@@ -204,7 +204,12 @@ public class DEEsv {
             catch (Exception e) {
                 System.err.println("Failed to create logfile.");
                 if (debugLevel == 1) {
-                    System.err.println(e.getMessage());
+                    if (e.getMessage() != null) {
+                        System.err.println(e.getMessage());
+                    }
+                    else {
+                        System.err.println("Encountered NullPointerException");
+                    }
                 }
                 else if (debugLevel > 1) {
                     e.printStackTrace(System.err);
@@ -438,7 +443,7 @@ public class DEEsv {
 
         // Populate the ciscoLogicalModuleObjects Hash
         this.ciscoLogicalModuleObjects = new Hashtable();
-	ciscoLogicalModuleObjects.put("InstanceID", "Index");
+        ciscoLogicalModuleObjects.put("InstanceID", "Module Index");
         ciscoLogicalModuleObjects.put("ModuleNumber", "Module Number");
         ciscoLogicalModuleObjects.put("ModuleType", "Type");
         ciscoLogicalModuleObjects.put("InstanceName", "Name");
@@ -469,7 +474,7 @@ public class DEEsv {
         ciscoMemoryPoolObjects.put("DynamicPoolType", "Dynamic Pool");
         ciscoMemoryPoolObjects.put("AlternatePoolType", "Alternate Pool");
         ciscoMemoryPoolObjects.put("IsValid", "Validity");
-        ciscoMemoryPoolObjects.put("Allocated", "Used (MB)");
+        ciscoMemoryPoolObjects.put("Allocated", "Used");
         ciscoMemoryPoolObjects.put("Free", "Free");
         ciscoMemoryPoolObjects.put("LargestFree", "Largest Free Block");
 
