@@ -128,8 +128,8 @@ my $results = "";
 if ( defined( $contents{'security'} ) ) {
 
     # Implement CHAP-like security
-    use Digest::MD5 qw(md5);    # This module is required for security to work.
-    my $digest = md5( $contents{'security'} );
+    use Digest::MD5 qw(md5_hex);    # This module is required for security to work.
+    my $digest = md5_hex( $contents{'security'} );
     send_data( $client, "digest" );
     $results = get_data($client);
     if ( $results ne "403" ) {

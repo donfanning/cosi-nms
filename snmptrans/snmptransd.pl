@@ -61,7 +61,7 @@ BEGIN {
 
 use strict;
 use vars
-qw($rcsid $PIDFILE $LOCAL_PORT $server $MAXLEN $PREFORK $MAX_CLIENTS_PER_CHILD %children $children $ME $MIBS $MIBDIRS $HTTPMIBS %contents @leave_indent $leave_was_simple $tree_buffer $last_ip);
+qw($rcsid $SECURITY $PIDFILE $LOCAL_PORT $server $MAXLEN $PREFORK $MAX_CLIENTS_PER_CHILD %children $children $ME $MIBS $MIBDIRS $HTTPMIBS %contents @leave_indent $leave_was_simple $tree_buffer $last_ip);
 use IO::Socket;
 use Symbol;
 use SNMP;
@@ -190,7 +190,7 @@ sub snmptrans {
     my $data;
 
     if ( $SECURITY ne "" ) {
-        use Digest::MD5 qw(md5);
+        use Digest::MD5 qw(md5_hex);
         unless ( open( PW, $SECURITY ) ) {
             die "Cannot open password file $SECURITY: $!\n";
         }
@@ -209,9 +209,9 @@ sub snmptrans {
             send_data( $client, "501" );
             return;
         }
-        $digest = get_data($client);
+        my $digest = get_data($client);
 
-        if ( $digest eq md5($pw) ) {
+        if ( $digest eq md5_hex($pw) ) {
             send_data( $client, "200" );
         }
         else {
