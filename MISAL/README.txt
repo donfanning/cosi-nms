@@ -7,7 +7,7 @@ MISAL is a multi-threaded Java library that allows for manipulation of TCP
 sockets.  MISAL is designed to wrap around sockets and give an easy interface
 to sending an receiving data on a socket.
 
-MISAL itself is fairly generic, and can be used for almost any type of TCP 
+MISAL itself is fairly generic, and can be used for almost any type of TCP
 socket.  It is mostly used for things like telnet.  MISAL knows about telnet
 options, and will reply with DONT or WONT for all options.
 
@@ -21,11 +21,11 @@ Right now, MISAL is considered to be beta-quality code.
 BUILDING:
 ---------
 
-MISAL requires JDK 1.1 or higher, and will work on UNIX, MacOS X, or 
+MISAL requires JDK 1.2 or higher, and will work on UNIX, MacOS X, or
 Windows (MacOS 9 has not been tested).
 
-MISAL requires PerlTools from
-http://www.savarese.org/oro/downloads/index.html#PerlTools.  PerlToos.jar
+MISAL requires Jakarta ORO from
+http://jakarta.apache.org/builds/jakarta-oro/release.  The jakarta-oro.jar file
 must be in your classpath before building or running MISAL-based applications.
 
 To build MISAL on UNIX or MacOS X, use the included Makefile.  You may need
@@ -39,8 +39,7 @@ environment, type:
 This will build MISAL.jar, all the JavaDoc API documentation, and the
 MISALTest.class and MISALTestIOS.class.
 
-To build MISAL on Windows (95/98/Me, NT, 2000, and maybe even XP), use 
-build.bat:
+To build MISAL on Windows (XP, NT, 2000, and 2003), use build.bat:
 
 > build
 
