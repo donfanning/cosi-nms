@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS Sources;
 create table Sources 
 (
 	Name 			varchar(30), 
@@ -12,6 +13,7 @@ create table Sources
 	Status 			tinyint
 );
 
+DROP TABLE IF EXISTS Targets;
 create table Targets 
 (
 	Name 	varchar(30), 
@@ -19,6 +21,7 @@ create table Targets
 	Status 	tinyint
 );
 
+DROP TABLE IF EXISTS Operations;
 create table Operations 
 (
 	Name 			varchar(30), 
@@ -37,6 +40,7 @@ create table Operations
 	adminURL		varchar(50)
 );
 
+DROP TABLE IF EXISTS Users;
 create table Users
 (
 	Username	varchar(30),
@@ -46,6 +50,7 @@ create table Users
 	Permissions	tinyint
 );
 
+DROP TABLE IF EXISTS Collectors;
 create table Collectors 
 (
 	Name			varchar(30),
