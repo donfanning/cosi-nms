@@ -1,6 +1,6 @@
 package com.marcuscom.MISAL;
 /*-
- * Copyright (c) 2001 Joe Clarke <marcus@marcuscom.com>
+ * Copyright (c) 2001-2004 Joe Clarke <marcus@marcuscom.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
