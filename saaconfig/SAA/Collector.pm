@@ -4,6 +4,7 @@ use strict;
 require 5.002;
 use lib qw(..);    # XXX This is for testing only.
 use SNMP;
+use SAA::Globals;
 use SAA::SAA_MIB;
 use SAA::Operation;
 use Carp;
@@ -54,9 +55,13 @@ sub new {
         error     => undef,
     };
 
-    if ( $args[3] ) {
-        my $rc = _needTarget( $self->{operation}->{type} );
-        $self->{target} = $args[3] if $rc;
+    my $rc = _needTarget( $self->{operation}->type() );
+    if ( scalar(@args) == 4 && $rc ) {
+        $self->{target} = $args[3];
+    }
+    elsif ( scalar(@args) < 4 && $rc ) {
+        croak
+          "SAA::Collector: The specified operation requires a target argument";
     }
 
     bless( $self, $class );
@@ -79,32 +84,138 @@ sub _needTarget {
     1;
 }
 
+sub source {
+    my $self = shift;
+    return $self->{source};
+}
+
+sub target {
+    my $self = shift;
+    return $self->{target};
+}
+
+sub name {
+    my $self = shift;
+    return $self->{name};
+}
+
+sub id {
+    my $self = shift;
+    my ($override);
+
+    if (@_) { $override = shift; }
+
+    if ( !$self->{id} || $override ) {
+
+        # Don't calculate id if it's already set or unless we're forced
+        # to (by setting $override to 1).
+        srand( time ^ $$ );    # We don't need the best seed.
+        $self->{id} = int( rand 65534 ) + 1;
+    }
+    return $self->{id};
+}
+
 sub life {
-	my $self = shift;
-	if (@_) { 
-		my $duration = shift;
-		if ($duration < $SAA::Collector::MIN_LIFE || $duration > $SAA::Collector::MAX_LIFE) {
-			return $self->{life};
-		}
-		else {
-			$self->{life} = $duration;
-		}
-	}
-	return $self->{life};
+    my $self = shift;
+    if (@_) {
+        my $duration = shift;
+        if ( $duration < $SAA::Collector::MIN_LIFE
+            || $duration > $SAA::Collector::MAX_LIFE )
+        {
+            return $self->{life};
+        }
+        else {
+            $self->{life} = $duration;
+        }
+    }
+    return $self->{life};
 }
 
 sub start_time {
-	my $self = shift;
-	if (@_) {
-		my $start = shift;
-		if ($start < $SAA::Collector::MIN_START_TIME || $start > $SAA::MAX_START_TIME) {
-			return $self->{startTime};
-		}
-		else {
-			$self->{startTime} = $start;
-		}
-	}
-	return $self->{startTime};
+    my $self = shift;
+    if (@_) {
+        my $start = shift;
+        if ( $start < $SAA::Collector::MIN_START_TIME
+            || $start > $SAA::MAX_START_TIME )
+        {
+            return $self->{startTime};
+        }
+        else {
+            $self->{startTime} = $start;
+        }
+    }
+    return $self->{startTime};
+}
+
+sub error {
+    my $self = shift;
+    if (@_) { $self->{error} = shift; }
+    return $self->{error};
+}
+
+sub install {
+
+    # This method installs the collector on the source router.  It 
+    # assumes that the source has been successfully learned.
+    my $self = shift;
+    my ( $source, $target, $operation, $id, $sess );
+
+    $source = $self->source();
+    $target = $self->target();
+    $id     = $self->id();
+
+    if ( $source->status() != $SAA::Globals::HOST_UP_SNMP ) {
+        $self->error( "Status for host " . $source->name()
+            . " indicates it is not SNMP reachable" );
+        return;
+    }
+
+    # For now, we use the read-only community string.  We'll change over
+    # to read-write when we do the actual configuration.
+    $sess = new SNMP::Session(
+        DestHost  => $source->addr(),
+        Community => $source->read_community(),
+        Version   => $source->snmp_version(),
+    );
+
+    # We need to determine if the given $id is already in use on the 
+    # source router.  We will loop ten times or until we find a free 
+    # row id.
+    my $i;
+    for ( $i = 0 ; $i < 10 ; $i++ ) {
+        my $val =
+          $sess->get( $SAA::SAA_MIB::rttMonCtrlAdminStatus . '.' . $id );
+        last if ( $sess->{ErrorNum} );
+        $id = $self->id(1);    # Force a new id to be generated.
+    }
+
+    # This really shouldn't happen.
+    if ( $i == 10 ) {
+        $self->error("Unable to find a free row id after ten tries");
+        return;
+    }
+
+    # Now that we have a valid row id, we can do the actual collector setup.
+    $sess = new SNMP::Session(
+        DestHost  => $source->addr(),
+        Community => $source->write_community(),
+        Version   => $source->snmp_version(),
+    );
+
+    # We will use the createAndWait method.
+    $sess->set(
+        new SNMP::Varbind(
+            [
+                $SAA::SAA_MIB::rttMonCtrlAdminStatus, $id,
+                $SAA::SAA_MIB::createAndWait, 'INTEGER'
+            ]
+        )
+    );
+
+    if ( $sess->{ErrorNum} ) {
+        $self->error("Failed to set row status");
+        return;
+    }
 }
 
 1;
