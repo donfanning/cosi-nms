@@ -2,21 +2,23 @@ package SAA::Target;
 
 use strict;
 require 5.002;
-use lib qw(..);
+use lib qw(..);    # XXX for testing purposes only.
 use SAA::Globals;
+use Carp;
 
 sub new {
     my ( $that, @args ) = @_;
     my $class = ref($that) || $that;
 
     if ( scalar(@args) != 2 ) {
-		return;
+        croak "SAA::Target: Insufficient arguments passed to constructor";
     }
 
     my $self = {
         name    => $args[0],
         address => $args[1],
         status  => $SAA::Globals::HOST_UP_IP,
+        error   => undef,
     };
 
     bless( $self, $class );
