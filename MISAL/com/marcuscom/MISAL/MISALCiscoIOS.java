@@ -10,10 +10,8 @@ public class MISALCiscoIOS extends MISAL {
 	public static final int CONFIG_MODE = 3;
 	public static final int CONFIG_MODE_IF = 4;
 	public static final int CONFIG_MODE_OTHER = 5;
-	public static final int VTY_PROMPT = 6;
-	public static final int USER_PROMPT = 7;
-	public static final int PASSWORD_PROMPT = 8;
-	public static final int ENABLE_PROMPT = 9;
+	public static final int USER_PROMPT = 6;
+	public static final int PASSWORD_PROMPT = 7;
 
 	protected static final int AUTH_UNKNOWN = 0;
 	protected static final int AUTH_VTY = 1;
@@ -31,23 +29,22 @@ public class MISALCiscoIOS extends MISAL {
 		super(socket);
 
 		/* Add Cisco-specific states */
-
 		try {
 			/* Standard disable prompt */
-			addState(this.DISABLE_MODE, "> ?$"); 
+			addState(this.DISABLE_MODE, ">$"); 
 			/* Standard enable prompt */
-			addState(this.ENABLE_MODE, "[^\\)]# ?$"); 
+			addState(this.ENABLE_MODE, "[^\\)]#$"); 
 			/* Vanilla config prompt */
-			addState(this.CONFIG_MODE, "\\(config\\)# ?$");
+			addState(this.CONFIG_MODE, "\\(config\\)#$");
 			/* Config interface prompt */
-			addState(this.CONFIG_MODE_IF, "\\(config-if\\)# ?$");
+			addState(this.CONFIG_MODE_IF, "\\(config-if\\)#$");
 			/* Some other config prompt */
-			addState(this.CONFIG_MODE_OTHER, "\\(config-[^i][^f]\\)# ?$");
-			addState(this.VTY_PROMPT, "Password: ?$");
-			addState(this.USER_PROMPT, "Username: ?$");
-			addState(this.PASSWORD_PROMPT, "Password: ?$");
-			addState(this.ENABLE_PROMPT, "Password: ?$");
+			addState(this.CONFIG_MODE_OTHER, "\\(config-[^i][^f]\\)#$");
+			addState(this.USER_PROMPT, "^Username:\\s.*$");
+			addState(this.PASSWORD_PROMPT, "^Password:\\s.*$");
 		}
+		/* This code should not generate an exception.  These
+		   patterns are tested. */
 		catch (MalformedPatternException mfpe) {}
 	}
 
@@ -108,13 +105,10 @@ public class MISALCiscoIOS extends MISAL {
 	}
 
 	public void login() throws InsufficientCredentialsException, IllegalMISALStateException, IOException {
-		if (getState() != MISAL_STATE_INITIAL) {
-			return;
-		}
 		switch (this.getAuthScheme(this.DISABLE_MODE)) {
 			case AUTH_VTY:
 				/* Expect a Password: prompt */
-				send(this.VTY_PROMPT, this._vtyPw, this.DISABLE_MODE);
+				send(this.PASSWORD_PROMPT, this._vtyPw + "\r", this.DISABLE_MODE);
 				/* If we don't get what we expect, throw
 				   the IllegalMISALStateException. */
 				break;
@@ -122,15 +116,14 @@ public class MISALCiscoIOS extends MISAL {
 				try {
 					/* Expect either ENABLE or DISABLE MODE
 					   as we could be using enable TACACS */
-					send(this.USER_PROMPT, this._user, this.PASSWORD_PROMPT);
-					send(this.PASSWORD_PROMPT, this._userPw, "[#>] ?$");
+					send(this.USER_PROMPT, this._user + "\r", this.PASSWORD_PROMPT);
+					send(this.PASSWORD_PROMPT, this._userPw + "\r", "[#>] ?$");
 				}
 				catch (IllegalMISALStateException imse) {
 					/* Fallback onto regular VTY logins. */
-					send(this.VTY_PROMPT, this._vtyPw, this.DISABLE_MODE);
+					send(this.PASSWORD_PROMPT, this._vtyPw + "\r", this.DISABLE_MODE);
 				}
 				break;
-
 		}
 
 	}
@@ -140,7 +133,7 @@ public class MISALCiscoIOS extends MISAL {
 			case ENABLE_MODE:
 				break;
 			case DISABLE_MODE:
-				send("enable\r", this.ENABLE_PROMPT);
+				send("enable\r", this.PASSWORD_PROMPT);
 				send(this._enablePw + "\r", this.ENABLE_MODE);
 				break;
 			case CONFIG_MODE:
