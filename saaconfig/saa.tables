@@ -9,14 +9,14 @@ create table Sources
 	IOS_Version 			varchar(25), 
 	Supported_Types	text,
 	Supported_Protocols	text,
-	Status 			int
+	Status 			tinyint
 );
 
 create table Targets 
 (
 	Name 	varchar(30), 
 	Address varchar(15), 
-	Status 	varchar(30)
+	Status 	tinyint
 );
 
 create table Operations 
@@ -28,13 +28,22 @@ create table Operations
 	Frequency 		varchar(30), 
 	Timeout 		varchar(30), 
 	Verify			varchar(30),
-	TOS			varchar(30),
-	targetPort 		varchar(5), 
-	sourcePort		varchar(5),
+	TOS				tinyint,
+	targetPort 		smallint, 
+	sourcePort		smallint,
 	controlEnabled 		varchar(30),
 	adminOperation		varchar(30),
 	adminStrings		varchar(30),
 	adminURL		varchar(50)
+);
+
+create table Users
+(
+	Username	varchar(30),
+	Firstname	varchar(30),
+	Lastname	varchar(30),
+	Password	varchar(50),
+	Permissions	tinyint
 );
 
 create table Collectors 
@@ -44,9 +53,9 @@ create table Collectors
  	sourceName 		varchar(30), 
 	targetName 		varchar(30), 
 	operationName 		varchar(30), 
-	Description 		longtext, 
-	startTime 		varchar(30), 
-	NVRam 			varchar(30), 
+	Description 		tinytext, 
+	startTime 		int, 
+	NVRam 			tinyint, 
 	RowAge 			varchar(30), 
 	Owner 			varchar(30), 
 	Life 			varchar(30)
