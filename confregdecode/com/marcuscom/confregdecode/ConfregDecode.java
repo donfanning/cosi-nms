@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 1998-2001 Joe Clarke <marcus@marcuscom.com>
+ * Copyright (c) 1998-2003 Joe Clarke <marcus@marcuscom.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -171,7 +171,7 @@ public class ConfregDecode extends Applet implements ActionListener {
         routerType.addItem("3600 Series", false);
         routerType.addItem("3700 Series", false);
         routerType.addItem("4000 Series", true);
-	routerType.addItem("6000 IOS Series", true);
+        routerType.addItem("6000 IOS Series", true);
         routerType.addItem("7000 Family", true);
         routerType.addItem("7200 Series", true);
         routerType.addItem("7600 Series", true);
