@@ -4,10 +4,12 @@ create table Sources
 	Address 		varchar(15), 
 	Read_Community 		varchar(50), 
 	Write_Community 		varchar(50),
-	SNMP_Version 		varchar(30), 
-	SAA_Version 			varchar(30), 
-	IOS_Version 			varchar(30), 
-	Status 			varchar(30) 
+	SNMP_Version 		varchar(2), 
+	SAA_Version 			varchar(10), 
+	IOS_Version 			varchar(25), 
+	Supported_Types	text,
+	Supported_Protocols	text,
+	Status 			int
 );
 
 create table Targets 
