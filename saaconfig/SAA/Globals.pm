@@ -12,15 +12,15 @@ use Carp;
 
 @ISA    = qw(Exporter);
 @EXPORT = qw(
-  HOST_DOWN
-  HOST_UP_IP
-  HOST_UP_SNMP
-  SNMP_ERR_NOSUCHNAME
-  SNMP_ERR_V2_IN_V1
-  SNMP_ERR_BAD_VERSION
-  addrToOctStr
-  addrToHexStr
-  checkIPAddr
+    HOST_DOWN
+    HOST_UP_IP
+    HOST_UP_SNMP
+    SNMP_ERR_NOSUCHNAME
+    SNMP_ERR_V2_IN_V1
+    SNMP_ERR_BAD_VERSION
+    addrToOctStr
+    addrToHexStr
+    checkIPAddr
 );
 
 use constant HOST_DOWN    => 0;
@@ -44,27 +44,21 @@ sub addrToOctStr {
         # octet string.
         # XXX This should be smarter so that SNA address can also be supported.
         my $addr = shift;
-        my ($a, $b, $c, $cidr) = split (/\./, $addr, 4);
+        my ($a, $b, $c, $cidr) = split(/\./, $addr, 4);
         return ("$a $b $c $cidr");
 
         #return ( sprintf "%.2x %.2x %.2x %.2x", $a, $b, $c, $cidr );
 }
 
 sub addrToHexStr {
-    if ( scalar(@_) != 1 ) {
-        croak "SAA::Globals::addrToHexStr: method requires one argument";
-    }
+        if (scalar(@_) != 1) {
+                croak
+                    "SAA::Globals::addrToHexStr: method requires one argument";
+        }
 
-	my $addr = shift ;
-	my (@IP,  $IP_octet, @hex_IP, $hex_octet, $hex_IP);
-    @IP = split ( /\./, $addr);
-	foreach $IP_octet (@IP)	{
-		$hex_octet = sprintf("%2.2x",$IP_octet);
-		push @hex_IP, $hex_octet;
-	}
-	$hex_IP=join("", @hex_IP);
-
-    return ( $hex_IP ) ;
+        my $addr = shift;
+        my ($a, $b, $c, $cidr) = split(/\./, $addr, 4);
+        return (sprintf "%2.2x%2.2x%2.2x%2.2x", $a, $b, $c, $cidr);
 }
 
 sub checkIPAddr {
@@ -74,7 +68,7 @@ sub checkIPAddr {
         }
 
         my $addr   = shift;
-        my @octets = split (/\./, $addr);
+        my @octets = split(/\./, $addr);
 
         if (scalar(@octets) != 4) {
                 return;
