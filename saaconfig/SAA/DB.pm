@@ -83,18 +83,19 @@ sub add_source {
     my $dbhx = $self->{dbh};
 
     my %SrcValHash = (
-        SrcId     => undef,
-        SrcAlias  => $src->{name},
-        SrcIpAddr => $src->{addr},
-        SrcDescr    => undef,    #$src->{descr}; method not present in Source.pm
-        SrcHostname => undef,    #$src->{hostname}; ""
-        SrcReadComm           => $src->{read_community},
-        SrcWriteComm          => $src->{write_community},
-        SrcSnmpVersion        => $src->{snmp_version},
-        SrcIosVersion         => $src->{ios_version},
-        SrcRttAppVersion      => $src->{saa_version},
-        SrcSupportedTypes     => $src->{type_supported},       #a ref to a hash
-        SrcSupportedProtocols => $src->{protocol_supported}    #a ref to a hash
+        SrcId        => undef,
+        SrcAlias     => $src->name(),
+        SrcIpAddr    => $src->addr(),
+        SrcStatus    => $src->status(),
+        SrcDescr     => undef,                  #method not present in Source.pm
+        SrcHostname  => undef,                  # ""
+        SrcReadComm  => $src->read_community(),
+        SrcWriteComm => $src->write_community(),
+        SrcSnmpVersion        => $src->snmp_version(),
+        SrcIosVersion         => $src->ios_version(),
+        SrcRttAppVersion      => $src->saa_version(),
+        SrcSupportedTypes     => $src->type_supported(),       #a ref to a hash
+        SrcSupportedProtocols => $src->protocol_supported()    #a ref to a hash
     );
 
     #some rudimentary checks to ensure we populate the "NOT NULL" fields in the tables.
@@ -112,7 +113,7 @@ sub add_source {
 "select \* from SAA_SOURCES where SrcIpAddr=\"$SrcValHash{SrcIpAddr}\" or SrcAlias=\"$SrcValHash{SrcAlias}\"";
     if ( scalar( @ary = $dbhx->selectrow_array($selector) ) != 0 ) {
         $self->error(
-"DB.pm : SrcAlias and.or SrcIpAddr of this source is already present: @ary"
+"DB.pm : SrcIpAddr and.or SrcAlias of this source is already present: $SrcValHash{SrcIpAddr} and.or $SrcValHash{SrcAlias}"
         );
         return;
     }
@@ -123,8 +124,8 @@ sub add_source {
 
     #first, lets churn up the next available SrcId
     my $srcidchecker = "select \* from  SAA_SOURCES order by SrcId DESC";
-    if ( scalar( @ary = $dbhx->selectrow_array($srcidchecker) ) != 0 ) {
-        $SrcValHash{SrcId} = "0";
+    if ( scalar( @ary = $dbhx->selectrow_array($srcidchecker) ) == 0 ) {
+        $SrcValHash{SrcId} = "1";
     }
     else {
         $SrcValHash{SrcId} = ++$ary[0];
@@ -139,6 +140,7 @@ sub add_source {
                 push ( @types, $_ );
             }
             push ( @Vals, "\"@types\"" );
+            push ( @IDs,  $key );
             next;
         }
 
@@ -148,6 +150,7 @@ sub add_source {
                 push ( @protocols, $_ );
             }
             push ( @Vals, "\"@protocols\"" );
+            push ( @IDs,  $key );
             next;
         }
 
@@ -179,6 +182,63 @@ sub add_source {
     1;
 }
 
+sub add_target {
+
+    #adds target to SAA_TARGETS table in saaconf database
+    #alls you have to do is pass it the target handle
+    my $self   = shift;
+    my $target = shift;
+    my $dbhx   = $self->{dbh};
+    use vars qw ($key @ary @IDs @Vals $sth);
+
+    my %TargetHash = (
+        TgtId            => undef,
+        TgtAlias         => $target->name(),
+        TgtIpAddr        => $target->addr(),
+        TgtStatus        => $target->status(),
+        TgtDescr         => undef,              #not defined in Target.pm as yet
+        TgtHostName      => undef,              # ""
+        TgtReadComm      => undef,              # ""
+        TgtWriteComm     => undef,              # ""
+        TgtIosVersion    => undef,              #""
+        TgtRttAppVersion => undef               #""
+    );
+
+    #first, lets churn up the next available TargetId
+    my $tgtidchecker = "select \* from  SAA_TARGETS order by TgtId DESC";
+    if ( scalar( @ary = $dbhx->selectrow_array($tgtidchecker) ) == 0 ) {
+        $TargetHash{TgtId} = "1";
+    }
+    else {
+        $TargetHash{TgtId} = ++$ary[0];
+    }
+
+    #now to pull IDs and values from the %TargetHash for the eventual query
+    foreach $key ( keys %TargetHash ) {
+
+        if ( $TargetHash{$key} ) {
+
+            #this is to get rid of all the vars not defined by user, 
+            #so we dont bother inserting them into the table
+            push ( @IDs,  $key );
+            push ( @Vals, "\"$TargetHash{$key}\"" );
+        }
+    }
+    my $IDs  = join ( ',', @IDs );
+    my $Vals = join ( ',', @Vals );
+    my $inserter = "insert into SAA_TARGETS \($IDs\) VALUES \($Vals\)";
+
+    if ( !( $sth = $dbhx->prepare($inserter) ) ) {
+        $self->error( "Failed to prepare query: " . $dbhx->errstr() );
+        return;
+    }
+
+    if ( !( $sth->execute() ) ) {
+        $self->error( "Failed to execute query: " . $dbhx->errstr() );
+        return;
+    }
+}
+
 sub add_user {
 
     #this as the name suggests, lets callers add NEW users to the SAA_USERS table.
@@ -193,17 +253,17 @@ sub add_user {
 
     my %UserHash = (
         UserId      => undef,
-        UserName    => $user->{username},
-        FirstName   => $user->{firstname},
-        LastName    => $user->{lastname},
-        Password    => $user->{password},
-        Permissions => $user->{perms}
+        UserName    => $user->username(),
+        FirstName   => $user->firstname(),
+        LastName    => $user->lastname(),
+        Password    => $user->password(),
+        Permissions => $user->perms()
     );
 
     #first, lets churn up the next available UserId
     my $useridchecker = "select \* from  SAA_USERS order by UserId DESC";
-    if ( scalar( @ary = $dbhx->selectrow_array($useridchecker) ) != 0 ) {
-        $UserHash{UserId} = "0";
+    if ( scalar( @ary = $dbhx->selectrow_array($useridchecker) ) == 0 ) {
+        $UserHash{UserId} = "1";
     }
     else {
         $UserHash{UserId} = ++$ary[0];
