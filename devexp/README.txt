@@ -9,7 +9,7 @@ INTRODUCTION:
 
 This tool is designed for CiscoWorks 2000 users running RME 3.1 or higher.  
 It automates the device export functionality in RME.  This tool can be run 
-from cron or at to produce regular CSV of XML "dumps" of the RME inventory.
+from cron or at to produce regular CSV or XML "dumps" of the RME inventory.
 
 REQUIREMENTS:
 -------------
