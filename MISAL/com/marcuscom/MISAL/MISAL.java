@@ -641,7 +641,7 @@ public class MISAL implements Runnable {
         Perl5Matcher matcher = new Perl5Matcher();
         Pattern pattern = null;
         for(int i = 1; i <= tries; i++) {
-            String buffer = this.getBuffer();
+            String buffer = this.getLastBuffer();
             if (buffer == null) continue;
             this.debug("Try number " + i + ", buffer = \"" + buffer + "\"");
             try {
