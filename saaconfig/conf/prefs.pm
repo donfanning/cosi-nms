@@ -12,6 +12,8 @@ use Exporter;
   $DB_USER
   $DB_PASS
   $KEY
+  $TEMP_DIR
+  $MAX_SESSIONS
 );
 
 ## DO NOT REMOVE NEXT LINE ##
@@ -21,6 +23,8 @@ use vars qw(
   $DB_USER
   $DB_PASS
   $KEY
+  $TEMP_DIR
+  $MAX_SESSIONS
 );
 
 ## DO NOT REMOVE NEXT LINE ##
@@ -34,6 +38,8 @@ $DB_PASS = 's44';
 # should be configurable by the end user so that all keys will be different.
 $KEY = pack( "H16", 'aIC9e8!Cmtdyu4GV' );
 
+$TEMP_DIR = '/tmp/SAA';
+$MAX_SESSIONS = 10;
 
 ## END PREFERENCES
 
