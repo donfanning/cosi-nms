@@ -15,7 +15,7 @@ use Exporter;
 
 my @ISA = qw(Exporter);
 ## DO NOT REMOVE NEXT LINE ##
-my @EXPORT = qw(
+my @EXPORT_OK = qw(
 $DB_HOST
 $DB_NAME
 $DB_USER
