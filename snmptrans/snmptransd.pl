@@ -50,13 +50,14 @@ BEGIN {
     # server parent will be written to.  This is usually /var/run.
     $PIDFILE = '/var/run/snmptransd.pid';
 
-# Specify the local port for the server to bind to.  This is 3333 by default.
+    # Specify the local port for the server to bind to.  This is 3333 
+    # by default.
     $LOCAL_PORT = 3333;
 
     # Specify the number of seconds to wait before throwing a timeout exception.
     # This helps avoid denial of service attacks if the MIB tree is large.  The
-    # default is 10 minutes.
-    $TIMEOUT_SECS = 600;
+    # default is 5 minutes.
+    $TIMEOUT_SECS = 300;
 
     # Enable CHAP-like security for connecting to the server process.  This is 
     # disable by default.  Set this to the name of the password file to 
@@ -159,10 +160,6 @@ $SIG{CHLD} = \&REAPER;
 $SIG{INT}  = \&HUNTSMAN;
 $SIG{TERM} = \&HUNTSMAN;
 
-# This signal handler controls what to do if the snmptrans operation runs
-# for too long.  We will catch this timeout, and return an error.
-$SIG{ALRM} = sub { die "timeout" };
-
 while (1) {
     sleep;
     my $i;
@@ -190,6 +187,10 @@ sub make_new_child {
     }
     else {
         $SIG{INT} = 'DEFAULT';
+
+        # This signal handler controls what to do if the snmptrans operation 
+        # runs for too long.  We will catch this timeout, and return an error.
+        $SIG{ALRM} = sub { die "timeout" };
 
         sigprocmask( SIG_UNBLOCK, $sigset )
           or die "Can't unblock SIGINT for fork: $!\n";
@@ -288,6 +289,8 @@ sub snmptrans {
             }
             else {
                 alarm(0);
+                send_data( $client, "500" );
+                return;
             }
         }
         my ($occurance);
@@ -621,7 +624,23 @@ sub snmptrans {
         if ($numeric) {
             my $mib = $SNMP::MIB{$request};
             $data .= ( $mib->{'parent'} )->{'objectID'} . "\n";
-            $data .= walkMIB( $client, $request, $request );
+            eval {
+                alarm($TIMEOUT_SECS);
+                $data .= walkMIB( $client, $request, $request );
+                alarm(0);
+            };
+
+            if ($@) {
+                if ( $@ =~ /timeout/ ) {
+                    send_data( $client, "502" );
+                    return;
+                }
+                else {
+                    alarm(0);
+                    send_data( $client, "500" );
+                    return;
+                }
+            }
         }
         else {
             $trans = SNMP::translateObj($request);
@@ -640,6 +659,8 @@ sub snmptrans {
                 }
                 else {
                     alarm(0);
+                    send_data( $client, "500" );
+                    return;
                 }
             }
             $data .= "</pre>\n";

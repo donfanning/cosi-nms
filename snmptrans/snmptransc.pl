@@ -177,6 +177,10 @@ if ( defined( $q->param('pattern') ) ) {
 "The server timed out before returning valid data.  Please try again with a more specific pattern."
         );
     }
+    elsif ( $results eq "500" ) {
+        return_error( "SNMP Search Error",
+            "Internal server error encountered." );
+    }
 
     return_data($results);
     exit(0);
@@ -220,6 +224,10 @@ if ( $q->param('xOps') eq "" ) {
 "The server timed out before returning valid data.  Please try again with a more specific object."
         );
     }
+    elsif ( $results eq "500" ) {
+        return_error( "SNMP Search Error",
+            "Internal server error encountered." );
+    }
 
     return_data($results);
 }
@@ -260,6 +268,10 @@ elsif ( $q->param('xOps') eq "detail" ) {
 "The server timed out before returning valid data.  Please try again with a more specific object."
         );
     }
+    elsif ( $results eq "500" ) {
+        return_error( "SNMP Search Error",
+            "Internal server error encountered." );
+    }
 
     return_data($results);
 }
@@ -299,6 +311,10 @@ elsif ( $q->param('xOps') eq "tree" ) {
         return_error( "SNMP Translate Error",
 "The server timed out before returning valid data.  Please try again with a more specific object."
         );
+    }
+    elsif ( $results eq "500" ) {
+        return_error( "SNMP Search Error",
+            "Internal server error encountered." );
     }
 
     return_data($results);
