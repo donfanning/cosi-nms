@@ -67,7 +67,7 @@ sub _needTarget {
 
     # This is a private static method to determine if a given operation type
     # needs a target.  HTTP, DNS, and DHCP operations do not need targets.
-    my ($type) = $_[0];
+    my $type = shift;
 
     if ( $type == $SAA::Operation::TYPE_DNS
         || $type == $SAA::Operation::TYPE_HTTP
@@ -77,6 +77,34 @@ sub _needTarget {
     }
 
     1;
+}
+
+sub life {
+	my $self = shift;
+	if (@_) { 
+		my $duration = shift;
+		if ($duration < $SAA::Collector::MIN_LIFE || $duration > $SAA::Collector::MAX_LIFE) {
+			return $self->{life};
+		}
+		else {
+			$self->{life} = $duration;
+		}
+	}
+	return $self->{life};
+}
+
+sub start_time {
+	my $self = shift;
+	if (@_) {
+		my $start = shift;
+		if ($start < $SAA::Collector::MIN_START_TIME || $start > $SAA::MAX_START_TIME) {
+			return $self->{startTime};
+		}
+		else {
+			$self->{startTime} = $start;
+		}
+	}
+	return $self->{startTime};
 }
 
 1;
