@@ -27,16 +27,8 @@ public class MISALCiscoIOS extends MISAL {
 	private String _user = null;
 	private String _userPw = null;
 
-	public MISALCiscoIOS(Socket socket, int bufSize) throws SocketException, IOException {
-		this(socket, false, bufSize);
-	}
-
-	public MISALCiscoIOS(Socket socket, boolean debug) throws SocketException, IOException {
-		this(socket, debug, DEFAULT_BUFFER_SIZE);
-	}
-
-	public MISALCiscoIOS(Socket socket, boolean debug, int bufSize) throws SocketException, IOException {
-		super(socket, debug, bufSize);
+	public MISALCiscoIOS(Socket socket) throws SocketException, IOException {
+		super(socket);
 
 		/* Add Cisco-specific states */
 
