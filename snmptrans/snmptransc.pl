@@ -29,6 +29,7 @@
 
 BEGIN {
     $ENV{'PATH'} = '/bin:/usr/bin';
+    delete @ENV{ 'IFS', 'CDPATH', 'ENV', 'BASH_ENV' };
 
     # This is the name of the script relative to the HTTP root.
     $ME = '/cgi-bin/snmptransc.pl';
@@ -43,76 +44,37 @@ BEGIN {
 
 use strict;
 use IO::Socket;
+use CGI;
 use vars
- qw($rcsid $SERVER_ADDR $SERVER_PORT $ME %contents $client $data $result $size);
+qw($rcsid $SERVER_ADDR $SERVER_PORT $ME $q $cookie $client $data $result $size);
 
 $rcsid = '$Id$';
 
 $| = 1;
 
-# Insure POST method
-if ( $ENV{'REQUEST_METHOD'} eq 'POST' ) {
+$q = new CGI;
+$q->cgi_error
+  and return_error( "SNMP Translate Error", "Unable to parse CGI variables." );
 
-    # Count the bytes received
-    my $buffer;
-    read( STDIN, $buffer, $ENV{'CONTENT_LENGTH'} );
-
-    # make list of name/value pairs
-    my @pairs = split ( /&/, $buffer );
-    my $pair;
-
-    # cycle through each pair and parse
-    foreach $pair (@pairs) {
-
-        # get the name/value pair
-        my ( $name, $value ) = split ( /=/, $pair );
-
-        # translate "+" to white space
-        $value =~ tr/+/ /;
-
-        # translate ASCII hex escaped characters if any
-        $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
-
-        # add the pair to a list marked on the name of the variable
-        if ( defined( $contents{$name} ) ) {
-            $contents{$name} = join ( "\0", $contents{$name}, $value );
-        }
-        else {
-            $contents{$name} = $value;
-        }
-    }
-}
-elsif ( $ENV{'REQUEST_METHOD'} eq 'GET' ) {    # Do the same thing for GET.
-    my @pairs = split ( /&/, $ENV{'QUERY_STRING'} );
-    my $pair;
-
-    foreach $pair (@pairs) {
-        $pair =~ tr/+/ /;
-        $pair =~ s/%([a-fA-F0-9][a-fA-F-0-9])/pack("C",hex($1))/eg;
-        my ( $name, $value ) = split ( /=/, $pair );
-        $value = 1 if ( !defined($value) );
-        $contents{$name} = $value;
-    }
-}
-
-if ( defined( $contents{'oid'} ) && $contents{'oid'} eq "" ) {
+if ( defined( $q->param('oid') ) && $q->param('oid') eq "" ) {
     return_error( "SNMP Translate Error",
       "You did not specify an object name or OID to translate." );
 }
-elsif ( defined( $contents{'pattern'} ) && $contents{'pattern'} eq "" ) {
+elsif ( defined( $q->param('pattern') ) && $q->param('pattern') eq "" ) {
     return_error( "SNMP Search Error",
       "You did not specify a pattern for which to search." );
 }
 
 # Make the user input ``oid'' string safe for Perl consumption.
 # Don't escape everything since we need to allow for regular expressions.
-$contents{'oid'} =~ s/([\~\`\&\;\"\<\>\'])//g;
-$contents{'oid'} =~ s/\s//g;
+my $oid = $q->param('oid');
+$oid =~ s/([\~\`\&\;\"\<\>\'])//g;
+$oid =~ s/\s//g;
 
-if ( $contents{'bg'} eq "1" ) {
+if ( $q->param('bg') eq "1" ) {
     return_error( "Bad Regular Expression",
-      "The regular expression <I>$contents{'oid'}</i> is not valid." )
-      if ( !( eval { 'snmp' =~ /$contents{'oid'}/i, 1 } ) );
+      "The regular expression <I>$oid</i> is not valid." )
+      if ( !( eval { 'snmp' =~ /$oid/i, 1 } ) );
 }
 
 $client = IO::Socket::INET->new(
@@ -125,11 +87,21 @@ $client = IO::Socket::INET->new(
 
 my $results = "";
 
-if ( defined( $contents{'security'} ) ) {
+if ( defined( $q->param('security') )
+  || defined( $q->cookie( -name => 'security' ) ) )
+{
+
+    my $security = "";
+    if ( defined( $q->param('security') ) ) {
+        $security = $q->param('security');
+    }
+    else {
+        $security = $q->cookie( -name => 'security' );
+    }
 
     # Implement CHAP-like security
     use Digest::MD5 qw(md5_hex);    # This module is required for security to work.
-    my $digest = md5_hex( $contents{'security'} );
+    my $digest = md5_hex($security);
     send_data( $client, "digest" );
     $results = get_data($client);
     if ( $results ne "403" ) {
@@ -144,9 +116,22 @@ if ( defined( $contents{'security'} ) ) {
         return_error( "Server Error",
           "Error authenticating with server (results = \"$results\")." );
     }
+
+    # Use cookies to persist the security info.
+    $cookie =
+      $q->cookie( -name => "security", -value => $security );
+
+    if ( !defined($cookie) ) {
+        return_error( "SNMP Translate Error",
+"You do not have cookies enabled in your browser.  This application requires all cookies to be enabled."
+        );
+    }
 }
 
-if ( defined( $contents{'pattern'} ) ) {
+if ( defined( $q->param('pattern') ) ) {
+    my $pattern = $q->param('pattern');
+    $pattern =~ s/([\~\`\&\;\"\<\>\'])/\\$1/g;
+
     send_data( $client, "pattern" );
     $results = get_data($client);
     if ( $results ne "200" ) {
@@ -160,23 +145,23 @@ if ( defined( $contents{'pattern'} ) ) {
           "Error communicating with server (results = \"$results\")." );
     }
     $results = get_data($client);
-    send_data( $client, $contents{'pattern'} );
+    send_data( $client, $pattern );
     $results = get_data($client);
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
           "Error communicating with server (results = \"$results\")." );
     }
-    send_data( $client, $contents{'descr'} );
+    send_data( $client, $q->param('descr') );
 
     $results = get_data($client);
     if ( $results eq "501" ) {
         return_error( "Bad Regular Expression",
-          "The regular expression <I>$contents{'pattern'}</i> is not valid." );
+          "The regular expression <I>$q->param('pattern')</i> is not valid." );
     }
     elsif ( $results eq "404" ) {
         return_error( "SNMP Search Error",
-"No objects were found matching the pattern <I>$contents{'pattern'}</i>.  Please alter your search pattern, and try again."
+"No objects were found matching the pattern <I>$q->param('pattern')</i>.  Please alter your search pattern, and try again."
         );
     }
 
@@ -184,77 +169,77 @@ if ( defined( $contents{'pattern'} ) ) {
     exit(0);
 }
 
-if ( $contents{'xOps'} eq "" ) {
+if ( $q->param('xOps') eq "" ) {
     send_data( $client, "simple" );
     $results = get_data($client);
     if ( $results ne "200" ) {
         return_error( "Server Error",
           "Error communicating with server (results = \"$results\")." );
     }
-    send_data( $client, "0" ) if ( $contents{'bg'} ne "1" );
-    send_data( $client, "1" ) if ( $contents{'bg'} eq "1" );
+    send_data( $client, "0" ) if ( $q->param('bg') ne "1" );
+    send_data( $client, "1" ) if ( $q->param('bg') eq "1" );
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
           "Error communicating with server (results = \"$results\")." );
     }
     $results = get_data($client);
-    send_data( $client, $contents{'oid'} );
+    send_data( $client, $oid );
     $results = get_data($client);
 
     if ( $results eq "404" ) {
         return_error( "SNMP Translate Error",
-"Unable to translate <I>$contents{'oid'}</i>.  The object was either not found or invalid."
+"Unable to translate <I>$oid</i>.  The object was either not found or invalid."
         );
     }
 
     return_data($results);
 }
-elsif ( $contents{'xOps'} eq "detail" ) {
+elsif ( $q->param('xOps') eq "detail" ) {
     send_data( $client, "detail" );
     $results = get_data($client);
     if ( $results ne "200" ) {
         return_error( "Server Error", "Error communicating with server." );
     }
-    send_data( $client, "0" ) if ( $contents{'bg'} ne "1" );
-    send_data( $client, "1" ) if ( $contents{'bg'} eq "1" );
+    send_data( $client, "0" ) if ( $q->param('bg') ne "1" );
+    send_data( $client, "1" ) if ( $q->param('bg') eq "1" );
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
           "Error communicating with server (results = \"$results\")." );
     }
     $results = get_data($client);
-    send_data( $client, $contents{'oid'} );
+    send_data( $client, $oid );
     $results = get_data($client);
 
     if ( $results eq "404" ) {
         return_error( "SNMP Translate Error",
-"Unable to translate <I>$contents{'oid'}</i>.  The object was either not found or invalid."
+"Unable to translate <I>$oid</i>.  The object was either not found or invalid."
         );
     }
 
     return_data($results);
 }
-elsif ( $contents{'xOps'} eq "tree" ) {
+elsif ( $q->param('xOps') eq "tree" ) {
     send_data( $client, "tree" );
     $results = get_data($client);
     if ( $results ne "200" ) {
         return_error( "Server Error", "Error communicating with server." );
     }
-    send_data( $client, "0" ) if ( $contents{'bg'} ne "1" );
-    send_data( $client, "1" ) if ( $contents{'bg'} eq "1" );
+    send_data( $client, "0" ) if ( $q->param('bg') ne "1" );
+    send_data( $client, "1" ) if ( $q->param('bg') eq "1" );
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
           "Error communicating with server (results = \"$results\")." );
     }
     $results = get_data($client);
-    send_data( $client, $contents{'oid'} );
+    send_data( $client, $oid );
     $results = get_data($client);
 
     if ( $results eq "404" ) {
         return_error( "SNMP Translate Error",
-"Unable to display tree for <I>$contents{'oid'}</i>.  The object was either not found or invalid."
+"Unable to display tree for <I>$oid</i>.  The object was either not found or invalid."
         );
     }
 
@@ -301,9 +286,8 @@ sub get_data {
 sub return_data {
     my ($data) = $_[0];
 
-    print <<EOH;
-Content-type: text/html
-
+    print $q->header( -type => "text/html", -cookie => $cookie );
+    print <<"EOH";
 <BODY BGCOLOR="#FFFFFF">
 
 $data
