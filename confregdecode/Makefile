@@ -12,7 +12,7 @@ all:
 	$(JAVAC) $(JAVAC_FLAGS) com/marcuscom/confregdecode/ConfregDecode.java
 
 jar: all
-	jar -cvf cd.jar com/marcuscom/confregdecode/*.class
+	$(JAR) -cvf cd.jar com/marcuscom/confregdecode/*.class
 
 clean:
 	$(RM) -f com/marcuscom/confregdecode/*.class
