@@ -505,6 +505,7 @@ public class DEEsv {
             DEEsvDevice d = new DEEsvDevice();
             parseDevice(list.item(i), d);
             devices.addElement(d);
+	    d = null;
         }
 
     }
