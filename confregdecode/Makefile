@@ -3,9 +3,9 @@
 # $Id$
 #
 
-JAVAC=	/usr/local/jdk1.1.8/bin/javac
+JAVAC=	/usr/local/jdk1.4.2/bin/javac
 JAVAC_FLAGS=	-O -g
-JAR=	/usr/local/jdk1.1.8/bin/jar
+JAR=	/usr/local/jdk1.4.2/bin/jar
 RM=	/bin/rm
 
 all:

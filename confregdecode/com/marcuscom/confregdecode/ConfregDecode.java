@@ -45,11 +45,12 @@ public class ConfregDecode extends Applet implements ActionListener {
     PropCheckbox[] bootModes, options,broadcasts;
     RouterChoice routerType;
     Label notesLabel;
+    boolean badJVM = false;
 
-    public static final Font DEFAULT_FONT = new Font("SansSerif",Font.PLAIN,12);
+    public static final Font DEFAULT_FONT = new Font("SansSerif",Font.PLAIN,10);
     public static final Font BIG_FONT = new Font("SansSerif",Font.BOLD,12);
 
-    public static final String VERSION = "1.2.0";
+    public static final String VERSION = "1.2.1";
 
     static Frame f;
 
@@ -216,10 +217,6 @@ public class ConfregDecode extends Applet implements ActionListener {
                                            getNotes(routerType);
                                        }
                                    });
-        leftPanel.add(new Label("Will boot into:"));
-        for (int i = 0; i < bootModes.length; i++) {
-            leftPanel.add(bootModes[i]);
-        }
         ItemListener bootmodes_listener = new ItemListener() {
                                               public void itemStateChanged(ItemEvent e) {
                                                   bootFilesChoice.select("");
@@ -234,8 +231,11 @@ public class ConfregDecode extends Applet implements ActionListener {
                                                  }
                                              };
 
+        leftPanel.add(new Label("Will boot into:"));
         for (int i = 0; i < bootModes.length; i++) {
             bootModes[i].addItemListener(bootmodes_listener);
+            bootModes[i].setFont(DEFAULT_FONT);
+            leftPanel.add(bootModes[i]);
         }
         leftPanel.add(new Label("Options:"));
         for (int i = 0; i < options.length; i++) {
@@ -265,6 +265,21 @@ public class ConfregDecode extends Applet implements ActionListener {
         this.validate();
         this.transferFocus();
         registerInputField.requestFocus();
+
+        /* XXX Check the Java version to see if we're running under a
+         * 1.4.x VM.  If so, Choice.select() _will_, in fact, generate
+         * an ItemEvent (see Sun bug #4627564).
+         */
+        checkJVMVersion();
+    }
+
+    private void checkJVMVersion() {
+        String version;
+
+        version = System.getProperty("java.version");
+        if (version.startsWith("1.4")) {
+            this.badJVM = true;
+        }
     }
 
     public void parseRegister(String configReg) {
@@ -402,44 +417,44 @@ public class ConfregDecode extends Applet implements ActionListener {
             bootModes[3].setState(true); // NetBoot
             break;
         case CISCO_6:
-            bootModes[3].setState(true); // NetBoot
             bootFilesChoice.select(5);
+            bootModes[3].setState(true); // NetBoot
             break;
         case CISCO_7:
             bootFilesChoice.select(6);
             bootModes[3].setState(true); // NetBoot
             break;
         case CISCO_10:
-            bootModes[3].setState(true); // NetBoot
             bootFilesChoice.select(7);
+            bootModes[3].setState(true); // NetBoot
             break;
         case CISCO_11:
-            bootModes[3].setState(true); // NetBoot
             bootFilesChoice.select(8);
+            bootModes[3].setState(true); // NetBoot
             break;
         case CISCO_12:
             bootModes[3].setState(true); // NetBoot
             bootFilesChoice.select(9);
             break;
         case CISCO_13:
-            bootModes[3].setState(true); // NetBoot
             bootFilesChoice.select(10);
+            bootModes[3].setState(true); // NetBoot
             break;
         case CISCO_14:
-            bootModes[3].setState(true); // NetBoot
             bootFilesChoice.select(11);
+            bootModes[3].setState(true); // NetBoot
             break;
         case CISCO_15:
-            bootModes[3].setState(true); // NetBoot
             bootFilesChoice.select(12);
+            bootModes[3].setState(true); // NetBoot
             break;
         case CISCO_16:
-            bootModes[3].setState(true); // NetBoot
             bootFilesChoice.select(13);
+            bootModes[3].setState(true); // NetBoot
             break;
         case CISCO_17:
-            bootModes[3].setState(true); // NetBoot
             bootFilesChoice.select(14);
+            bootModes[3].setState(true); // NetBoot
             break;
         default:
         }
@@ -520,7 +535,9 @@ public class ConfregDecode extends Applet implements ActionListener {
         else {
             bootIntoValue = ((PropCheckbox)bootIntoGroup.getSelectedCheckbox()).getPropValue();
             if (bootModes[2].getState() == true) {
-                bootFilesChoice.select(1);
+                if (!badJVM) {
+                    bootFilesChoice.select(1);
+                }
             }
         }
 
@@ -556,7 +573,7 @@ public class ConfregDecode extends Applet implements ActionListener {
     public static void main(String[] argv) {
         f = new Frame("cisco Systems Config-Register Decoder");
         ConfregDecode cd = new ConfregDecode();
-        f.setSize(575,450);
+        f.setSize(640,480);
         f.addWindowListener(new WindowAdapter() {
                                 public void windowClosing(WindowEvent e) { System.exit(0); }
                             });
