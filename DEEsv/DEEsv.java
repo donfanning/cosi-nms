@@ -37,7 +37,7 @@ import org.xml.sax.*;
 
 public class DEEsv {
     public final static String CWEXPORT = "cwexport";
-    public final static String VERSION = "1.0";
+    public final static String VERSION = "1.1";
     public final static String rcsid = "$Id$";
 
     public static String NMSROOT = System.getProperty("NMSROOT");
