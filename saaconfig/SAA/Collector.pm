@@ -93,7 +93,7 @@ sub id {
         # Don't calculate id if it's already set or unless we're forced
         # to (by setting $override to 1).
         srand( time ^ $$ );    # We don't need the best seed.
-        $self->{id} = int( rand 65534 ) + 1;
+        $self->{id} = int( rand 65535 ) + 1;
     }
     return $self->{id};
 }
