@@ -14,7 +14,7 @@ sub new {
     }
 
     my $self = {
-        aame    => $args[0],
+        name    => $args[0],
         address => $args[1],
         status  => $SAA::Globals::HOST_UP_IP,
     };
