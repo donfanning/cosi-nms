@@ -1,3 +1,6 @@
+#
+# $Id$
+#
 package SAA::Collector;
 
 use strict;

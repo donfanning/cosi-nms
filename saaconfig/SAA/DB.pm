@@ -1,3 +1,6 @@
+#
+# $Id$
+#
 package SAA::DB;
 
 use strict;

@@ -1,3 +1,6 @@
+#
+# $Id$
+#
 package SAA::Globals;
 
 use strict;
