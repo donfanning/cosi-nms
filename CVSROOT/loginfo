@@ -25,4 +25,4 @@
 # or
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
 CVSROOT /usr/bin/python $CVSROOT/CVSROOT/syncmail %{sVv} awo@users.sourceforge.net, robelewi@users.sourceforge.net, jmarcus@users.sourceforge.net
-DEFAULT /usr/bin/python $CVSROOT/CVSROOT/syncmail %{sVv} cosi-nms-checkins@lists.sourceforge.net
+DEFAULT /usr/bin/python $CVSROOT/CVSROOT/syncmail %s cosi-nms-checkins@lists.sourceforge.net
