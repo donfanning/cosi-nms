@@ -1,25 +1,16 @@
-package com.marcuscom.MISAL;
-
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import com.oroinc.text.regex.*;
-
-/**
- * Copyright &copy; 2001 Joe Clarke &lt;marcus@marcuscom.com&gt;<br>
- * All rights reserved.<br>
- * <p>
+/*-
+ * Copyright (c) 2001 Joe Clarke <marcus@marcuscom.com>
+ * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * <ol>
- * <li>Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.</li>
- * <li>Redistributions in binary form must reproduce the above copyright
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.</li>
- * </ul>
- * <p>
+ *    documentation and/or other materials provided with the distribution.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,16 +22,25 @@ import com.oroinc.text.regex.*;
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- * </p>
+ *
  * $Id$
- * <p>
- * MISAL is the MarcusCom Intelligent Socket Abstraction Library.<br>
+ */
+package com.marcuscom.MISAL;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import com.oroinc.text.regex.*;
+
+ /**
+ * <p>MISAL is the MarcusCom Intelligent Socket Abstraction Library.
  * It is designed to make interacting with TCP sockets (such as telnet)
- * much easier.</p>
+ * much easier.  It uses a separate thread to check the socket's state,
+ * and make sure data is sent at the right time.</p>
  *
  * @author	Joe Clarke &lt;marcus@marcuscom.com&gt;
- * @version	1.0
- * @since	JDK1.1
+ * @version	1.0, $Id$
+ * @since	MISAL1.0
  */
 public class MISAL implements Runnable {
 	/**

@@ -10,7 +10,7 @@ package com.marcuscom.MISAL;
  * <p>&copy; 2001 MarcusCom, Inc.  All rights reserved.</p>
  * 
  * @version	1.0, $Id$
- * @author 	Joe Clarke &lt;jclarke@cisco.com&gt;
+ * @author 	Joe Clarke &lt;marcus@marcuscom.com&gt;
  * @see		MISAL
  */
 public class MalformedMISALStateException extends Exception {
