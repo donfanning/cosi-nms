@@ -43,13 +43,17 @@ sub new {
           "SAA::Collector: The specified operation requires a target argument";
     }
 
-	if (!$self->{source}->protocol_supported($self->{operation}->{protocol})) {
-		croak "SAA::Collector: The specified protocol is not supported by this source router";
-	}
+    if (
+        !$self->{source}->protocol_supported( $self->{operation}->{protocol} ) )
+    {
+        croak
+"SAA::Collector: The specified protocol is not supported by this source router";
+    }
 
-	if (!$self->{source}->type_supported($self->{operation}->{type})) {
-		croak "SAA::Collector: The specified type is not supported by this source router";
-	}
+    if ( !$self->{source}->type_supported( $self->{operation}->{type} ) ) {
+        croak
+"SAA::Collector: The specified RTT type is not supported by this source router";
+    }
 
     bless( $self, $class );
     $self;
@@ -124,11 +128,13 @@ sub history_filter {
     if (@_) {
         my $val = shift;
         foreach ( keys %{$SAA::SAA_MIB::historyFilterEnum} ) {
+
             if ( $val == $SAA::SAA_MIB::historyFilterEnum->{$_} ) {
                 $filter = $val;
                 last;
             }
         }
+
         if ( !$filter ) {
             return $self->{historyFilter};
         }
@@ -242,7 +248,7 @@ sub install {
         ],
         [
             $SAA::SAA_MIB::rttMonEchoAdminSourceAddress, $id,
-            addrToOctStr( $source->addr() ),            'OCTETSTR'
+            addrToOctStr( $source->addr() ),             'OCTETSTR'
         ],
         [
             $SAA::SAA_MIB::rttMonEchoAdminSourcePort, $id,
@@ -260,16 +266,21 @@ sub install {
             $SAA::SAA_MIB::rttMonEchoAdminTOS, $id,
             $operation->tos(),                 'INTEGER'
         ],
-        [
-            $SAA::SAA_MIB::rttMonEchoAdminNameServer,   $id,
-            addrToOctStr( $operation->name_server() ), 'OCTETSTR'
-        ],
     );
 
-# Add objects that may be undef for certain operations.
-	if ($target) {
-		push @{$varlist}, [ $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
-		addrToOctStr( $target->addr() ), 'OCTSTR' ];
+    # Add objects that may be undef for certain operations.
+    if ($target) {
+        push @{$varlist},
+          [ $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
+            addrToOctStr( $target->addr() ), 'OCTSTR' ];
+    }
+
+	if ($operation->name_server()) {
+		push @{$varlist}, [ $SAA::SAA_MIB::rttMonEchoAdminNameServer, $id, addrToOctStr( $operation->name_server() ), 'OCTSTR'];
+	}
+
+	if ($operation->http_operation()) {
+		push @{$varlist}, [ $SAA::SAA_MIB::rttMonEchoAdminOperation, $id, $operation->http_operation(), 'INTEGER'];
 	}
 
     # Set the objects on the source router.

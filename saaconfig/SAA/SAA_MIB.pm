@@ -29,6 +29,7 @@ use vars qw(
   $rttMonEchoAdminControlEnable
   $rttMonEchoAdminProtocol
   $rttMonCtrlAdminRttType
+  $rttMonEchoAdminOperation
   $historyFilterEnum
   $rowStatusEnum
   $httpOperationEnum
@@ -67,6 +68,7 @@ my @EXPORT =
   $rttMonEchoAdminControlEnable
   $rttMonEchoAdminProtocol
   $rttMonCtrlAdminRttType
+  $rttMonEchoAdminOperation
   $historyFilterEnum
   FALSE
   TRUE
@@ -128,6 +130,7 @@ $rttMonEchoAdminSourcePort         = $rttMonEchoAdminEntry . '.7';
 $rttMonEchoAdminControlEnable      = $rttMonEchoAdminEntry . '.8';
 $rttMonEchoAdminTOS                = $rttMonEchoAdminEntry . '.9';
 $rttMonEchoAdminNameServer         = $rttMonEchoAdminEntry . '.12';
+$rttMonEchoAdminOperation          = $rttMonEchoAdminEntry . '.13';
 
 # These are taken from the SNMPv2-TC definitions.  true is 1 and false is 2.
 use constant TRUE  => 1;
