@@ -113,6 +113,7 @@ public class ConfregDecode extends Applet implements ActionListener {
     public ConfregDecode() {
 
         this.setFont(DEFAULT_FONT);
+	this.setBackground(Color.white);
 
         System.out.println("cisco Systems IOS Configuration Register Decoder " + VERSION + "\nby Joe Clarke");
 
