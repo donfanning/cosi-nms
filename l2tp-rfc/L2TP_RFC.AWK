@@ -1,0 +1,432 @@
+# COSI: Vadim Zakharine, Access Team
+# ver 1.0
+
+BEGIN {
+ filter = "N"
+# Possible values are "Y" (skip from report all debugs with no comments
+#  associated) or "N" (copy all debugs to the report)
+}
+
+{
+ if(filter ~ "N") {
+  print $0
+ }
+}
+
+/: (I|O|Parse) [\x20-\x7E]*SCCRQ/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Start control connection request (msg type 1); requires AVP 0, 2, 3, 7, 9]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*SCCRP/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Start control connection reply (msg type 2); requires AVP 0, 2, 3, 7, 9]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*SCCCN/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Start control connection connected (msg type 3); requires AVP 0]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*HELLO/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control connection hello (msg type 6); requires AVP 0]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*StopCCN/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Stop control connection notification (msg type 4); requires AVP 0, 1, 9]"
+ print "[AVP 1 values:]"
+ print "[ 1 General request]"
+ print "[ 2 General error]"
+ print "[  0 No general error]"
+ print "[  1 No control connection for the LAC-LNS]"
+ print "[  2 Wrong length]"
+ print "[  3 A value out of range or a reserved field was non-zero]"
+ print "[  4 Insufficient resources]"
+ print "[  5 Invalid session ID]"
+ print "[  6 Generic vendor-specific error on LAC]"
+ print "[  7 Try another LNS]"
+ print "[  8 Shutdown due to receipt of unknown AVP with M-bit set]"
+ print "[ 3 Control channel already exists]"
+ print "[ 4 Requester not authorised to open control channel]"
+ print "[ 5 Protocol version not supported]"
+ print "[ 6 Requester is shut down]"
+ print "[ 7 Finite state machine error]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*OCRQ/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Outgoing data call request (LAC <- LNS, msg type 7); requires AVP 0, 14, 15, 16, 17, 18, 19, 21]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*OCRP/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Outgoing data call reply (LAC -> LNS, msg type 8); requires AVP 0, 14]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*OCCN/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Outgoing data call connected (LAC  -> LNS, msg type 9); requires AVP 0, 19, 24]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*ICRQ/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Incoming data call request (LAC -> LNS, msg type 10); requires AVP 0, 14, 15]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*ICRP/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Incoming data call reply (LAC <- LNS, msg type 11); requires AVP 0, 14]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*ICCN/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Incoming data call connected (LAC -> LNS, msg type 12); requires AVP 0, 19, 24]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*CDN/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data call disconnect notify (msg type 14); requires AVP 0, 1, 14]"
+ print "[AVP 1 values:]"
+ print "[ 1 Carrier lost]"
+ print "[ 2 See error code]"
+ print "[ 3 Administrative reason]"
+ print "[ 4 Lack of appropriate facilities available (temporary)]"
+ print "[ 5 Lack of appropriate facilities available (permanent)]"
+ print "[ 6 Invalid destination]"
+ print "[ 7 No carrier]"
+ print "[ 8 Busy]"
+ print "[ 9 No dial tone]"
+ print "[ 10 Timeout on LAC]"
+ print "[ 11 Call connected, but no appropriate framing detected]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*WEN/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[WAN (LAC <-> Client) error notify (msg type 15); requires AVP 0, 34]"
+}
+
+/: (I|O|Parse) [\x20-\x7E]*SLI/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Set link (PPP session) info (msg type 16); requires AVP 0, 35]"
+}
+
+/Parse ( )+AVP 0\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Message type]"
+}
+
+/Parse ( )+AVP 1\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Result code (reason for terminating)]"
+}
+
+/Parse ( )+AVP 2\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control: protocol version]"
+}
+
+/Parse ( )+AVP 3\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control: framing capabilities (async, sync)]"
+}
+
+/Parse ( )+AVP 4\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control: bearer capabilities (analogue, digital)]"
+}
+
+/Parse ( )+AVP 5\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control: Tie breaker (single tunnel for concurrent LAC and LNS requests)]"
+}
+
+/Parse ( )+AVP 6\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control: firmware revision]"
+}
+
+/Parse ( )+AVP 7\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control: host name]"
+}
+
+/Parse ( )+AVP 8\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control: vendor name]"
+}
+
+/Parse ( )+AVP 9\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control: assigned tunnel ID]"
+}
+
+/Parse ( )+AVP 10\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control: receive window size]"
+}
+
+/Parse ( )+AVP 11\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control: authentication challenge]"
+}
+
+/Parse ( )+AVP 12\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: Q.931 cause]"
+}
+
+/Parse ( )+AVP 13\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Control: authentication response]"
+}
+
+/Parse ( )+AVP 14\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: Assigned session ID]"
+}
+
+/Parse ( )+AVP 15\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: call serial number]"
+}
+
+/Parse ( )+AVP 16\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: minimum bps (line speed)]"
+}
+
+/Parse ( )+AVP 17\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: maximum bps (line speed)]"
+}
+
+/Parse ( )+AVP 18\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: bearer type (analogue, digital)]"
+}
+
+/Parse ( )+AVP 19\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: framing type (async, sync)]"
+}
+
+/Parse ( )+AVP 20\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[]"
+}
+
+/Parse ( )+AVP 21\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: called number]"
+}
+
+/Parse ( )+AVP 22\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: calling number]"
+}
+
+/Parse ( )+AVP 23\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: sub-address (additional dialing info)]"
+}
+
+/Parse ( )+AVP 24\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: LAC (Tx) connect speed]"
+}
+
+/Parse ( )+AVP 25\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: vendor specific physical channel ID]"
+}
+
+/Parse ( )+AVP 26\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, PPP: Initial received LCP CONFREQ]"
+}
+
+/Parse ( )+AVP 27\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, PPP: last sent LCP CONFREQ]"
+}
+
+/Parse ( )+AVP 28\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, PPP: last received LCP CONFREQ]"
+}
+
+/Parse ( )+AVP 29\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, PPP: LAC proxy authentication type]"
+ print "[ 1 text name/pass exchange; requires AVP 33]"
+ print "[ 2 CHAP; requires AVP 31, 32, 33]"
+ print "[ 3 PAP; requires AVP 32, 33]"
+ print "[ 4 no authentication]"
+ print "[ 5 MSCHAP ver. 1; requires AVP 31, 32, 33]"
+}
+
+/Parse ( )+AVP 30\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, PPP: LAC proxy authentication name]"
+}
+
+/Parse ( )+AVP 31\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, PPP: LAC proxy authentication challenge]"
+}
+
+/Parse ( )+AVP 32\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, PPP:  LAC proxy authentication ID]"
+}
+
+/Parse ( )+AVP 33\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, PPP: LAC proxy authentication response]"
+}
+
+/Parse ( )+AVP 34\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, status: call errors]"
+ print "[ CRC]"
+ print "[ framing]"
+ print "[ hw overruns]"
+ print "[ buffer overruns]"
+ print "[ time-outs]"
+ print "[ alignment]"
+}
+
+/Parse ( )+AVP 35\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, status: LNS negotiated ACCM with the client]"
+}
+
+/Parse ( )+AVP 36\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Random vector]"
+}
+
+/Parse ( )+AVP 37\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: private customer group ID]"
+}
+
+/Parse ( )+AVP 38\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: LAC Rx connect speed]"
+}
+
+/Parse ( )+AVP 39\,/ {
+ if(filter ~ "Y") {
+  print $0
+ }
+ print "[Data, call: sequence numbers required]"
+}
