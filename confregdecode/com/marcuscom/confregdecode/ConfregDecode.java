@@ -105,6 +105,9 @@ public class ConfregDecode extends Applet implements ActionListener {
     static final int DIAG_MODE = 0x8000;
     static final int OPTIONS_MASK = 0xA1C0;
 
+    static final String OLD_CONFREG_CMD = "o/r <register value>";
+    static final String NEW_CONFREG_CMD = "confreg <register value>";
+
 
     public ConfregDecode() {
 
@@ -162,28 +165,26 @@ public class ConfregDecode extends Applet implements ActionListener {
         bootFilesChoice.addItem("cisco17-<router type>", CISCO_17);
 
         routerType = new RouterChoice();
-        routerType.addItem("1000 Series", true);
-        routerType.addItem("1600 Series", true);
-        routerType.addItem("1700 Series", false);
-        routerType.addItem("2000/3000 Series", true);
-        routerType.addItem("2500 Series", true);
-        routerType.addItem("2600 Series", false);
-        routerType.addItem("3600 Series", false);
-        routerType.addItem("3700 Series", false);
-        routerType.addItem("4000 Series", true);
-        routerType.addItem("6000 IOS Series", true);
-        routerType.addItem("7000 Family", true);
-        routerType.addItem("7200 Series", true);
-        routerType.addItem("7600 Series", true);
-        routerType.addItem("AS5xxx", true);
-        routerType.addItem("AGS+/AGS/MGS/CGS", true);
-        routerType.addItem("ASM-CS", true);
-        routerType.addItem("AccessPro Series", true);
-        routerType.addItem("GSR Family", true);
-        routerType.addItem("MC3810", false);
-        routerType.addItem("MSFC", true);
-        routerType.addItem("RSM", true);
-        routerType.addItem("RSP", true);
+        routerType.addItem("1000 Series", true, NEW_CONFREG_CMD);
+        routerType.addItem("1600 Series", true, NEW_CONFREG_CMD);
+        routerType.addItem("1700 Series", false, NEW_CONFREG_CMD);
+        routerType.addItem("2000/3000 Series", true, OLD_CONFREG_CMD);
+        routerType.addItem("2500 Series", true, OLD_CONFREG_CMD);
+        routerType.addItem("2600 Series", false, NEW_CONFREG_CMD);
+        routerType.addItem("3600 Series", false, NEW_CONFREG_CMD);
+        routerType.addItem("3700 Series", false, NEW_CONFREG_CMD);
+        routerType.addItem("4000 Series", true, NEW_CONFREG_CMD);
+        routerType.addItem("7000 Family", true,  NEW_CONFREG_CMD);
+        routerType.addItem("7200 Series", true, NEW_CONFREG_CMD);
+        routerType.addItem("AS5xxx", true, NEW_CONFREG_CMD);
+        routerType.addItem("AGS+/AGS/MGS/CGS", true, OLD_CONFREG_CMD);
+        routerType.addItem("ASM-CS", true, OLD_CONFREG_CMD);
+        routerType.addItem("AccessPro Series", true, OLD_CONFREG_CMD);
+        routerType.addItem("GSR Family", true, NEW_CONFREG_CMD);
+        routerType.addItem("MC3810", false, NEW_CONFREG_CMD);
+        routerType.addItem("MSFC", true, NEW_CONFREG_CMD);
+        routerType.addItem("RSM", true, NEW_CONFREG_CMD);
+        routerType.addItem("RSP", true, NEW_CONFREG_CMD);
 
         this.setLayout(new BorderLayout(10, 10));
 
@@ -202,7 +203,7 @@ public class ConfregDecode extends Applet implements ActionListener {
         leftPanel.add(registerInputField);
         registerInputField.addActionListener(new ActionListener() {
                                                  public void actionPerformed(ActionEvent e) {
-                                                     getNotes(routerType.getSelectedItem());
+                                                     getNotes(routerType);
                                                      parseRegister(((TextField)e.getSource()).getText());
                                                  }
                                              });
@@ -212,7 +213,7 @@ public class ConfregDecode extends Applet implements ActionListener {
         routerType.addItemListener(new ItemListener() {
                                        public void itemStateChanged(ItemEvent e) {
                                            parseRegister(registerInputField.getText());
-                                           getNotes(routerType.getSelectedItem());
+                                           getNotes(routerType);
                                        }
                                    });
         leftPanel.add(new Label("Will boot into:"));
@@ -222,13 +223,13 @@ public class ConfregDecode extends Applet implements ActionListener {
         ItemListener bootmodes_listener = new ItemListener() {
                                               public void itemStateChanged(ItemEvent e) {
                                                   bootFilesChoice.select("");
-                                                  getNotes(routerType.getSelectedItem());
+                                                  getNotes(routerType);
                                                   calculateRegister();
                                               }
                                           };
         ItemListener default_item_listener = new ItemListener() {
                                                  public void itemStateChanged(ItemEvent e) {
-                                                     getNotes(routerType.getSelectedItem());
+                                                     getNotes(routerType);
                                                      calculateRegister();
                                                  }
                                              };
@@ -288,7 +289,7 @@ public class ConfregDecode extends Applet implements ActionListener {
 
     public void parseBaud() {
         int baudMask, maskedBits;
-        if (!routerType.isOld(routerType.getSelectedItem())) { // new router series
+        if (!routerType.isOld()) { // new router series
             baudMask = 0x1820;
         }
         else {
@@ -467,36 +468,32 @@ public class ConfregDecode extends Applet implements ActionListener {
         }
     }
 
-    public void getNotes(String router) {
+    public void getNotes(RouterChoice router) {
+        String routerType = router.getSelectedItem();
         notesArea.setForeground(Color.black);
         notesArea.setText(""); // clear notes area
 
-        notesLabel.setText("Notes for " + router + " routers: ");
+        notesLabel.setText("Notes for " + routerType + " devices: ");
 
         notesArea.append("Note: IOS reads the config-register in\n   littleendian byte order, LSB first (i.e.\n   0x21022 becomes 0x1022 or a 1200 baud\n   console).\n\n");
 
-        if (router.equals("GSR Family") || router.equals("7000 Family") || router.equals("7500 Series") || router.equals("7200 Series") || router.equals("4000 Series") || router.equals("2600 Series") || router.equals("3600 Series") || router.equals("MC3810") || router.equals("AS5xxx") || router.equals("1000 Series") || router.equals("1600 Series") || router.equals("1700 Series")) {
-            notesArea.append("Command to change config-reg in ROMMON:\n  confreg <register value>\n");
-        }
-        else {
-            notesArea.append("Command to change config-reg in ROM mode:\n  o/r <register value>\n");
-        }
-        if (router.equals("2600 Series") || router.equals("3600 Series")) {
+        notesArea.append("Command to change config-reg in ROM mode:\n  " + router.getConfregCommand() + "\n");
+        if (routerType.equals("2600 Series") || routerType.equals("3600 Series")) {
             notesArea.append("\nCan xmodem a file into flash from ROMMON:\n  xmodem -c <filename>\n");
         }
-        if (router.equals("1600 Series")) {
+        if (routerType.equals("1600 Series")) {
             notesArea.append("\nCan xmodem a file into flash from ROMMON:\n xmodem -cfs115200 <filename>\n");
             notesArea.append("This sets the console baud to 115200, \n erases the flash, downloads the image,\n  and performs CRC-16 error checking.\n");
             notesArea.append("\nSetting the console baud to 115200 is only supported DURING\n  the xmodem.  Afterward you must change\n  the baud rate back to 9600 or less.\n");
         }
 
-        if (router.equals("2600 Series") ||  router.equals("3600 Series")) {
+        if (routerType.equals("2600 Series") ||  routerType.equals("3600 Series")) {
             notesArea.append("(*Hint* Set console baud to 115200 before doing an xmodem)\n\n");
             notesArea.append("\nROMMON Security requires:\n - No boot to ROMMON\n - Break disabled\n - Can't ignore NVRAM\n - No diagnostic mode\n");
             notesArea.append("\nReset console baud rate to 9600:\n - 3620/2600 shunt pins 1-2 on the J3 jumper (DUART_RST)\n - 3640 shunt pins 1-2 on J3 jumper (BAUD_RST)\n");
         }
 
-        if (router.equals("2600 Series")) {
+        if (routerType.equals("2600 Series")) {
             notesArea.append("\nCan tftp a file into flash from ROMMON:\n  tftpdnld\n\n");
         }
         notesArea.setCaretPosition(0); // Set the pointer position back to the start of the text (new to Java 1.1)
@@ -543,10 +540,9 @@ public class ConfregDecode extends Applet implements ActionListener {
 
         //System.out.println("Printing register.");
         //System.out.println(newRegister);
-        if (routerType.isOld(routerType.getSelectedItem()) && (newRegister & 0x0020) == 0x0020) {
+        if (routerType.isOld() && (newRegister & 0x0020) == 0x0020) {
             notesArea.setForeground(Color.red);
             notesArea.setText("This device only supports console speeds up to 9600 baud.");
-            notesArea.setForeground(Color.black);
         }
         else {
             registerInputField.setText(HEX_PREFIX + Integer.toString(newRegister, 16));
@@ -638,19 +634,27 @@ class PropChoice extends Choice {
 
 class RouterChoice extends Choice {
     protected Hashtable routerAge;
+    protected Hashtable confregCommand;
 
     RouterChoice() {
         super();
         routerAge = new Hashtable();
+        confregCommand = new Hashtable();
     }
 
-    public synchronized void addItem(String item, boolean oldRouter) {
+    public synchronized void addItem(String item, boolean oldRouter, String cmd) {
         super.addItem(item);
         routerAge.put(item, new Boolean(oldRouter));
+        confregCommand.put(item, cmd);
+
     }
 
-    public synchronized boolean isOld(String item) {
-        return(((Boolean)routerAge.get(item)).booleanValue());
+    public synchronized boolean isOld() {
+        return(((Boolean)routerAge.get(this.getSelectedItem())).booleanValue());
+    }
+
+    public synchronized String getConfregCommand() {
+        return((String)confregCommand.get(this.getSelectedItem()));
     }
 
 }
