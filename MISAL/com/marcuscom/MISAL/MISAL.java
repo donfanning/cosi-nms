@@ -38,7 +38,7 @@ import org.apache.oro.text.regex.*;
 * and make sure data is sent at the right time.</p>
 *
 * @author	Joe Clarke &lt;marcus@marcuscom.com&gt;
-* @version	1.0, $Id$
+* @version	1.1.1, $Id$
 * @since	MISAL1.0
 */
 public class MISAL implements Runnable {
@@ -236,14 +236,14 @@ public class MISAL implements Runnable {
 
             String buffer = this._readAll();
             if (buffer != null) {
+                Enumeration keys = stateTable.keys();
+                Perl5Matcher p5m = new Perl5Matcher();
+                Pattern pattern = null;
                 /* We preserve a separate buffer to hold the
                    last read data.  This will be useful for
                    error checking. */
                 this.setBuffer(this.getLastBuffer());
                 this.setLastBuffer(buffer);
-                Enumeration keys = stateTable.keys();
-                Perl5Matcher p5m = new Perl5Matcher();
-                Pattern pattern = null;
                 while(keys.hasMoreElements()) {
                     int state = ((Integer)keys.nextElement()).intValue();
                     pattern = (Pattern)stateTable.get(new Integer(state));
@@ -384,7 +384,7 @@ public class MISAL implements Runnable {
 
     /**
      * Returns the contents of the main accumulator buffer.  This buffer
-     * contains all the data fro the sockets output stream since the last
+     * contains all the data from the sockets output stream since the last
      * call to <code>clearBuffer</code>.  The output will include the
      * contents of the current temporary buffer as well.
      *
@@ -394,6 +394,8 @@ public class MISAL implements Runnable {
      * @return the accumulated MISAL buffer as a string.
      */
     public synchronized String getBuffer() {
+        if (this._buffer == null) return this.getLastBuffer();
+        if (this.getLastBuffer() == null) return this._buffer;
         return this._buffer.concat(this.getLastBuffer());
     }
 
@@ -416,7 +418,7 @@ public class MISAL implements Runnable {
      * @since	MISAL1.0
      */
     public boolean toggleDebug() {
-        this._debug = this._debug ? false : true;
+        this._debug = !this._debug;
         this.debug("Debugging set to " + this._debug);
         return this._debug;
     }
@@ -573,7 +575,7 @@ public class MISAL implements Runnable {
     }
 
     /**
-            * Wait for a certain state for proceeding.
+            * Wait for a certain state before proceeding.
             *
             * @see #send(int,String,String,int,int)
             * @since MISAL 1.0
@@ -599,7 +601,7 @@ public class MISAL implements Runnable {
     }
 
     /**
-            * Wait for a certain state for proceeding.
+            * Wait for a certain state before proceeding.
             *
             * @see #send(int,String,String,int,int)
             * @since MISAL 1.0
@@ -640,24 +642,17 @@ public class MISAL implements Runnable {
         Pattern pattern = null;
         for(int i = 1; i <= tries; i++) {
             String buffer = this.getBuffer();
-            this.debug("i = " + i + " buffer = \"" + buffer + "\"");
+            if (buffer == null) continue;
+            this.debug("Try number " + i + ", buffer = \"" + buffer + "\"");
             try {
                 pattern = compiler.compile(prompt);
             }
             catch (MalformedPatternException mpe) {
                 return false;
             }
-            if (buffer == null) {
-                if (matcher.contains(this.getBuffer(), pattern)) {
-                    this.debug("Found a buffer match!");
-                    return true;
-                }
-            }
-            else {
-                if (matcher.contains(buffer, pattern)) {
-                    this.debug("Found a buffer match!");
-                    return true;
-                }
+            if (matcher.contains(buffer, pattern)) {
+                this.debug("Found a buffer match!");
+                return true;
             }
             try {
                 Thread.sleep(this.MISAL_THREAD_SLEEP_INTERVAL);
@@ -685,7 +680,7 @@ public class MISAL implements Runnable {
     private String _readAll() {
         byte b[] = null;
         int i = 0;
-	String retBuf = null;
+        String retBuf = null;
 
         try {
             int numBytes = 0;
@@ -700,9 +695,9 @@ public class MISAL implements Runnable {
             b = new byte[numBytes];
             while (numBytes > 0) {
                 t = _bis.read();
-		numBytes--;
+                numBytes--;
                 if (t == '\n' || t == '\r' || t == '\t' ||
-			(t >= 32 && t < 127)) {
+                        (t >= 32 && t < 127)) {
                     /* If not a negotiation character,
                        it needs to be read as data. */
                     b[i++] = (byte)t;
@@ -710,7 +705,7 @@ public class MISAL implements Runnable {
                 }
                 obuf[0] = (byte)255;
                 t = _bis.read();
-		numBytes--;
+                numBytes--;
                 if (t == 251 || t == 252) {
                     y = 254;
                 }
@@ -720,7 +715,7 @@ public class MISAL implements Runnable {
                 if (y > 0) {
                     obuf[1] = (byte)y;
                     obuf[2] = (byte)_bis.read();
-		    numBytes--;
+                    numBytes--;
                     _bos.write(obuf, 0, 3);
                     _bos.flush();
                     y = 0;
@@ -732,7 +727,7 @@ public class MISAL implements Runnable {
             return null;
         }
 
-	if (i == 0) return null;
+        if (i == 0) return null;
 
         retBuf = new String(b, 0, i);
         this.debug("Read \"" + retBuf + "\" from socket input stream");
