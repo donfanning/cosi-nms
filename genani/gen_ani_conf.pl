@@ -69,10 +69,10 @@ $OUTFILE = $ANI_SNMP_CONF;
 $OFFLINE = 0;
 
 if ( $CRM::CRM_OS eq "WIN" ) {
-    $NULL = "2>&1 >nul";
+    $NULL = ">nul 2>&1";
 }
 else {
-    $NULL = "2>&1 >/dev/null";
+    $NULL = ">/dev/null 2>&1";
 }
 
 my $opts = {};
