@@ -49,7 +49,7 @@ public class ConfregDecode extends Applet implements ActionListener {
     public static final Font DEFAULT_FONT = new Font("SansSerif",Font.PLAIN,12);
     public static final Font BIG_FONT = new Font("SansSerif",Font.BOLD,12);
 
-    public static final String VERSION = "1.0.2";
+    public static final String VERSION = "1.1.0";
 
     static Frame f;
 
@@ -84,11 +84,15 @@ public class ConfregDecode extends Applet implements ActionListener {
     static final int CISCO_17 = 0x000f;
     static final int BOOT_FILE_MASK = 0x000F;
 
+    static final int RESERVED_4 = 0x0010;
+
     static final int IGNORE_NVRAM = 0x0040;
 
     static final int OEM_BIT = 0x0080;
 
     static final int IGNORE_BREAK = 0x0100;
+
+    static final int RESERVED_9 = 0x0200;
 
     static final int BCAST_ALL_ONES = 0x0000;
     static final int BCAST_ALL_ZEROS = 0x0400;
@@ -135,10 +139,10 @@ public class ConfregDecode extends Applet implements ActionListener {
 
         broadcastGroup = new CheckboxGroup();
         broadcasts = new PropCheckbox[4];
-        broadcasts[0] = new PropCheckbox("Net all ones, bcast all ones *", broadcastGroup, false, BCAST_ALL_ONES);
-        broadcasts[1] = new PropCheckbox("Net all zeros, bcast all zeros", broadcastGroup, false, BCAST_ALL_ZEROS);
-        broadcasts[2] = new PropCheckbox("Net address, bcast all zeros", broadcastGroup, false, NET_BCAST_ZEROS);
-        broadcasts[3] = new PropCheckbox("Net address, bcast all ones", broadcastGroup, false, NET_BCAST_ONES);
+        broadcasts[0] = new PropCheckbox("Net all ones, host all ones *", broadcastGroup, false, BCAST_ALL_ONES);
+        broadcasts[1] = new PropCheckbox("Net all zeros, host all zeros", broadcastGroup, false, BCAST_ALL_ZEROS);
+        broadcasts[2] = new PropCheckbox("Net address, host all zeros", broadcastGroup, false, NET_BCAST_ZEROS);
+        broadcasts[3] = new PropCheckbox("Net address, host all ones", broadcastGroup, false, NET_BCAST_ONES);
 
         bootFilesChoice = new PropChoice();
         bootFilesChoice.addItem("", -1);
@@ -166,11 +170,16 @@ public class ConfregDecode extends Applet implements ActionListener {
         routerType.addItem("2600 Series", false);
         routerType.addItem("AccessPro Series", true);
         routerType.addItem("3600 Series", false);
+        routerType.addItem("3700 Series", true);
         routerType.addItem("MC3810", false);
         routerType.addItem("4000 Series", true);
         routerType.addItem("7000 Family", true);
         routerType.addItem("GSR Family", true);
+        routerType.addItem("RSP", true);
+        routerType.addItem("RSM", true);
+        routerType.addItem("MSFC", true);
         routerType.addItem("7200 Series", true);
+        routerType.addItem("7600 Series", true);
         routerType.addItem("AGS+/AGS/MGS/CGS", true);
         routerType.addItem("AS5xxx", true);
         routerType.addItem("ASM-CS", true);
@@ -265,6 +274,7 @@ public class ConfregDecode extends Applet implements ActionListener {
             parsedHex = Integer.parseInt(configReg, 16);
         }
         catch (NumberFormatException nfe1) {
+            notesArea.setForeground(Color.red);
             notesArea.setText("The number you entered is not a valid config-reg value.");
             return;
         }
@@ -311,6 +321,7 @@ public class ConfregDecode extends Applet implements ActionListener {
             baudRatesChoice.select(8);
             break;
         default:
+            notesArea.setForeground(Color.red);
             notesArea.setText("Error in baud bits.");
         }
     }
@@ -358,6 +369,11 @@ public class ConfregDecode extends Applet implements ActionListener {
         if ((parsedHex & IGNORE_BREAK) == IGNORE_BREAK) options[2].setState(true);
         if ((parsedHex & NET_BOOT) == NET_BOOT) options[3].setState(true);
         if ((parsedHex & DIAG_MODE) == DIAG_MODE) options[4].setState(true);
+        if ((parsedHex & RESERVED_4) == RESERVED_4 ||
+                (parsedHex & RESERVED_9) == RESERVED_9) {
+            notesArea.setForeground(Color.red);
+            notesArea.setText("Bits 4 and 9 are reserved; DO NOT SET");
+        }
     }
 
     public void parseBootFile() {
@@ -445,11 +461,13 @@ public class ConfregDecode extends Applet implements ActionListener {
             broadcasts[3].setState(true);
             break;
         default:
+            notesArea.setForeground(Color.red);
             notesArea.setText("Unknown broadcast " + maskedBits + ".\n");
         }
     }
 
     public void getNotes(String router) {
+        notesArea.setForeground(Color.black);
         notesArea.setText(""); // clear notes area
 
         notesLabel.setText("Notes for " + router + " routers: ");
@@ -525,7 +543,9 @@ public class ConfregDecode extends Applet implements ActionListener {
         //System.out.println("Printing register.");
         //System.out.println(newRegister);
         if (routerType.isOld(routerType.getSelectedItem()) && (newRegister & 0x0020) == 0x0020) {
+            notesArea.setForeground(Color.red);
             notesArea.setText("This router only supports console speeds up to 9600 baud.");
+            notesArea.setForeground(Color.black);
         }
         else {
             registerInputField.setText(HEX_PREFIX + Integer.toString(newRegister, 16));
