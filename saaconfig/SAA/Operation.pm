@@ -5,6 +5,7 @@ require 5.002;
 use lib qw(..);    # XXX This is for testing only.
 use SNMP;
 use SAA::SAA_MIB;
+use Carp;
 
 # Define global protocols
 $SAA::Operation::PROTO_NA                 = 1;
@@ -76,7 +77,7 @@ sub new {
     my $class = ref($that) || $that;
 
     if ( scalar(@args) != 3 ) {
-        return;
+		croak "SAA::Operation: Insufficient arguments passed to constructor";
     }
 
     my $self = {
