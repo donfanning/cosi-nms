@@ -74,9 +74,9 @@ sub new {
     # ARG 3: int proto
 
     # This constructor creates new SAA operations.  It accepts three mandatory
-# arguments, the operation name, the operation protocol, the operation type.  
-    # Once the class is instantiated, use the accessor methods to configure the 
-    # class properties.
+    # arguments, the operation name, the operation protocol, the 
+    # operation type.  Once the class is instantiated, use the accessor methods 
+    # to configure the class properties.
     my ( $that, @args ) = @_;
     my $class = ref($that) || $that;
 
@@ -98,10 +98,11 @@ sub new {
         sourcePort       => $SAA::Operation::DEFAULT_SPORT,
         controlEnable    => $SAA::Operation::DEFAULT_CONTROL_ENABLE,
         dnsTargetAddress => '',
+        error            => undef,
     };
 
     my $rc = _validateTypeProto( $args[1], $args[2] );
-    return unless $rc;
+	return unless $rc;
     $self->{type}     = $args[1];
     $self->{protocol} = $args[2];
     bless( $self, $class );
