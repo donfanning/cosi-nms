@@ -1,0 +1,17 @@
+  <!ELEMENT request (authentication,source,addDevices?,listDevices?,getDeviceCredentials?,setCredentials?,getDeviceIPAddresses?)>
+  <!ELEMENT authentication EMPTY>
+  <!ELEMENT source (host,product,version,description)>
+  <!ELEMENT host (#PCDATA)>
+  <!ELEMENT product (#PCDATA)>
+  <!ELEMENT version (#PCDATA)>
+  <!ELEMENT description (#PCDATA)>
+  <!ELEMENT addDevices (deviceInfo)>
+  <!ELEMENT listDevices (deviceInfo?)>
+  <!ELEMENT getDeviceCredentials (deviceInfo?)>
+  <!ELEMENT setCredentials (deviceInfo)>
+  <!ELEMENT getDeviceIPAddresses (deviceInfo?)>
+  <!ELEMENT deviceInfo (#PCDATA)>
+  <!ATTLIST request responseFormat (csv | xml) #IMPLIED>
+  <!ATTLIST authentication name CDATA #REQUIRED pwd CDATA #REQUIRED>
+  <!ATTLIST listDevices deviceType (all | managed) #IMPLIED>
+  <!ATTLIST getDeviceCredentials  wantdbid (yes) #IMPLIED wantsysoid (yes) #IMPLIED>
