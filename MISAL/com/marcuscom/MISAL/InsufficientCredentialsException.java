@@ -16,6 +16,8 @@ public class InsufficientCredentialsException extends Exception {
 	/**
 	 * Simply calls the corresponding constructor of its superclass.
 	 *
+	 * @param message A message indicating why the state desired was not 
+	 * reached
 	 * @see		Exception
 	 * @since	MISAL1.0
 	 */
