@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2002 Joe Marcus Clarke <marcus@marcuscom.com>
+ * Copyright (c) 2002, 2003 Joe Marcus Clarke <marcus@marcuscom.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,9 +70,6 @@ public class DEEsv {
     protected String tmpfilename = null;
     protected Node document = null;
     protected char separator = ',';
-
-    // Storage Vectors for our  devices
-    protected Vector devices = new Vector();
 
     // Hashtables used to store XML tag -> CSV header name mappings
     protected Hashtable chassisObjects = null;
@@ -193,15 +190,15 @@ public class DEEsv {
                 usage();
                 System.exit(1);
             }
-	    else if (argv[i].startsWith("-")) {
-		if (!argv[i].equals("-help") && !argv[i].equals("-m") &&
-		    !argv[i].equals("-continue") &&
-		    !argv[i].equals("-device") && !argv[i].equals("view") &&
-		    !argv[i].equals("-input") && !argv[i].equals("-u")) {
-		    System.err.println("* Fatal error * Unknown command argument OR unexpected argument: " + argv[i]);
-		    System.exit(1);
-		}
-	    }
+            else if (argv[i].startsWith("-")) {
+                if (!argv[i].equals("-help") && !argv[i].equals("-m") &&
+                        !argv[i].equals("-continue") &&
+                        !argv[i].equals("-device") && !argv[i].equals("view") &&
+                        !argv[i].equals("-input") && !argv[i].equals("-u")) {
+                    System.err.println("* Fatal error * Unknown command argument OR unexpected argument: " + argv[i]);
+                    System.exit(1);
+                }
+            }
         }
 
         // Obtain a DataOutputStream to write error output.
@@ -248,7 +245,7 @@ public class DEEsv {
             runCwexport(argv, tmp.toString());
             deesv = new DEEsv(tmp.toString(), separator, ps);
             deesv.xml2CSV();
-            deesv.printCSV();
+            deesv = null;
             ps.close();
             System.err.close();
             tmp.delete();
@@ -256,12 +253,12 @@ public class DEEsv {
         catch (Exception e) {
             System.err.println("Failed to create CSV file.");
             if (debugLevel == 1) {
-		if (e.getMessage() != null) {
+                if (e.getMessage() != null) {
                     System.err.println(e.getMessage());
-		}
-		else {
-		    System.err.println("Encountered NullPointerException");
-		}
+                }
+                else {
+                    System.err.println("Encountered NullPointerException");
+                }
             }
             else if (debugLevel > 1) {
                 e.printStackTrace(System.err);
@@ -310,7 +307,7 @@ public class DEEsv {
                     str = str.substring(0, idx);
                 }
                 System.err.print(str);
-		System.err.flush();
+                System.err.flush();
             }
         }
 
@@ -323,7 +320,7 @@ public class DEEsv {
     }
 
     static void usage() {
-        System.err.println("(C) Copyright 2002 MarcusCom, Inc.  All Rights Reserved");
+        System.err.println("(C) Copyright 2002, 2003 MarcusCom, Inc.  All Rights Reserved");
         System.err.println("CiscoWorks 2000 command line interface for exporting inventory\ndata in CSV format.");
         System.err.println("");
         System.err.println("General syntax to run a command with arguments is");
@@ -344,7 +341,7 @@ public class DEEsv {
     }
 
     static void version() {
-        System.out.println("Copyright (C) 2002 MarcusCom, Inc. All Rights Reserved.");
+        System.out.println("Copyright (C) 2002, 2003 MarcusCom, Inc. All Rights Reserved.");
         System.out.println("DEEsv: CSV wrapper to CiscoWorks 2000 Data Extracting Engine\ncommand line interface");
         System.out.println("        Version " + VERSION);
     }
@@ -499,23 +496,19 @@ public class DEEsv {
 
     }
 
-    public void xml2CSV() {
+    public void xml2CSV() throws IOException {
         NodeList list = (((Document)document)).getElementsByTagName(RME_PLATFORM);
         for (int i = 0; i < list.getLength(); i++) {
             DEEsvDevice d = new DEEsvDevice();
             parseDevice(list.item(i), d);
-            devices.addElement(d);
-	    d = null;
+            printCSV(d);
+            d = null;
         }
 
     }
 
-    public void printCSV() throws IOException {
-        Enumeration e = devices.elements();
-        while (e.hasMoreElements()) {
-            DEEsvDevice d = (DEEsvDevice)e.nextElement();
-            d.print(ps, this.separator);
-        }
+    public void printCSV(DEEsvDevice d) throws IOException {
+        d.print(ps, this.separator);
     }
 
     protected void parseDevice(Node n, DEEsvDevice device) {
@@ -578,6 +571,7 @@ public class DEEsv {
                 }
             }
             netElement.addData(h);
+            h = null;
         }
     }
 
@@ -616,6 +610,7 @@ public class DEEsv {
                 }
             }
             logicalModuleTable.addData(h);
+            h = null;
         }
     }
 
@@ -656,6 +651,7 @@ public class DEEsv {
                 }
             }
             portTable.addData(h);
+            h = null;
         }
     }
 
@@ -683,6 +679,7 @@ public class DEEsv {
                 }
             }
             ifEntryTable.addData(h);
+            h = null;
         }
     }
 
@@ -710,6 +707,7 @@ public class DEEsv {
                 }
             }
             memoryPoolTable.addData(h);
+            h = null;
         }
     }
 
@@ -739,6 +737,7 @@ public class DEEsv {
                 }
             }
             ipProtoEndpointTable.addData(h);
+            h = null;
         }
     }
 
@@ -765,6 +764,7 @@ public class DEEsv {
                 }
             }
             peHasIfEntryTable.addData(h);
+            h = null;
         }
     }
 
@@ -801,6 +801,7 @@ public class DEEsv {
 
                 }
                 chassis.addData(h);
+                h = null;
             }
         }
     }
@@ -850,6 +851,7 @@ public class DEEsv {
 
             }
             cardTable.addData(h);
+            h = null;
         }
     }
 
@@ -877,6 +879,7 @@ public class DEEsv {
                 }
             }
             physMemTable.addData(h);
+            h = null;
         }
     }
 
@@ -908,6 +911,7 @@ public class DEEsv {
                 }
             }
             flashTable.addData(h);
+            h = null;
         }
     }
 
@@ -939,6 +943,7 @@ public class DEEsv {
                 }
             }
             partitionTable.addData(h);
+            h = null;
         }
     }
 
@@ -967,6 +972,7 @@ public class DEEsv {
                 }
             }
             fileTable.addData(h);
+            h = null;
         }
     }
 
