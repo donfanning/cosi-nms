@@ -338,7 +338,8 @@ sub snmptrans {
                         $mib = $SNMP::MIB{$trans};
                 }
 
-                my $type = $$mib{'type'};
+                my $type   = $$mib{'type'};
+                my $syntax = $$mib{'syntax'};
                 if ($type eq "OBJECTID") {
                         $type = "OBJECT ID";
                 }
@@ -360,7 +361,7 @@ sub snmptrans {
                         $type = "Opaque";
                 } elsif ($type eq "NULL") {
                         $type = "Null";
-                } elsif ($type eq "BITSTRING") {
+                } elsif ($type eq "BITSTRING" || $type eq "BITS") {
                         $type = "BitString";
                 } elsif ($type eq "COUNTER64") {
                         $type = "Counter64";
@@ -373,6 +374,10 @@ sub snmptrans {
                         $type = "UInteger";
                 } elsif ($type eq "NOTIF" || $type eq "TRAP") {
                         $type = "Trap";
+                }
+
+                if ($type eq "") {
+                        $type = $syntax;
                 }
 
                 $data =
@@ -441,7 +446,7 @@ sub snmptrans {
                         $type = "Opaque";
                 } elsif ($type eq "NULL") {
                         $type = "Null";
-                } elsif ($type eq "BITSTRING") {
+                } elsif ($type eq "BITSTRING" || $type eq "BITS") {
                         $type = "BitString";
                 } elsif ($type eq "COUNTER64") {
                         $type = "Counter64";
@@ -454,6 +459,10 @@ sub snmptrans {
                         $type = "UInteger";
                 } elsif ($type eq "NOTIF" || $type eq "TRAP") {
                         $type = "Trap";
+                }
+
+                if ($type eq "") {
+                        $type = $syntax;
                 }
 
                 #	$descr =~ s/\s+/ /g;
@@ -833,7 +842,9 @@ sub print_mib_leaves {
                         $typ = "Null     ";
                 } elsif ($$mib{'type'} eq "COUNTER64") {
                         $typ = "Counter64";
-                } elsif ($$mib{'type'} eq "BITSTRING") {
+                } elsif (  $$mib{'type'} eq "BITSTRING"
+                        || $$mib{'type'} eq "BITS")
+                {
                         $typ = "BitString";
                 } elsif ($$mib{'type'} eq "NSAPADDRESS") {
                         $typ = "NsapAddr ";
