@@ -69,6 +69,10 @@ $SAA::Operation::MAX_TPORT     = 65536;
 
 sub new {
 
+    # ARG 1: String name
+    # ARG 2: int type
+    # ARG 3: int proto
+
     # This constructor creates new SAA operations.  It accepts three mandatory
 # arguments, the operation name, the operation protocol, the operation type.  
     # Once the class is instantiated, use the accessor methods to configure the 
@@ -77,7 +81,7 @@ sub new {
     my $class = ref($that) || $that;
 
     if ( scalar(@args) != 3 ) {
-		croak "SAA::Operation: Insufficient arguments passed to constructor";
+        croak "SAA::Operation: Insufficient arguments passed to constructor";
     }
 
     my $self = {
@@ -284,9 +288,9 @@ sub targetPort {
 }
 
 sub control_enabled {
-	my $self = shift;
-	if (@_) { $self->{controlEnabled} = shift;}
-	return $self->{controlEnabled};
+    my $self = shift;
+    if (@_) { $self->{controlEnabled} = shift; }
+    return $self->{controlEnabled};
 }
 
 1;
