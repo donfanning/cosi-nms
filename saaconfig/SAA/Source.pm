@@ -13,18 +13,19 @@ sub new {
     my ( $that, @args ) = @_;
     my $class = ref($that) || $that;
 
-	if (scalar(@args) != 3) {
-		return;
-	}
+    if ( scalar(@args) != 4 ) {
+        return;
+    }
 
     my $self = {
-        name        => $args[0],
-        address     => $args[1],
-        community   => $args[2],
-        SNMPVersion => undef,
-        SAAVersion  => undef,
-        IOSVersion  => undef,
-        status      => $SAA::Globals::HOST_DOWN,
+        name           => $args[0],
+        address        => $args[1],
+        readCommunity  => $args[2],
+        writeCommunity => $args[3],
+        SNMPVersion    => undef,
+        SAAVersion     => undef,
+        IOSVersion     => undef,
+        status         => $SAA::Globals::HOST_DOWN,
     };
 
     bless( $self, $class );
@@ -49,7 +50,7 @@ sub snmp_version {
     return $self->{SNMPVersion};
 }
 
-sub community {
+sub read_community {
     my $self      = shift;
     my $encrypted = 0;
     $encrypted = shift if (@_);
@@ -60,19 +61,47 @@ sub community {
         # and in the database.
         my $comm = shift;
         if ($encrypted) {
-            $self->{community} = $comm;
-            return $self->{community};
+            $self->{readCommunity} = $comm;
+            return $self->{readCommunity};
         }
         my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
 
-        $self->{community} = $cipher->encrypt_hex($comm);
+        $self->{readCommunity} = $cipher->encrypt_hex($comm);
     }
 
     if ($encrypted) {
-        return $self->{community};
+        return $self->{readCommunity};
     }
     my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
-    my $comm   = $cipher->decrypt_hex($self->{community});
+    my $comm = $cipher->decrypt_hex( $self->{readCommunity} );
+
+    return $comm;
+}
+
+sub write_community {
+    my $self      = shift;
+    my $encrypted = 0;
+    $encrypted = shift if (@_);
+
+    if (@_) {
+
+        # Store the community string in a Blowfish cipher in the memory
+        # and in the database.
+        my $comm = shift;
+        if ($encrypted) {
+            $self->{writeCommunity} = $comm;
+            return $self->{writeCommunity};
+        }
+        my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
+
+        $self->{writeCommunity} = $cipher->encrypt_hex($comm);
+    }
+
+    if ($encrypted) {
+        return $self->{writeCommunity};
+    }
+    my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
+    my $comm = $cipher->decrypt_hex( $self->{writeCommunity} );
 
     return $comm;
 }
@@ -125,13 +154,15 @@ sub learn {
     # This method will try v2c if the device claims to support v2c.  If v2c
     # fails, it will fallback to v1.
     my $self = shift;
-    return 0 unless ( defined $self->addr() && defined $self->community() );
+    return 0
+      unless ( defined $self->addr() && defined $self->read_community()
+        && defined $self->writeCommunity );
 
     $self->snmp_version("1") unless defined $self->snmp_version();
 
     my $sess = new SNMP::Session(
         DestHost  => $self->addr(),
-        Community => $self->community(),
+        Community => $self->read_community(),
         Version   => $self->snmp_version()
     );
 
@@ -149,6 +180,14 @@ sub learn {
 
             # SNMPv2c not supported!
             $self->snmp_version("1");
+
+            # We need to re-create session with the right version number.
+            $sess = new SNMP::Session(
+                DestHost  => $self->addr(),
+                Community => $self->read_community(),
+                Version   => $self->snmp_version()
+            );
+
         }
         else {
             ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
@@ -161,7 +200,7 @@ sub learn {
     if ( $self->snmp_version() eq "1" ) {
         $vars =
           new SNMP::VarList( [ $SAA::SAA_MIB::rttMonApplVersion, 0 ],
-            [ 'system', 0 ] );
+            [ 'sysDescr', 0 ] );
         @vals = $sess->get($vars);
         if ( $sess->{ErrorNum} ) {
             return 0;
@@ -173,6 +212,29 @@ sub learn {
             $self->_status($SAA::Globals::HOST_UP_SNMP);
         }
     }
+
+# We need to test to make sure the read-write community string works.  We will
+# first read sysLocation, then set it to the same value.  Some firewalls don't
+    # like it when a SNMP GET and SET come from the same source port, so we'll
+    # create two SNMP sessions.
+    $sess = new SNMP::Session(
+        DestHost  => $self->addr(),
+        Community => $self->read_community(),
+        Version   => $self->snmp_version()
+    );
+    my $loc = $sess->get('sysLocation.0');
+
+    return 0 if ( $sess->{ErrorNum} );
+
+    $sess = new SNMP::Session(
+        DestHost  => $self->addr(),
+        Community => $self->write_community(),
+        Version   => $self->snmp_version()
+    );
+
+    $sess->set( new SNMP::Varbind( [ 'sysLocation', 0, $loc, 'OCTETSTR' ] ) );
+
+    return 0 if ( $sess->{ErrorNum} );
 
     $self->_saa_version($saavers);
     $self->_ios_version($iosvers);
