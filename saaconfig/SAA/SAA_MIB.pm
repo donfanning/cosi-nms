@@ -99,6 +99,8 @@ my @EXPORT =
   MAX_TPORT
   MIX_LIFE
   MAX_LIFE
+  MAX_HTTP_STRINGS
+  MAX_HTTP_STRING_LEN
   DEFAULT_START_TIME
   DEFAULT_LIFE
   LIVE_FOREVER
@@ -229,21 +231,23 @@ use constant DEFAULT_START_TIME     => 0;
 use constant DEFAULT_LIFE           => 3600;
 
 # Define global limits
-use constant MIN_THRESHOLD => 0;
-use constant MIN_TIMEOUT   => 0;
-use constant MIN_SPORT     => 0;
-use constant MIN_TPORT     => 0;
-use constant MIN_FREQUENCY => 0;
-use constant MAX_FREQUENCY => 604800;
-use constant MIN_TOS       => 0;
-use constant MAX_TOS       => 255;
-use constant MAX_TIMEOUT   => 604800000;
-use constant MAX_THRESHOLD => 2147483647;
-use constant CONTROL       => 0;
-use constant MAX_SPORT     => 65536;
-use constant MAX_TPORT     => 65536;
-use constant MIN_LIFE      => 0;
-use constant MAX_LIFE      => 2147483647;
+use constant MIN_THRESHOLD       => 0;
+use constant MIN_TIMEOUT         => 0;
+use constant MIN_SPORT           => 0;
+use constant MIN_TPORT           => 0;
+use constant MIN_FREQUENCY       => 0;
+use constant MAX_FREQUENCY       => 604800;
+use constant MIN_TOS             => 0;
+use constant MAX_TOS             => 255;
+use constant MAX_TIMEOUT         => 604800000;
+use constant MAX_THRESHOLD       => 2147483647;
+use constant CONTROL             => 0;
+use constant MAX_SPORT           => 65536;
+use constant MAX_TPORT           => 65536;
+use constant MIN_LIFE            => 0;
+use constant MAX_LIFE            => 2147483647;
+use constant MAX_HTTP_STRINGS    => 5;
+use constant MAX_HTTP_STRING_LEN => 255;
 
 # End limit definitions
 

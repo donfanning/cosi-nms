@@ -38,6 +38,7 @@ sub new {
         controlEnable    => SAA::SAA_MIB::DEFAULT_CONTROL_ENABLE,
         dnsTargetAddress => undef,
         httpOperation    => undef,
+        httpStrings      => undef,
         error            => undef,
     };
 
@@ -274,17 +275,47 @@ sub http_operation {
     if (@_) {
         $val = shift;
         foreach ( keys %{$SAA::SAA_MIB::httpOperationEnum} ) {
+
             if ( $val == $SAA::SAA_MIB::httpOperationEnum->{$_} ) {
                 $op = $val;
                 last;
             }
         }
+
         if ( !$op ) {
             return $self->{httpOperation};
         }
         $self->{httpOperation} = $op;
     }
     return $self->{httpOperation};
+}
+
+sub http_string {
+    my $self = shift;
+
+    # This field is only applicable to http operations.
+    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http} ) {
+        return;
+    }
+
+    if (@_) {
+        my $string = shift;
+        my ( $i, $length );
+        $i      = 0;
+        $length = 0;
+
+        # This string has a cap.  If this string is longer than the max, we need
+        # to chop it, and fit it into an array.
+        while ( $i < SAA::SAA_MIB::MAX_HTTP_STRINGS ) {
+            while ( $length < length $string ) {
+                push @{ $self->{httpStrings} },
+                  substr( $string, $length, SAA::SAA_MIB::MAX_HTTP_STRING_LEN );
+                $length += SAA::SAA_MIB::MAX_HTTP_STRING_LEN;
+            }
+            $i++;
+        }
+    }
+    return $self->{httpStrings};
 }
 
 sub name_server {

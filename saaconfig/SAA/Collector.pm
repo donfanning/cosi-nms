@@ -269,19 +269,26 @@ sub install {
     );
 
     # Add objects that may be undef for certain operations.
+
     if ($target) {
         push @{$varlist},
           [ $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
             addrToOctStr( $target->addr() ), 'OCTSTR' ];
     }
 
-	if ($operation->name_server()) {
-		push @{$varlist}, [ $SAA::SAA_MIB::rttMonEchoAdminNameServer, $id, addrToOctStr( $operation->name_server() ), 'OCTSTR'];
-	}
+    if ( $operation->name_server() ) {
+        push @{$varlist},
+          [
+            $SAA::SAA_MIB::rttMonEchoAdminNameServer,  $id,
+            addrToOctStr( $operation->name_server() ), 'OCTSTR'
+        ];
+    }
 
-	if ($operation->http_operation()) {
-		push @{$varlist}, [ $SAA::SAA_MIB::rttMonEchoAdminOperation, $id, $operation->http_operation(), 'INTEGER'];
-	}
+    if ( $operation->http_operation() ) {
+        push @{$varlist},
+          [ $SAA::SAA_MIB::rttMonEchoAdminOperation, $id,
+            $operation->http_operation(), 'INTEGER' ];
+    }
 
     # Set the objects on the source router.
     $sess->set($varlist);
