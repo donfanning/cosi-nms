@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+   
+  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <title>Tool for modem terse records</title>
+</head>
+ <body>
+<div align="Center">
+<h2> Summary</h2>
+</div>
+ The programm calculates statistics based on data (green) reported by modems
+when disconnecting the calls. The output contains abridged data reported
+by modems (blue) and statistics of disconnect reasons calculated both per
+each user and overall (red).<br>
+<b> Required debugs:</b><br>
+none, but "modem call-record terse" needs to be set in global configuration 
+<div align="Center"> 
+<h2>Original output of "modem call-record terse"</h2>
+ </div>
+ 4w0d: %CALLRECORD-3-MICA_<font color="#33cc00"><b>TERSE</b></font>_CALL_REC: 
+DS0 slot/contr/chan==0/0/12, slot/port==1/19, call_id==7E72, <font color="#33cc00"><b><font>
+ userid==(n/a)</font></b></font>, ip==0.0.0.0, <font color="#33cc00"><b>calling==3522</b></font>
+ , <font color="#33cc00"><b>called==5241</b></font>, <font color="#33cc00"><b>
+ std==V.90</b></font>, <font color="#33cc00"><b>prot==ASYNC Mode</b></font>
+ , <font color="#33cc00"><b>comp==None</b></font>, <font color="#33cc00"><b>
+ init-rx/tx b-rate==16800/42666</b></font>, <font color="#33cc00"><b><font>
+ finl-rx/tx b-rate==168</font></b></font><font color="#33cc00"><b><font>00/42666</font></b></font>
+ , rbs==0, d-pad==None, <font color="#33cc00"><b>retr==</b></font><font color="#33cc00"><b><font>
+ 0</font></b></font>, <font color="#33cc00"><b>sq==3</b></font>, <font color="#33cc00"><b>
+ snr==26</b></font>, <font color="#33cc00"><b>rx/tx chars==1088/145</b></font>
+ , p/w info==25, <font color="#33cc00"><b>rx/tx ec==0/0</b></font>, <font color="#33cc00"><b>
+ bad==0</b></font>, <font color="#33cc00"><b>time==38</b></font>, finl-state==Steady 
+Speedshift, disc(radius)==(n/a)/(n/a), <font color="#33cc00"><b>disc(modem)==DF00</b></font>
+  Tx (host to line) data flushing - OK/Requested by host/non-specific host 
+disconnect<br>
+ 4w0d: %CALLRECORD-3-MICA_<font color="#33cc00"><b>TERSE</b></font>_CALL_REC: 
+DS0 slot/contr/chan==0/2/18, slot/port==1/1, call_id==7E73, <font color="#33cc00"><b>
+ userid==(n/a)</b></font>, ip==0.0.0.0, <font color="#33cc00"><b>calling==3526</b></font>
+ , <font color="#33cc00"><b>called==5241</b></font>, <font color="#33cc00"><b>
+ std==V.90</b></font>, <font color="#33cc00"><b>prot==LAP-M</b></font>, <font color="#33cc00"><b>
+ comp==V.42bis both</b></font>, <font color="#33cc00"><b>init-rx/tx b-rate==19200/38666</b></font>
+ , <font color="#33cc00"><b>finl-rx/tx b-rate==1</b></font><font color="#33cc00"><b>
+ 9200/38666</b></font>, rbs==0, d-pad==None, retr==0, <font color="#33cc00"><b>
+ sq==3</b></font>, <font color="#33cc00"><b>snr==28</b></font>, <font color="#33cc00"><b>
+ rx/tx chars==54/12</b></font>, p/w info==25, <font color="#33cc00"><b>rx/tx 
+ec==1/1</b></font>, <font color="#33cc00"><b>bad==0</b></font>, <font color="#33cc00"><b>
+ time==27</b></font>, finl-state==Steady Retrain, disc(radius)==(n/a)/(n/a), 
+<font color="#33cc00"><b>disc(modem)==DF00</b></font> Tx (host to line) data 
+flushing - OK/Requested by host/non-specific host disconnect<br>
+ 4w0d: %CALLRECORD-3-MICA_<font color="#33cc00"><b>TERSE</b></font>_CALL_REC: 
+DS0 slot/contr/chan==0/2/24, slot/port==1/30, call_id==7E7C, <font color="#33cc00"><b>
+ userid==user</b></font>, ip==0.0.0.0, <font color="#33cc00"><b>calling==3522</b></font>
+ , <font color="#33cc00"><b>called==5241</b></font>, <font color="#33cc00"><b>
+ std==V.34+</b></font>, <font color="#33cc00"><b>prot==LAP-M</b></font>,
+<font color="#33cc00"><b> comp==V.42bis both</b></font>, <font color="#33cc00"><b>
+init-rx/tx b-rate==28800/31200</b></font> , <font color="#33cc00"><b>finl-rx/tx
+b-rate==</b></font><font color="#33cc00"><b> 28800/31200</b></font>, rbs==0,
+d-pad==None, <font color="#33cc00"><b>retr==0</b></font> , <font color="#33cc00"><b>
+sq==3</b></font>, <font color="#33cc00"><b>snr==37</b></font> , <font color="#33cc00"><b>
+rx/tx chars==241/136</b></font>, p/w info==0, <font color="#33cc00"><b>rx/tx
+ec==11/15</b></font>, <b><font color="#33cc00"> bad==0</font></b>, <font color="#33cc00"><b>
+time==25</b></font>, finl-state==Steady, disc(radius)==User Error/PAP Auth
+Failed, <font color="#33cc00"><b>disc(modem)==DF03</b></font>  Tx (host to
+line) data flushing - OK/Requested by host/DTR dropped<br>
+ 
+<div align="Center"> 
+<h2>Report output</h2>
+ </div>
+ <i>The first 4 bytes (numbers in square brackets) are used to identify the 
+part of the report the record/line belongs to: so that after the report is 
+sorted (e. g. using a "<b>sort</b>" utility), the records still stay within 
+their parts.</i><i><br>
+ </i><i>1st part ("</i><font color="#ff0000">[00]</font><i>")is an extract 
+of the original log</i><i><br>
+ </i><i>2nd part ("</i><font color="#ff0000">[10]</font><i>")is distribution 
+of disconnect reasons per </i><font color="#33cc00">calling#<font color="#ff0000">
+ &gt;</font>called#<font color="#ff0000">"</font>username<font color="#ff0000">
+ "</font></font> combination<br>
+ <i>3rd part ("</i><font color="#ff0000">[20]</font><i>")is overall distribution 
+of disconnect reasons</i><i><br>
+ </i><i>4th part ("</i><font color="#ff0000">[30]</font><i>")is total number 
+of terse records processed and unique </i><font color="#33cc00">calling#<font color="#ff0000">
+ &gt;</font>called#<font color="#ff0000">"</font>username<font color="#ff0000">
+ "</font></font><i> combinations identified</i><br>
+ <br>
+ <font color="#ff0000">[00]</font><b><font color="#3333ff">DF00<font color="#ff0000">
+ =</font>3522<font color="#ff0000">&gt;</font>5241<font color="#ff0000">"</font>
+ (n/a)</font></b><font color="#ff0000"><b><font>"</font></b></font> %CALLRECORD-3-MICA_<font color="#3333ff"><b>
+ TERSE</b></font>_CALL_REC: std==<font color="#3333ff"><b>V.90</b></font>
+ prot==<font color="#3333ff"><b>ASYNC</b></font> comp==<font color="#3333ff"><b>
+ None</b></font> b-rate==<font color="#3333ff"><b>16800/42666</b></font>
+b-rate==<font color="#3333ff"><b> 16800/42666</b></font> retr==<font color="#3333ff"><b>
+0</b></font>&nbsp;sq==3 snr==<font color="#3333ff"><b>26</b></font> chars==<font color="#3333ff"><b>
+ 1088/145</b></font> ec==<font color="#3333ff"><b>0/0</b></font> bad==<font color="#3333ff"><b>
+ 0</b></font> time==<font color="#3333ff"><b>38</b></font> finl-state==Steady 
+disc(radius)==(n/a)/(n/a) disc(modem)==<font color="#3333ff"><b>DF00</b></font>
+  Tx (host to line) data flushing - OK/Requested by host/non-specific host 
+disconnect<br>
+ <font color="#ff0000">[00]</font><b><font color="#3333ff">DF00<font color="#ff0000">
+ =</font>3526<font color="#ff0000">&gt;</font>5241<font color="#ff0000">"</font>
+ (n/a)<font color="#ff0000">"</font></font></b> %CALLRECORD-3-MICA_<font color="#3333ff"><b>
+ TERSE</b></font>_CALL_REC: std==<font color="#3333ff"><b>V.90</b></font>
+ prot==<font color="#3333ff"><b>LAP-M</b></font> comp==<font color="#3333ff"><b>
+ V.42bis</b></font> b-rate==<font color="#3333ff"><b>19200/38666</b></font>
+  b-rate==<font color="#3333ff"><b>19200/38666</b></font> retr==<font color="#3333ff"><b>
+ 0</b></font> sq==3 snr==28 chars==<font color="#3333ff"><b>54/12</b></font>
+  ec==<font color="#3333ff"><b>1/1</b></font> bad==<font color="#3333ff"><b>
+ 0</b></font> time==<font color="#3333ff"><b>27</b></font> finl-state==Steady 
+disc(radius)==(n/a)/(n/a) disc(modem)==<font color="#3333ff"><b>DF00</b></font>
+  Tx (host to line) data flushing - OK/Requested by host/non-specific host 
+disconnect<br>
+ <font color="#ff0000">[00]</font><font color="#3333ff"><b>DF03<font color="#ff0000">
+ =</font>3522<font color="#ff0000">&gt;</font>5241</b><font color="#ff0000"><b>
+ "</b></font><b>user<font color="#ff0000">"</font></b></font> %CALLRECORD-3-MICA_<font color="#3333ff"><b>
+ TERSE</b></font>_CALL_REC: std==<font color="#3333ff"><b>V.34+</b></font>
+  prot==<font color="#3333ff"><b>LAP-M</b></font> comp==<font color="#3333ff"><b>
+ V.42bis</b></font> b-rate==<font color="#3333ff"><b>28800/31200</b></font>
+  b-rate==<font color="#3333ff"><b>28800/31200</b></font> retr==<font color="#3333ff"><b>
+ 0</b></font> sq==3, snr==37 chars==<font color="#3333ff"><b>241/136</b></font>
+  ec==<font color="#3333ff"><b>11/15</b></font> bad==<font color="#3333ff"><b>
+ 0</b></font> time==<font color="#3333ff"><b>25</b></font> finl-state==Steady 
+disc(radius)==User Error/PAP Auth Failed disc(modem)==<font color="#3333ff"><b>
+ DF03</b></font> Tx (host to line) data flushing - OK/Requested by host/DTR 
+dropped<br>
+ <br>
+ <font color="#ff0000">[10]</font><font color="#3333ff"><b>3522<font color="#ff0000">
+ &gt;</font>5241<font color="#ff0000">"</font>user<font color="#ff0000">"</font>
+ =DF03</b></font> : <font color="#ff0000"><b>1</b></font> (user <font color="#ff0000"><b>
+ 100.00%</b></font>, total <font color="#ff0000"><b>100.00%</b></font>)<br>
+ <font color="#ff0000">[10]</font><font color="#3333ff"><b>3522<font color="#ff0000">
+ &gt;</font>5241<font color="#ff0000">"</font>(n/a)<font color="#ff0000">
+"</font> =DF00</b></font> : <font color="#ff0000"><b>1</b></font> (user <font color="#ff0000"><b>
+ 100.00%</b></font>, total <font color="#ff0000"><b>50.00%</b></font>)<br>
+ <font color="#ff0000">[10]</font><font color="#3333ff"><b>3526<font color="#ff0000">
+ &gt;</font>5241<font color="#ff0000">"</font>(n/a)<font color="#ff0000">
+"</font> =DF00</b></font> : <font color="#ff0000"><b>1</b></font> (user <font color="#ff0000"><b>
+ 100.00%</b></font>, total <font color="#ff0000"><b>50.00%</b></font>)<br>
+ <br>
+ <font color="#ff0000">[20]</font><font color="#3333ff"><b>DF00</b></font>
+  : <font color="#ff0000"><b>2</b></font> (<font color="#ff0000"><b>66.67%</b></font>
+ )<br>
+ <font color="#ff0000">[20]</font><font color="#3333ff"><b>DF03</b></font>
+  : <font color="#ff0000"><b>1</b></font> (<font color="#ff0000"><b>
