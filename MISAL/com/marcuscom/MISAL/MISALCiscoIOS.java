@@ -221,7 +221,7 @@ public class MISALCiscoIOS extends MISAL {
         switch (this.getAuthScheme(this.DISABLE_MODE)) {
         case AUTH_VTY:
             /* Expect a Password: prompt */
-            send(this.PASSWORD_PROMPT, this._vtyPw + "\r", this.DISABLE_MODE);
+            send(this.PASSWORD_PROMPT, this._vtyPw + "\r", "[#>]$");
             /* If we don't get what we expect, throw
                the IllegalMISALStateException. */
             break;
@@ -230,11 +230,11 @@ public class MISALCiscoIOS extends MISAL {
                 /* Expect either ENABLE or DISABLE MODE
                    as we could be using enable TACACS */
                 send(this.USER_PROMPT, this._user + "\r", this.PASSWORD_PROMPT);
-                send(this.PASSWORD_PROMPT, this._userPw + "\r", "[#>] ?$");
+                send(this.PASSWORD_PROMPT, this._userPw + "\r", "[#>]$");
             }
             catch (IllegalMISALStateException imse) {
                 /* Fallback onto regular VTY logins. */
-                send(this.PASSWORD_PROMPT, this._vtyPw + "\r", this.DISABLE_MODE);
+                send(this.PASSWORD_PROMPT, this._vtyPw + "\r", "[#>]$");
             }
             break;
         }
