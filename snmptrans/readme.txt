@@ -17,6 +17,10 @@ and a web server capable of serving out Perl CGI scripts.
 If you wish to use the CHAP-like authentication security, the 
 Digest::MD5 Perl module is also needed.
 
+The CGI.pm module is also needed for the CGI side of things.  This is
+a new requirement that enables easy use of cookies.  In the past, I
+used my own CGI parsing routines.
+
 INSTALLATION and USE:
 ---------------------
 
