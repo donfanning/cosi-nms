@@ -4,14 +4,13 @@ use strict;
 require 5.002;
 use lib qw(..);
 use SAA::Globals;
-use Carp;
 
 sub new {
     my ( $that, @args ) = @_;
     my $class = ref($that) || $that;
 
     if ( scalar(@args) != 2 ) {
-        croak "SAA::Target: Insufficient arguments passed to constructor.";
+		return;
     }
 
     my $self = {

@@ -7,7 +7,6 @@ use SNMP;
 use SAA::Globals;
 use SAA::SAA_MIB;
 use Crypt::CBC;
-use Carp;
 
 # Right now, we'll configure for v1/v2c.
 sub new {
@@ -15,7 +14,7 @@ sub new {
     my $class = ref($that) || $that;
 
 	if (scalar(@args) != 3) {
-		croak "SAA::Source: Insufficient arguments passed to constructor.";
+		return;
 	}
 
     my $self = {
