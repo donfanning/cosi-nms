@@ -38,10 +38,6 @@ if ( !$db_user->validate_passwd( $q->param("form_pass") ) ) {
     exit(0);
 }
 
-# Start the persistent session.  When logging in, this function is effectively
-# a no-op.
-session_start($q);
-
 my $q_sess =
   new CGI( 'user' => $db_user->username(), 'perms' => $db_user->perms() );
 

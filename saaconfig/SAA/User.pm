@@ -3,7 +3,7 @@ package SAA::User;
 use strict;
 require 5.002;
 use Carp;
-use vars qw(@ISA @EXPORT_OK);
+use vars qw(@ISA @EXPORT_OK %EXPORT_TAGS);
 use Exporter;
 use Carp;
 use Digest::MD5 qw(md5_hex);
@@ -14,6 +14,9 @@ use lib qw(..);
   PERMS_GUEST
   PERMS_USER
   PERMS_ADMIN
+);
+%EXPORT_TAGS = (
+    Perms => [qw(PERMS_GUEST PERMS_USER PERMS_ADMIN)],
 );
 
 use constant PERMS_GUEST => 0x00;
