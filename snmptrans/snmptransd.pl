@@ -708,9 +708,9 @@ sub snmptrans {
                     return;
                 }
             }
-            $data .= "</pre>\n";
-            send_data( $client, $data );
         }
+        $data .= "</pre>\n";
+        send_data( $client, $data );
     }
     else {
         send_data( $client, "500" );
