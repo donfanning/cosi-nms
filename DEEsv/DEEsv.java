@@ -438,6 +438,7 @@ public class DEEsv {
 
         // Populate the ciscoLogicalModuleObjects Hash
         this.ciscoLogicalModuleObjects = new Hashtable();
+	ciscoLogicalModuleObjects.put("InstanceID", "Index");
         ciscoLogicalModuleObjects.put("ModuleNumber", "Module Number");
         ciscoLogicalModuleObjects.put("ModuleType", "Type");
         ciscoLogicalModuleObjects.put("InstanceName", "Name");
