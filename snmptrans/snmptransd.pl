@@ -308,7 +308,7 @@ sub snmptrans {
 
                 foreach $occurance (@occurances) {
                         $data .= "<TR>\n";
-                        my ($value, $isbranch) = split (/\|/, $occurance);
+                        my ($value, $isbranch) = split(/\|/, $occurance);
                         if ($isbranch) {
                                 $data .= "<TD>$value</td>\n";
                                 $data .=
@@ -376,7 +376,7 @@ sub snmptrans {
                 }
 
                 $data =
-                    "<PRE>" . $oid . " = " . $trans . " (" . $type
+                      "<PRE>" . $oid . " = " . $trans . " (" . $type
                     . ")</pre>\n";
                 send_data($client, $data);
         } elsif ($type eq "detail") {
@@ -533,7 +533,8 @@ sub snmptrans {
                                                         $data .=
                                                             $range->{'low'};
                                                 } else {
-                                                        $data .= $range->{'low'}
+                                                        $data .=
+                                                              $range->{'low'}
                                                             . ".."
                                                             . $range->{'high'};
                                                 }
@@ -617,7 +618,7 @@ sub snmptrans {
                         $data .= "\tDESCRIPTION    " . $descr . "\n";
                 }
                 $data .= "::= { ";
-                my @parts = split (/\./, $oid);
+                my @parts = split(/\./, $oid);
                 my ($savepart);
                 $SNMP::use_long_names = 0;
                 my $i;
@@ -637,8 +638,17 @@ sub snmptrans {
                 $data = "<PRE>\n";
 
                 if ($numeric) {
-                        my $mib = $SNMP::MIB{$request};
-                        $data .= ($mib->{'parent'})->{'objectID'} . "\n";
+                        my $mib  = $SNMP::MIB{$request};
+                        my $foid = "";
+                        foreach my $soid (
+                                split(/\./, ($mib->{'parent'})->{'objectID'}))
+                        {
+                                next unless $soid;
+                                $foid .= "." . $soid;
+                                $data .=
+                                    ".<A HREF=\"$ME?oid=$foid&xOps=tree\" TITLE=\"$foid\" ALT=\"$foid\">$soid</a>";
+                        }
+                        $data .= "\n";
                         eval {
                                 alarm($TIMEOUT_SECS);
                                 $data .= walkMIB($client, $request, $request);
@@ -657,8 +667,17 @@ sub snmptrans {
                         }
                 } else {
                         $trans = SNMP::translateObj($request);
-                        my $mib = $SNMP::MIB{$trans};
-                        $data .= ($mib->{'parent'})->{'objectID'} . "\n";
+                        my $mib  = $SNMP::MIB{$trans};
+                        my $foid = "";
+                        foreach my $soid (
+                                split(/\./, ($mib->{'parent'})->{'objectID'}))
+                        {
+                                next unless $soid;
+                                $foid .= "." . $soid;
+                                $data .=
+                                    ".<A HREF=\"$ME?oid=$foid&xOps=tree\" TITLE=\"$foid\" ALT=\"$foid\">$soid</a>";
+                        }
+                        $data .= "\n";
                         eval {
                                 alarm($TIMEOUT_SECS);
                                 $data .= walkMIB($client, $request, $trans);
@@ -759,11 +778,11 @@ sub print_mib_leaves {
         if ($$mib{'type'} eq "") {
                 if ($test_count) {
                         $tree_buffer .=
-                            join ("", @leave_indent)
+                            join("", @leave_indent)
                             . "--<A HREF=\"$ME?oid=$$mib{'label'}&xOps=tree\"><FONT COLOR=\"green\">$$mib{'label'}</FONT></A>($$mib{'subID'}) <SMALL><A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\" title=\"$sd\" alt=\"$sd\"><FONT COLOR=\"#DC00DC\">detail</FONT></A></SMALL>\n";
                 } else {
                         $tree_buffer .=
-                            join ("", @leave_indent)
+                            join("", @leave_indent)
                             . "--<A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\" title=\"$sd\" alt=\"$sd\"><FONT COLOR=\"#DC00DC\">$$mib{'label'}</FONT></A>($$mib{'subID'})\n";
                 }
 
@@ -836,18 +855,18 @@ sub print_mib_leaves {
 
                 if ($test_count) {
                         $tree_buffer .=
-                            join ("", @leave_indent)
+                            join("", @leave_indent)
                             . "-- $acc $typ <A HREF=\"$ME?oid=$$mib{'label'}&xOps=tree\"><FONT COLOR=\"green\">$$mib{'label'}</FONT></A>($$mib{'subID'}) <SMALL><A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\" title=\"$sd\" alt=\"$sd\"><FONT COLOR=\"#DC00DC\">detail</FONT></A></SMALL>\n";
                 } else {
                         $tree_buffer .=
-                            join ("", @leave_indent)
+                            join("", @leave_indent)
                             . "-- $acc $typ <A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\" title=\"$sd\" alt=\"$sd\"><FONT COLOR=\"#DC00DC\">$$mib{'label'}</FONT></A>($$mib{'subID'})\n";
                 }
 
                 $leave_indent[$ip] = $last_ipch;
                 if ($$mib{'textualConvention'} ne "") {
                         $tree_buffer .=
-                            join ("", @leave_indent)
+                            join("", @leave_indent)
                             . "        Textual Convention: $$mib{'textualConvention'}\n";
                 }
 
@@ -856,11 +875,13 @@ sub print_mib_leaves {
                         my $cpos = 0;
                         my $cmax = $level - scalar(@leave_indent) - 16;
                         $tree_buffer .=
-                            join ("", @leave_indent) . "        Values: ";
+                            join("", @leave_indent) . "        Values: ";
                         my $key;
 
-                        foreach $key (sort { $ep->{$a} <=> $ep->{$b} }
-                                keys %{$ep})
+                        foreach $key (
+                                sort { $ep->{$a} <=> $ep->{$b} }
+                                keys %{$ep}
+                            )
                         {
                                 my $buf;
                                 my $bufw;
@@ -868,7 +889,7 @@ sub print_mib_leaves {
                                 $cpos += ($bufw = length($buf) + 2);
                                 if ($cpos >= $cmax) {
                                         $tree_buffer .= "\n"
-                                            . join ("", @leave_indent)
+                                            . join("", @leave_indent)
                                             . "                ";
                                         $cpos = $bufw;
                                 }
@@ -888,10 +909,10 @@ sub print_mib_leaves {
                 my $range;
                 if ($size == 1) {
                         $tree_buffer .=
-                            join ("", @leave_indent) . "        Size: ";
+                            join("", @leave_indent) . "        Size: ";
                 } else {
                         $tree_buffer .=
-                            join ("", @leave_indent) . "        Range: ";
+                            join("", @leave_indent) . "        Range: ";
                 }
 
                 foreach $range (@{$mib->{'ranges'}}) {
@@ -935,7 +956,7 @@ sub print_mib_leaves {
                                 || ($np->{'type'} eq "")
                             )
                         {
-                                $tree_buffer .= join ("", @leave_indent) . "\n";
+                                $tree_buffer .= join("", @leave_indent) . "\n";
                         }
 
                         if ($i == $count) {
