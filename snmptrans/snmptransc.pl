@@ -125,6 +125,27 @@ $client = IO::Socket::INET->new(
 
 my $results = "";
 
+if ( defined( $contents{'security'} ) ) {
+
+    # Implement CHAP-like security
+    use Digest::MD5 qw(md5);    # This module is required for security to work.
+    my $digest = md5( $contents{'security'} );
+    send_data( $client, "digest" );
+    $results = get_data($client);
+    if ( $results ne "403" ) {
+        return_error( "Server Error",
+         "Error initiating authentication with server (results = \"$results\")."
+        );
+    }
+    send_data( $client, $digest );
+    $results = get_data($client);
+
+    if ( $results ne "200" ) {
+        return_error( "Server Error",
+          "Error authenticating with server (results = \"$results\")." );
+    }
+}
+
 if ( defined( $contents{'pattern'} ) ) {
     send_data( $client, "pattern" );
     $results = get_data($client);

@@ -52,6 +52,11 @@ BEGIN {
 
 # Specify the local port for the server to bind to.  This is 3333 by default.
     $LOCAL_PORT = 3333;
+
+    # Enable CHAP-like security for connecting to the server process.  This is 
+    # disable by default.  Set this to the name of the password file to 
+    # enable security.
+    $SECURITY = "";
 }
 
 use strict;
@@ -183,6 +188,37 @@ sub snmptrans {
     my ($client) = $_[0];
     my ( $bg, $type, $size, $request );
     my $data;
+
+    if ( $SECURITY ne "" ) {
+        use Digest::MD5 qw(md5);
+        unless ( open( PW, $SECURITY ) ) {
+            die "Cannot open password file $SECURITY: $!\n";
+        }
+
+        my $pw = <PW>;
+
+        close(PW);
+
+        chomp $pw;
+
+        $type = get_data($client);
+        if ( $type eq "digest" ) {
+            send_data( $client, "403" );
+        }
+        else {
+            send_data( $client, "501" );
+            return;
+        }
+        $digest = get_data($client);
+
+        if ( $digest eq md5($pw) ) {
+            send_data( $client, "200" );
+        }
+        else {
+            send_data( $client, "403" );
+            return;
+        }
+    }
 
     $type = get_data($client);
     send_data( $client, "200" );
