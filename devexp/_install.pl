@@ -41,7 +41,7 @@ if ( $CRM::CRM_OS ne "WIN" ) {
         'devexp.pl'   => "/opt/CSCOpx/bin",
         'devexp.xml'  => "/opt/CSCOpx/objects/devexp",
         'devexp.conf' => "/opt/CSCOpx/objects/devexp",
-        'devexp.dtd'  => "/opt/CSCOpx/objects/devexp",
+        'devexp.dtd'  => "/opt/CSCOpx/devexp/devexp",
     );
     %perms = (
         'devexp.pl'   => 0750,
@@ -49,14 +49,8 @@ if ( $CRM::CRM_OS ne "WIN" ) {
         'devexp.conf' => 0640,
         'devexp.dtd'  => 0640,
     );
-    @dirs = ("/opt/CSCOpx/objects/devexp");
+    @dirs = ( "/opt/CSCOpx/objects/devexp", "/opt/CSCOpx/htdocs/devexp" );
     $PERL = "/opt/CSCOpx/bin/perl";
-
-    return_error( 0, "Removing old DevExp ..." );
-    foreach (@dirs) {
-        system("/bin/rm -fr $_") if ( -d $_ );
-    }
-    print " DONE!\n";
 
     if ( defined( $ENV{'PX_USER'} ) ) {
         $uid = ( getpwnam( $ENV{'PX_USER'} ) )[2];
@@ -74,15 +68,9 @@ else {
         'devexp.pl'   => "$NMSROOT\\bin",
         'devexp.xml'  => "$NMSROOT\\objects\\devexp",
         'devexp.conf' => "$NMSROOT\\objects\\devexp",
-        'devexp.dtd'  => "$NMSROOT\\objects\\devexp",
+        'devexp.dtd'  => "$NMSROOT\\htdocs\\devexp",
     );
-    @dirs = ("$NMSROOT\\objects\\devexp");
-
-    return_error( 0, "Removing old DevExp ..." );
-    foreach (@dirs) {
-        system("rd /s/q $_") if ( -d $_ );
-    }
-    print " DONE!\n";
+    @dirs = ( "$NMSROOT\\objects\\devexp", "$NMSROOT\\htdocs\\devexp" );
 
     $PERL = "$NMSROOT\\bin\\perl";
     $PS   = "\\";
@@ -93,9 +81,12 @@ else {
 
 return_error( 0, "Creating install directories ..." );
 foreach (@dirs) {
-    mkdir( $_, 0750 )
-      or return_error( 1, "Unable to create directory $_: $!\n" );
+    if ( !-d $_ ) {
+        mkdir( $_, 0750 )
+          or return_error( 1, "Unable to create directory $_: $!\n" );
+    }
     chown( $uid, $gid, $_ ) if ( $CRM::CRM_OS ne "WIN" );
+
 }
 print " DONE!\n";
 
