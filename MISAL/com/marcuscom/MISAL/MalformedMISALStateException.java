@@ -8,31 +8,31 @@ package com.marcuscom.MISAL;
  * have more details.
  * </p>
  * <p>&copy; 2001 MarcusCom, Inc.  All rights reserved.</p>
- * 
+ *
  * @version	1.0, $Id$
  * @author 	Joe Clarke &lt;marcus@marcuscom.com&gt;
  * @see		MISAL
  */
 public class MalformedMISALStateException extends Exception {
-	/**
-	 * Simply calls the corresponding constructor of its superclass.
-	 *
-	 * @see		Exception
-	 * @since	MISAL1.0
-	 */
-	 public MalformedMISALStateException() {
-		 super();
-	 }
+    /**
+     * Simply calls the corresponding constructor of its superclass.
+     *
+     * @see		Exception
+     * @since	MISAL1.0
+     */
+    public MalformedMISALStateException() {
+        super();
+    }
 
-	 /**
-	  * Simply calls the corresponding constructor of its superclass.
-	  *
-	  * @param message	A message indicating why there is an error in
-	  *			the state
-	  * @see		Exception
-	  * @since		MISAL1.0
-	  */
-	  public MalformedMISALStateException(String message) {
-		  super(message);
-	  }
+    /**
+     * Simply calls the corresponding constructor of its superclass.
+     *
+     * @param message	A message indicating why there is an error in
+     *			the state
+     * @see		Exception
+     * @since		MISAL1.0
+     */
+    public MalformedMISALStateException(String message) {
+        super(message);
+    }
 }

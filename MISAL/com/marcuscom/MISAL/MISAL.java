@@ -53,7 +53,7 @@ public class MISAL implements Runnable {
     public final static int MISAL_STATE_CLOSED = 0;
 
     /**
-     * The default state checking thread interval 
+     * The default state checking thread interval
      * (1 millisecond).
      */
     protected final static int MISAL_DEFAULT_SLEEP_INTERVAL = 1;
@@ -64,20 +64,20 @@ public class MISAL implements Runnable {
      */
     protected final static int MISAL_THREAD_SLEEP_INTERVAL = 100;
     /**
-     * Number of milliseconds to wait with fast timers 
+     * Number of milliseconds to wait with fast timers
      * (10 milliseconds).
      */
     protected final static int MISAL_SHORT_THREAD_SLEEP_INTERVAL = 10;
 
     /**
      * The default number of retries before failing when a state match
-     * is not found (1000).  This number is multiplied by the 
+     * is not found (1000).  This number is multiplied by the
      * MISAL_THREAD_SLEEP_INTERVAL.
      */
     protected final static int DEFAULT_RETRIES = 1000;
 
     /**
-     * The default size for the main accumulator buffer 
+     * The default size for the main accumulator buffer
      * (1 MB).  All data read from the socket is stored in this buffer.
      */
     protected final static int DEFAULT_BUFFER_SIZE = 1*1024*1024;
@@ -209,8 +209,8 @@ public class MISAL implements Runnable {
 
     /**
      * Runs the state checking thread.  This method should not
-     * be called directly.  Instead, use the 
-     * <code>stopCheckingState()</code> and 
+     * be called directly.  Instead, use the
+     * <code>stopCheckingState()</code> and
      * <code>startCheckingState()</code> methods.
      *
      * @see		#startCheckingState()
@@ -419,117 +419,117 @@ public class MISAL implements Runnable {
         return this._debug;
     }
 
-	/**
-         * Send data on the MISAL socket.
-         *
-         * @since MISAL 1.0
-         * @param data the data to send on the socket
-         * @param expect a string indicating what to expect back from the host
-         * @throws IllegalMISALStateException if the state, <CODE>expect</CODE>, is not reached.
-         * @throws IOException if any miscellaneous IO error occurs.
-         */
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @since MISAL 1.0
+            * @param data the data to send on the socket
+            * @param expect a string indicating what to expect back from the host
+            * @throws IllegalMISALStateException if the state, <CODE>expect</CODE>, is not reached.
+            * @throws IOException if any miscellaneous IO error occurs.
+            */
     public void send(String data, String expect) throws IllegalMISALStateException, IOException {
         this.send(MISAL_STATE_UNKNOWN, data, expect, 0, 0);
     }
 
-	/**
-         * Send data on the MISAL socket.
-         *
-         * @since MISAL 1.0
-         * @param data the data to send on the socket
-         * @param expectState an integer indicating what to expect back from the
-         * host
-         * @throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
-         * @throws IOException if any miscellaneous IO error occurs.
-         */
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @since MISAL 1.0
+            * @param data the data to send on the socket
+            * @param expectState an integer indicating what to expect back from the
+            * host
+            * @throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
+            * @throws IOException if any miscellaneous IO error occurs.
+            */
     public void send(String data, int expectState) throws IllegalMISALStateException, IOException {
         this.send(MISAL_STATE_UNKNOWN, data, null, expectState, 0);
     }
 
-	/**
-         * Send data on the MISAL socket.
-         *
-         * @since MISAL 1.0
-         * @param state the initial state to require before sending data on the
-         * socket
-         * @param data the data to send on the socket
-         * @param expect a String indicating what to expect back from the host
-         * @throws IllegalMISALStateException if the state, <CODE>expect</CODE> is not reached
-         * @throws IOException if any miscellaneous IO error occurs.
-         */
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @since MISAL 1.0
+            * @param state the initial state to require before sending data on the
+            * socket
+            * @param data the data to send on the socket
+            * @param expect a String indicating what to expect back from the host
+            * @throws IllegalMISALStateException if the state, <CODE>expect</CODE> is not reached
+            * @throws IOException if any miscellaneous IO error occurs.
+            */
     public void send(int state, String data, String expect) throws IllegalMISALStateException, IOException {
         this.send(state, data, expect, 0, 0);
     }
 
-	/**
-         * Send data on the MISAL socket.
-         *
-         * @since MISAL 1.0
-         * @param state the initial state to require before sending data on the
-         * socket
-         * @param data the data to send on the socket
-         * @param expectState an integer indicating what to expect back from the
-         * host
-         * @throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
-         * @throws IOException if any miscellaneous IO error occurs.
-         */
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @since MISAL 1.0
+            * @param state the initial state to require before sending data on the
+            * socket
+            * @param data the data to send on the socket
+            * @param expectState an integer indicating what to expect back from the
+            * host
+            * @throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
+            * @throws IOException if any miscellaneous IO error occurs.
+            */
     public void send(int state, String data, int expectState) throws IllegalMISALStateException, IOException {
         this.send(state, data, null, expectState, 0);
     }
 
-	/**
-         * Send data on the MISAL socket.
-         *
-         * @since MISAL 1.0
-         * @param state the initial state to require before sending data on the
-         * socket
-         * @param data the data to send on the socket
-         * @param expect a string indicating what to expect back from the host
-         * @param wait number of retries before timing out if expect state
-         * is not met
-         * @throws IllegalMISALStateException if the state, <CODE>expect</CODE>, is not reached.
-         * @throws IOException if any miscellaneous IO exception occurs.
-         */
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @since MISAL 1.0
+            * @param state the initial state to require before sending data on the
+            * socket
+            * @param data the data to send on the socket
+            * @param expect a string indicating what to expect back from the host
+            * @param wait number of retries before timing out if expect state
+            * is not met
+            * @throws IllegalMISALStateException if the state, <CODE>expect</CODE>, is not reached.
+            * @throws IOException if any miscellaneous IO exception occurs.
+            */
     public void send(int state, String data, String expect, int wait) throws IllegalMISALStateException, IOException {
         this.send(state, data, expect, 0, wait);
     }
 
-	/**
-         * Send data on the MISAL socket.
-         *
-         * @since MISAL 1.0
-         * @param state the initial state to require before sending data on the
-         * socket
-         * @param data the data to send on the socket
-         * @param expectState an integer indicating what to expect back from the
-         * host
-         * @param wait number of retries before timing out if expect state
-         * is not met
-         * @throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
-         * @throws IOException if any miscellaneous IO error occurs.
-         */
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @since MISAL 1.0
+            * @param state the initial state to require before sending data on the
+            * socket
+            * @param data the data to send on the socket
+            * @param expectState an integer indicating what to expect back from the
+            * host
+            * @param wait number of retries before timing out if expect state
+            * is not met
+            * @throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
+            * @throws IOException if any miscellaneous IO error occurs.
+            */
     public void send(int state, String data, int expectState, int wait) throws IllegalMISALStateException, IOException {
         this.send(state, data, null, expectState, wait);
     }
 
-	/**
-         * Send data on the MISAL socket.  This overloaded version of send() should
-         * not be normally used.  Instead, use one of the other send() methods.
-         *
-         * @see #expect(int,int)
-         * @since MISAL 1.0
-         * @param state the initial state to require before sending data on the
-         * socket
-         * @param data the data to send on the socket
-         * @param expect a string indicating what to expect back from the host
-         * @param expectState an integer indicating what to expect back from the
-         * host
-         * @param wait number of retries before timing out if expect state
-         * is not met
-         * @throws IllegalMISALStateException if the state,<CODE>expectState</CODE>, or the state <CODE>expect</CODE>
-         * are not reached.
-         * @throws IOException if any miscellaneous IO error occurs.
-         */
+    /**
+            * Send data on the MISAL socket.  This overloaded version of send() should
+            * not be normally used.  Instead, use one of the other send() methods.
+            *
+            * @see #expect(int,int)
+            * @since MISAL 1.0
+            * @param state the initial state to require before sending data on the
+            * socket
+            * @param data the data to send on the socket
+            * @param expect a string indicating what to expect back from the host
+            * @param expectState an integer indicating what to expect back from the
+            * host
+            * @param wait number of retries before timing out if expect state
+            * is not met
+            * @throws IllegalMISALStateException if the state,<CODE>expectState</CODE>, or the state <CODE>expect</CODE>
+            * are not reached.
+            * @throws IOException if any miscellaneous IO error occurs.
+            */
     protected void send(int state, String data, String expect, int expectState, int wait) throws IllegalMISALStateException, IOException {
         this.debug("Entering send(int, String, String, int, int) method.");
         boolean result = false;
@@ -570,41 +570,41 @@ public class MISAL implements Runnable {
         }
     }
 
-	/**
-         * Wait for a certain state for proceeding.
-         *
-         * @see #send(int,String,String,int,int)
-         * @since MISAL 1.0
-         * @param state an integer indicating the state to wait for
-         * @return true if state is reached, fales otherwise
-         */
+    /**
+            * Wait for a certain state for proceeding.
+            *
+            * @see #send(int,String,String,int,int)
+            * @since MISAL 1.0
+            * @param state an integer indicating the state to wait for
+            * @return true if state is reached, fales otherwise
+            */
     protected boolean expect(int state) {
         return this.expect(state, this.DEFAULT_RETRIES);
     }
 
-	/**
-         * Wait for a certain string of data from the remote host before
-         * proceeding.  For example, wait for an enable prompt before doing
-         * a <code>show run</code>.
-         *
-         * @see #send(int,String,String,int,int)
-         * @since MISAL 1.0
-         * @param prompt string to expect from remote host
-         * @return true if <CODE>prompt</CODE> is reached, false otherwise.
-         */
+    /**
+            * Wait for a certain string of data from the remote host before
+            * proceeding.  For example, wait for an enable prompt before doing
+            * a <code>show run</code>.
+            *
+            * @see #send(int,String,String,int,int)
+            * @since MISAL 1.0
+            * @param prompt string to expect from remote host
+            * @return true if <CODE>prompt</CODE> is reached, false otherwise.
+            */
     protected boolean expect(String prompt) {
         return this.expect(prompt, this.DEFAULT_RETRIES);
     }
 
-	/**
-         * Wait for a certain state for proceeding.
-         *
-         * @see #send(int,String,String,int,int)
-         * @since MISAL 1.0
-         * @param state an integer indicating the state to wait for
-         * @param tries number of tries before giving up on the expected state
-         * @return true is <CODE>prompt</CODE> is reached, false otherwise.
-         */
+    /**
+            * Wait for a certain state for proceeding.
+            *
+            * @see #send(int,String,String,int,int)
+            * @since MISAL 1.0
+            * @param state an integer indicating the state to wait for
+            * @param tries number of tries before giving up on the expected state
+            * @return true is <CODE>prompt</CODE> is reached, false otherwise.
+            */
     protected boolean expect(int state, int tries) {
         this.debug("Entering method expect(int, int)");
         for(int i = 1; i <= tries; i++) {
@@ -620,17 +620,17 @@ public class MISAL implements Runnable {
         return false;
     }
 
-	/**
-         * Wait for a certain string of data from the remote host before
-         * proceeding.  For example, wait for an enable prompt before doing
-         * a <code>show run</code>.
-         *
-         * @see #send(int,String,String,int,int)
-         * @since MISAL 1.0
-         * @param prompt string to expect from remote host
-         * @param tries number of tries before giving up on the expected state
-         * @return true if <CODE>prompt</CODE> is seen, false otherwise.
-         */
+    /**
+            * Wait for a certain string of data from the remote host before
+            * proceeding.  For example, wait for an enable prompt before doing
+            * a <code>show run</code>.
+            *
+            * @see #send(int,String,String,int,int)
+            * @since MISAL 1.0
+            * @param prompt string to expect from remote host
+            * @param tries number of tries before giving up on the expected state
+            * @return true if <CODE>prompt</CODE> is seen, false otherwise.
+            */
     protected boolean expect(String prompt, int tries) {
         this.debug("Entering method expect(String, int)");
         Perl5Compiler compiler = new Perl5Compiler();
@@ -652,10 +652,10 @@ public class MISAL implements Runnable {
                 }
             }
             else {
-               if (matcher.contains(buffer, pattern)) {
-                   this.debug("Found a buffer match!");
-                   return true;
-               }
+                if (matcher.contains(buffer, pattern)) {
+                    this.debug("Found a buffer match!");
+                    return true;
+                }
             }
             try {
                 Thread.sleep(this.MISAL_THREAD_SLEEP_INTERVAL);
