@@ -646,7 +646,7 @@ sub snmptrans {
                                 next unless $soid;
                                 $foid .= "." . $soid;
                                 $data .=
-                                    ".<A HREF=\"$ME?oid=$foid&xOps=tree\" TITLE=\"$foid\" ALT=\"$foid\">$soid</a>";
+                                    ".<A HREF=\"$ME?oid=$foid&xOps=tree\" TITLE=\"$foid\" ALT=\"$foid\"><FONT COLOR=\"green\">$soid</font></a>";
                         }
                         $data .= "\n";
                         eval {
@@ -675,7 +675,7 @@ sub snmptrans {
                                 next unless $soid;
                                 $foid .= "." . $soid;
                                 $data .=
-                                    ".<A HREF=\"$ME?oid=$foid&xOps=tree\" TITLE=\"$foid\" ALT=\"$foid\">$soid</a>";
+                                    ".<A HREF=\"$ME?oid=$foid&xOps=tree\" TITLE=\"$foid\" ALT=\"$foid\"><FONT COLOR=\"green\">$soid</font></a>";
                         }
                         $data .= "\n";
                         eval {
