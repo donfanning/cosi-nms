@@ -160,7 +160,7 @@ public class ConfregDecode extends Applet implements ActionListener {
         routerType = new RouterChoice();
         routerType.addItem("1000 Series", true);
         routerType.addItem("1600 Series", true);
-        routerType.addItem("1700 Series", true);
+        routerType.addItem("1700 Series", false);
         routerType.addItem("2000/3000 Series", true);
         routerType.addItem("2500 Series", true);
         routerType.addItem("2600 Series", false);
