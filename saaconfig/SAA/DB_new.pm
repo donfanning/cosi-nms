@@ -206,5 +206,6 @@ sub DESTROY {
 
     # We create an explicit DESTROY method to take care of closing the 
 	# database handle.
+	$self->dbh()->commit();
     $self->dbh()->disconnect();
 }
