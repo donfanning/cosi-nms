@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# Copyright (c)2000 by cisco Systems, Inc.  All rights reserved.
+# Copyright (c)2000-2001 by MarcusCom, Inc.  All rights reserved.
 # $Id$
 #
 

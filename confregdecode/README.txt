@@ -1,5 +1,5 @@
-cisco Systems Config-Register Decoder Readme
---------------------------------------------
+cisco Systems IOS(tm) Config-Register Decoder Readme
+----------------------------------------------------
 
 $Id$
 
