@@ -101,7 +101,7 @@ public class DEEsvContainer {
             Enumeration e = order.elements();
             while (e.hasMoreElements()) {
                 String datum = (String)h.get(e.nextElement());
-                if (datum != null) {
+                if (datum != null || datum.equals("null")) {
                     datum = datum.trim();
                     datum = datum.replace('\n', ' ');
                     datum = datum.replace('\r', ' ');
