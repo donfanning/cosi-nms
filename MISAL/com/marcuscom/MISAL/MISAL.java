@@ -88,6 +88,7 @@ public class MISAL implements Runnable {
     private String _lastBuffer = null;
     private boolean _debug = false;
     private Thread _stateChecker = null;
+    private boolean _stateCheckerRunning = false;
     private BufferedInputStream _bis = null;
     private BufferedOutputStream _bos = null;
     private int _bufferSize = this.DEFAULT_BUFFER_SIZE;
@@ -190,6 +191,7 @@ public class MISAL implements Runnable {
     protected void startCheckingState() {
         if (_stateChecker == null) {
             _stateChecker = new Thread(this);
+            _stateCheckerRunning = true;
             _stateChecker.start();
         }
     }
@@ -202,7 +204,7 @@ public class MISAL implements Runnable {
      */
     protected void stopCheckingState() {
         if (_stateChecker != null) {
-            _stateChecker.stop();
+            _stateCheckerRunning = false;
             _stateChecker = null;
         }
     }
@@ -218,7 +220,7 @@ public class MISAL implements Runnable {
      * @since	MISAL1.0
      */
     public void run() {
-        while(true) {
+        while(_stateCheckerRunning) {
             if (stateTable.isEmpty()) {
                 /* We don't want to hit a null pointer if
                    someone empties the state table on us */
@@ -682,20 +684,28 @@ public class MISAL implements Runnable {
 
     private String _readAll() {
         byte b[] = null;
+        String retBuf = null;
+        int numBytes = 0;
+        int i = 0;
         try {
-            if (_bis.available() == 0) {
+            numBytes = _bis.available();
+            if (numBytes == 0) {
                 return null;
             }
-            b = new byte[_bis.available()];
+            b = new byte[numBytes];
+            retBuf = new String();
             int t;
             int y = 0;
-            int i = 0;
             byte[] obuf = new byte[4];
             while (_bis.available() > 0) {
                 t = _bis.read();
                 if (t == '\n' || t == '\r' || (t >= 32 && t < 127)) {
                     /* If not a negotiation character,
                        it needs to be read as data. */
+                    if (i == numBytes) {
+                        retBuf = retBuf.concat(new String(b, 0, i));
+                        i = 0;
+                    }
                     b[i++] = (byte)t;
                     continue;
                 }
@@ -720,8 +730,10 @@ public class MISAL implements Runnable {
         catch (IOException ioe) {
             return null;
         }
-        this.debug("Read \"" + new String(b) + "\" from socket input stream");
-        return new String(b);
+
+        retBuf = retBuf.concat(new String(b, 0, i));
+        this.debug("Read \"" + retBuf + "\" from socket input stream");
+        return retBuf;
     }
 
     /**
