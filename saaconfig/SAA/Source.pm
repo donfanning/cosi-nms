@@ -13,16 +13,16 @@ sub new {
     my ( $that, @args ) = @_;
     my $class = ref($that) || $that;
 
-    if ( scalar(@args) != 4 ) {
+    if ( scalar(@args) != 3 ) {
         return;
     }
 
     my $self = {
         name           => $args[0],
         address        => $args[1],
-        readCommunity  => $args[2],
-        writeCommunity => $args[3],
-        SNMPVersion    => undef,
+        readCommunity  => undef,
+        writeCommunity => undef,
+        SNMPVersion    => $args[2],
         SAAVersion     => undef,
         IOSVersion     => undef,
         status         => $SAA::Globals::HOST_DOWN,
