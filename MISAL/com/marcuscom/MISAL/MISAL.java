@@ -5,6 +5,42 @@ import java.net.*;
 import java.util.*;
 import com.oroinc.text.regex.*;
 
+/**-
+ * Copyright &copy; 2001 Joe Clarke &lt;marcus@marcuscom.com&gt;
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * <ol>
+ * <li>Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.</li>
+ * <li>Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.</li>
+ * <p>
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * </p>
+ * $Id$
+ * <p>
+ * MISAL is the MarcusCom Intelligent Socket Abstraction Library.<br>
+ * It is designed to make interacting with TCP sockets (such as telnet)
+ * much easier.</p>
+ *
+ * @author	Joe Clarke &lt;marcus@marcuscom.com&gt;
+ * @version	%I%, %G%
+ * @since	JDK1.1
+ */
 public class MISAL implements Runnable {
 	public final static int MISAL_STATE_UNKNOWN = -1;
 	public final static int MISAL_STATE_CLOSED = 0;
@@ -26,38 +62,74 @@ public class MISAL implements Runnable {
 	private int _currentState = this.MISAL_STATE_UNKNOWN;
 	private int _sleepInterval = this.MISAL_DEFAULT_SLEEP_INTERVAL;
 
-	public MISAL(Socket socket, boolean debug) throws SocketException,IOException {
-		this(socket, debug, DEFAULT_BUFFER_SIZE);
-	}
-
-	public MISAL(Socket socket) throws SocketException, IOException {
-		this(socket, false, DEFAULT_BUFFER_SIZE);
-	}
-
-	public MISAL(Socket socket, int bufSize) throws SocketException, IOException {
-		this(socket, false, bufSize);
-	}
-
-	public MISAL(Socket socket, boolean debug, int bufSize) throws SocketException,IOException {
+	/**
+	 * Create a new MISAL socket.
+	 *
+	 * @param socket	the <em>open</em> java.net.Socket to be 
+	 *			abstracted
+	 * @throws		SocketException
+	 * @throws		IOException
+	 * @see			Socket
+	 * @since		JDK1.1
+	 */
+	public MISAL(Socket socket) throws SocketException,IOException {
 		if (socket == null) {
 			throw new SocketException("Socket passed to MISAL cannot be null.");
 		}
 		this._socket = socket;
-		this._debug = debug;
-		this._bufferSize = bufSize;
 		_bis = new BufferedInputStream(this._socket.getInputStream(), bufSize);
 		_bos = new BufferedOutputStream(this._socket.getOutputStream());
 		stateTable = new Hashtable();
 	}
 
+	/**
+	 * Get the MISAL socket's output stream as a
+	 * java.io.BufferedOutputStream.
+	 *
+	 * @return	java.io.BufferedOutputStream
+	 * @see		Socket#getOutputStream
+	 * @see		BufferedOutputStream
+	 * @since	JDK1.1
+	 */
 	protected BufferedInputStream getInputStream() {
 		return this._bis;
 	}
 
+	/**
+	 * Get the MISAL socket's input stream as a
+	 * java.io.BufferedInputStream.
+	 *
+	 * @return	java.io.BufferedInputStream
+	 * @see		Socket#getInputStream
+	 * @see		BufferedInputStream
+	 * @since	JDK1.1
+	 */
 	protected BufferedOutputStream getOutputStream() {
 		return this._bos;
 	}
 
+	/**
+	 * Add a new MISAL state to the state table.  MISAL states are used
+	 * by the state reading/setting thread to indicate where the socket
+	 * is.  For example, a state can be identified by the regular
+	 * expression <code>/login: ?$/</code> and a constant 
+	 * STATE_LOGIN_PROMPT.
+	 *
+	 * @param state		an integer (usually defined as a constant)
+	 *			that uniquely identifies this state.  Classes
+	 *			extending MISAL can start their state numbering
+	 *			at 1.
+	 * @param prompt	a Perl regular expression, in the form of a
+	 *			String.  When this expression is matched, the
+	 *			MISAL state will be set to the value of the
+	 *			<code>state</code> argument
+	 * @throws MalformedPatternException
+	 * @exception MalformedPatternException
+	 *             if the prompt is not a valid Perl regular expression.
+	 * @see			#removeState
+	 * @see			Pattern
+	 * @since		JDK1.1
+	 */
 	public synchronized void addState(int stateId, String prompt) throws MalformedPatternException {
 		Perl5Compiler compiler = new Perl5Compiler();
 		Pattern pattern = compiler.compile(prompt);
