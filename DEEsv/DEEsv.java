@@ -197,8 +197,9 @@ public class DEEsv {
 		if (!argv[i].equals("-help") && !argv[i].equals("-m") &&
 		    !argv[i].equals("-continue") &&
 		    !argv[i].equals("-device") && !argv[i].equals("view") &&
-		    !argv[i].equals("-input")) {
+		    !argv[i].equals("-input") && !argv[i].equals("-u")) {
 		    System.err.println("* Fatal error * Unknown command argument OR unexpected argument: " + argv[i]);
+		    System.exit(1);
 		}
 	    }
         }
