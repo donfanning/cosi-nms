@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-BEGIN { push ( @INC, "/home/nicko/saaconfig" ); };
+BEGIN { push ( @INC, "~/saaconfig" ); };
 
 use SAA::DB;
 use SAA::Source;
