@@ -38,5 +38,5 @@ docs:
 clean:
 	$(RM) -f $(srcdir)/MISAL.jar
 	$(RM) -f $(srcdir)/$(package_os)/*.class
-	$(RM) -rf $(docdir)
+	$(RM) -rf $(docdir)/Package-com
 	$(RM) -f $(srcdir)/MISALTest.class
