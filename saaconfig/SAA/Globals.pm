@@ -14,6 +14,8 @@ use Carp;
 @EXPORT_OK = qw($KEY $PAD $HOST_DOWN $HOST_UP_IP $HOST_UP_SNMP);
 
 # Random key used in Blowfish ciphering.
+# XXX This key should not be statically defined here.  In the release, this
+# should be configurable by the end user so that all keys will be different.
 $KEY = pack("H16", 'aIC9e8!Cmtdyu4GV');
 $PAD = 'aBcDeFg';
 
