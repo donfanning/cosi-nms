@@ -5,6 +5,7 @@ require 5.002;
 use lib qw(..);    # XXX This is for testing only.
 use SNMP;
 use SAA::SAA_MIB;
+use SAA::Operation;
 use Carp;
 
 # Default collector values
@@ -61,3 +62,21 @@ sub new {
     bless( $self, $class );
     $self;
 }
+
+sub _needTarget {
+
+    # This is a private static method to determine if a given operation type
+    # needs a target.  HTTP, DNS, and DHCP operations do not need targets.
+    my ($type) = $_[0];
+
+    if ( $type == $SAA::Operation::TYPE_DNS
+        || $type == $SAA::Operation::TYPE_HTTP
+        || $type == $SAA::Operations::TYPE_DHCP )
+    {
+        return 0;
+    }
+
+    1;
+}
+
+1;
