@@ -1,4 +1,4 @@
 Welcome to the COSI-nms site. 
 This is a test page to test the CVS and provide a place to post some quick info.
-And this line is for the change detection through wincvs...
-We hope to go live within 2 weeks. This was updated via CVS on 051701. Run from welcome directory.
+We hope to go live within 2 weeks. 
+This was updated via CVS on 051701 via wincvs (Run from welcome directory.)
