@@ -4,6 +4,7 @@ use strict;
 require 5.002;
 use lib qw(../..);
 use SAA::Globals;
+# Is this still a valid Package?
 use SAA::Ping;
 
 sub new {
