@@ -30,6 +30,12 @@ use vars qw(
   $rttMonEchoAdminProtocol
   $rttMonCtrlAdminRttType
   $rttMonEchoAdminOperation
+  $rttMonEchoAdminString1
+  $rttMonEchoAdminString2
+  $rttMonEchoAdminString3
+  $rttMonEchoAdminString4
+  $rttMonEchoAdminString5
+  $rttMonEchoAdminURL
   $historyFilterEnum
   $rowStatusEnum
   $httpOperationEnum
@@ -69,6 +75,12 @@ my @EXPORT =
   $rttMonEchoAdminProtocol
   $rttMonCtrlAdminRttType
   $rttMonEchoAdminOperation
+  $rttMonEchoAdminString1
+  $rttMonEchoAdminString2
+  $rttMonEchoAdminString3
+  $rttMonEchoAdminString4
+  $rttMonEchoAdminString5
+  $rttMonEchoAdminURL
   $historyFilterEnum
   FALSE
   TRUE
@@ -101,6 +113,7 @@ my @EXPORT =
   MAX_LIFE
   MAX_HTTP_STRINGS
   MAX_HTTP_STRING_LEN
+  MAX_URL_LEN
   DEFAULT_START_TIME
   DEFAULT_LIFE
   LIVE_FOREVER
@@ -133,6 +146,12 @@ $rttMonEchoAdminControlEnable      = $rttMonEchoAdminEntry . '.8';
 $rttMonEchoAdminTOS                = $rttMonEchoAdminEntry . '.9';
 $rttMonEchoAdminNameServer         = $rttMonEchoAdminEntry . '.12';
 $rttMonEchoAdminOperation          = $rttMonEchoAdminEntry . '.13';
+$rttMonEchoAdminURL                = $rttMonEchoAdminEntry . '.15';
+$rttMonEchoAdminString1            = $rttMonEchoAdminEntry . '.20';
+$rttMonEchoAdminString2            = $rttMonEchoAdminEntry . '.21';
+$rttMonEchoAdminString3            = $rttMonEchoAdminEntry . '.22';
+$rttMonEchoAdminString4            = $rttMonEchoAdminEntry . '.23';
+$rttMonEchoAdminString5            = $rttMonEchoAdminEntry . '.24';
 
 # These are taken from the SNMPv2-TC definitions.  true is 1 and false is 2.
 use constant TRUE  => 1;
@@ -248,6 +267,7 @@ use constant MIN_LIFE            => 0;
 use constant MAX_LIFE            => 2147483647;
 use constant MAX_HTTP_STRINGS    => 5;
 use constant MAX_HTTP_STRING_LEN => 255;
+use constant MAX_URL_LEN         => 255;
 
 # End limit definitions
 

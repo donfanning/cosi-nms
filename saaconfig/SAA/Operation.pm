@@ -39,6 +39,7 @@ sub new {
         dnsTargetAddress => undef,
         httpOperation    => undef,
         httpStrings      => undef,
+        httpURL          => undef,
         error            => undef,
     };
 
@@ -290,7 +291,7 @@ sub http_operation {
     return $self->{httpOperation};
 }
 
-sub http_string {
+sub http_strings {
     my $self = shift;
 
     # This field is only applicable to http operations.
@@ -316,6 +317,25 @@ sub http_string {
         }
     }
     return $self->{httpStrings};
+}
+
+sub http_url {
+    my $self = shift;
+
+    # This field is only applicable to http operations.
+    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http} ) {
+        return;
+    }
+
+    if (@_) {
+        my $url = shift;
+
+        if ( length $url > SAA::SAA_MIB::MAX_URL_LEN ) {
+            return $self->{httpURL};
+        }
+        $self->{httpURL} = $url;
+    }
+    return $self->{httpURL};
 }
 
 sub name_server {

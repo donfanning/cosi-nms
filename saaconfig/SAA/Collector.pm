@@ -272,8 +272,10 @@ sub install {
 
     if ($target) {
         push @{$varlist},
-          [ $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
-            addrToOctStr( $target->addr() ), 'OCTSTR' ];
+          [
+            $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
+            addrToOctStr( $target->addr() ),             'OCTSTR'
+        ];
     }
 
     if ( $operation->name_server() ) {
@@ -286,8 +288,30 @@ sub install {
 
     if ( $operation->http_operation() ) {
         push @{$varlist},
-          [ $SAA::SAA_MIB::rttMonEchoAdminOperation, $id,
-            $operation->http_operation(), 'INTEGER' ];
+          [
+            $SAA::SAA_MIB::rttMonEchoAdminOperation, $id,
+            $operation->http_operation(),            'INTEGER'
+        ];
+    }
+
+    if ( $operation->http_strings() ) {
+        my $i;
+        for ( $i = 0 ; $i < scalar( @{ $operation->http_strings() } ) ; $i++ ) {
+            if ( $operation->http_strings()->[$i] ) {
+                my $var = "SAA::SAA_MIB::rttMonEchoAdminString" . ( $i + 1 );
+                no strict 'refs';    # We need to do this to allow $$var
+                push @{$varlist},
+                  [ $$var, $id, $operation->http_strings()->[$i], 'OCTSTR' ];
+            }
+        }
+    }
+
+    if ( $operation->http_url() ) {
+        push @{$varlist},
+          [
+            $SAA::SAA_MIB::rttMonEchoAdminURL, $id,
+            $operation->http_url(),            'OCTSTR'
+        ];
     }
 
     # Set the objects on the source router.
