@@ -24,6 +24,7 @@ public class MISALCiscoIOS extends MISAL {
 	private String _enablePw = null;
 	private String _user = null;
 	private String _userPw = null;
+	private String _errorMessage = null;
 
 	public MISALCiscoIOS(Socket socket) throws SocketException, IOException {
 		super(socket);
@@ -70,6 +71,14 @@ public class MISALCiscoIOS extends MISAL {
 
 	public void setPasswordPrompt(String prompt) throws MalformedMISALStateException {
 		addState(this.PASSWORD_PROMPT, prompt);
+	}
+
+	public String getLastErrorMessage() {
+		return this._errorMessage;
+	}
+
+	private void setLastErrorMessage(String message) {
+		this._errorMessage = message;
 	}
 
 	private int getAuthScheme(int state) throws InsufficientCredentialsException {
@@ -191,10 +200,11 @@ public class MISALCiscoIOS extends MISAL {
 		Perl5Compiler compiler = new Perl5Compiler();
 		Pattern pattern = null;
 		try {
-			pattern = compiler.compile("^% ");
+			pattern = compiler.compile("^% (.*)$");
 		}
 		catch (MalformedPatternException mfpe) {}
 		if (matcher.contains(getLastBuffer(), pattern)) {
+			this.setLastErrorMessage(matcher.getMatch().group(1));
 			return true;
 		}
 		return false;
