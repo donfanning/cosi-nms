@@ -113,7 +113,8 @@ print<<FORM2B;
 
 <tr>
 <td><input type=CHECKBOX NAME=server VALUE='on' CHECKED>NAS
- <br><input type=CHECKBOX NAME=timestamp VALUE='on' CHECKED>Time Stamp
+ <br><input type=CHECKBOX NAME=start_time VALUE='on' CHECKED>Start Time
+ <br><input type=CHECKBOX NAME=end_time VALUE='on' CHECKED>End Time
  <br><input type=CHECKBOX NAME=dso_slot VALUE='on'>DSO Slot
  <br><input type=CHECKBOX NAME=dso_contr VALUE='on'>DSO Control
  <br><input type=CHECKBOX NAME=dso_chan VALUE='on'>DSO Channel
@@ -123,9 +124,9 @@ print<<FORM2B;
  <br><input type=CHECKBOX NAME=calling VALUE='on'>Calling Number
  <br><input type=CHECKBOX NAME=called VALUE='on' CHECKED>Called Number
  <br><input type=CHECKBOX NAME=std VALUE='on' CHECKED>Connected Standard
+ <br><input type=CHECKBOX NAME=prot VALUE='on' CHECKED>Connect Protocol
 </td>
-<td><input type=CHECKBOX NAME=prot VALUE='on' CHECKED>Connect Protocol
- <br><input type=CHECKBOX NAME=comp VALUE='on' CHECKED>Compression
+<td><br><input type=CHECKBOX NAME=comp VALUE='on' CHECKED>Compression
  <br><input type=CHECKBOX NAME=init_rx VALUE='on' CHECKED>Initial RX Bit Rate
  <br><input type=CHECKBOX NAME=init_tx VALUE='on' CHECKED>Initial TX Bit Rate
  <br><input type=CHECKBOX NAME=rbs VALUE='on'>RBS Pattern
@@ -134,12 +135,11 @@ print<<FORM2B;
  <br><input type=CHECKBOX NAME=sq VALUE='on'>Signal Quality
  <br><input type=CHECKBOX NAME=snr VALUE='on' CHECKED>Signal to Noise Ratio
  <br><input type=CHECKBOX NAME=rx_chars VALUE='on' CHECKED>RX Characters
-</td>
-
-<td><input type=CHECKBOX NAME=tx_chars VALUE='on' CHECKED>TX Characters
+ <br><input type=CHECKBOX NAME=tx_chars VALUE='on' CHECKED>TX Characters
  <br><input type=CHECKBOX NAME=rx_ec VALUE='on' CHECKED>RX Error Correction Frames
  <br><input type=CHECKBOX NAME=tx_ec VALUE='on' CHECKED>TX Error Correction Frames
- <br><input type=CHECKBOX NAME=bad VALUE='on' CHECKED>Bad Characters
+</td>
+<td><br><input type=CHECKBOX NAME=bad VALUE='on' CHECKED>Bad Characters
  <br><input type=CHECKBOX NAME=timeon VALUE='on' CHECKED>Time On
  <br><input type=CHECKBOX NAME=final_state VALUE='on' CHECKED>Final State
  <br><input type=CHECKBOX NAME=disc_radius VALUE='on'>Disconnect Reason (Radius)
@@ -173,24 +173,6 @@ print "  </tr>\n";
 print " </table>\n";
 print "</form>\n";
 
-### Daily Statistics
-print "<FORM METHOD=GET ACTION=./mcr_elite.pl>\n";
-print " <B><FONT COLOR='#3333FF'>Daily Statistics (per server):</font></b>\n";
-print "  <TABLE WIDTH=780 BGCOLOR='#d0d0d0' BORDER=0>\n";
-print "  <TR>\n";
-print "   <TD> <b> <FONT SIZE=3>NAS: </font></b><select name=dev>";
-for $dev(@devnames){
-        print "      <OPTION>$dev\n";
-}
-print "    </select> &nbsp; &nbsp;\n";
-print "  </td>\n";
-print "  <TD>\n";
-date_selector();
-print "  </td>\n";
-print "  <TD><INPUT TYPE=submit VALUE=\"View stats\"></td>\n";
-print " </tr>\n";
-print " </table>\n";
-print "</form>\n";
 
 #---------End HTML-----------------
 print template("$LWTHTML/lwt-end.lbi");
@@ -223,6 +205,7 @@ sub date_selector {
 	print "<b><font size=3>Month: </font></b>";
 	print "<select name=month>\n";
 	my $i = 0;
+	print "<OPTION VALUE=> All\n";
 	for $month(@months) {
 		$i = $i+1;
 		&tddate($i);
@@ -237,6 +220,7 @@ sub date_selector {
 
 	print "<B><FONT SIZE=3>Day: </font></b>";
 	print "<SELECT NAME=day>\n";
+	print "<OPTION VALUE=> All\n";
 	for( $i=1; $i<=31; $i++ ) {
 		&tddate($i);
 		$d = $t;

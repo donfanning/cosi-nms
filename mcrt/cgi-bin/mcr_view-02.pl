@@ -15,6 +15,10 @@
 use CGI;
 use DBD::mysql;
 use DBI;
+use Time::CTime;
+use Date::Parse;
+
+
 #use strict;
 
 # - Variables and Setup --------------------------------
@@ -51,7 +55,7 @@ my $messages;
 my $user = 'nobody';
 my $pwd = "ibm53tmi";
 #my $dsn = "dbi:mysql:feedback;host=sj-xxx-apps";
-my $dsn = "dbi:mysql:mysql;host=localhost";
+my $dsn = "dbi:mysql:$database;host=$db_hostname";
 $dbh = DBI->connect($dsn, $user, $pwd )
 or die "Can't connect to mySQL database: $DBI::errstr\n";
 
@@ -75,8 +79,10 @@ print template("$LWTHTML/lwt-start.lbi", {
 $user_id = $q->param('user_id');
 $ip = $q->param('ip');
 
-@columns = qw/server timestamp dso_slot dso_contr dso_chan slot port call_id calling called std prot comp init_rx init_tx rbs 
-dpad retr sq snr rx_chars tx_chars rx_ec tx_ec bad timeon final_state disc_radius disc_modem disc_local disc_remote/;
+@columns = qw/server  start_time end_time dso_slot dso_contr dso_chan 
+slot port call_id calling called std prot comp init_rx init_tx rbs 
+dpad retr sq snr rx_chars tx_chars rx_ec tx_ec bad timeon final_state 
+disc_radius disc_modem disc_local disc_remote/;
 
 my @selections;
 my $selector = "user_id, ip";
@@ -90,13 +96,9 @@ foreach $column (@columns) {
 	}
 }
 if( $user_id ) {
-	$sql = qq{SELECT $selector from $tablename where user_id = "$user_id"};
+	$sql = qq{SELECT $selector from $tablename where user_id = "$user_id" order by start_time};
 } elsif( $ip ) {
-	if( $ip eq "allyourbase" ) {
-	        print "\n<A HREF=\"http://www.xentao.com/allyourbase/ayb3.swf\">ALL YOUR BASE ARE BELONG TO US</a>";
-	        exit;
-	}
-	$sql = qq{\nSELECT $selector from $tablename where ip = "$ip"};
+	$sql = qq{\nSELECT $selector from $tablename where ip = "$ip" order by start_time};
 } else {
 	print( "<H4>IP and/or userid invalid.</h4>" );
 	exit;
@@ -123,11 +125,17 @@ while( @row  = $sth->fetchrow_array ) {
 	$BG_COLOR = (($rowcount%2) == 0) ? "#00FFAA" : "#FFFFFF";
 	$rowcount++;
 	$col = "";
+	my $j = 0;
 	foreach $col (@row) {
 		if( $col eq "" ) {
 			$col = "NULL";
+		} elsif(("$selections[$j]" eq "start_time") || 
+		("$selections[$j]" eq "end_time")) {
+			&frmat_date($row[$j]);
+			$row[$j] = $p_date;
 		}
 		print( "   <TD NOWRAP>$col</td>\n" );
+		$j++
 	}
 	printf("  </tr>\n");
 }
@@ -152,4 +160,18 @@ sub template {
                       : ""
               }gsex;
     return $text;
+}
+
+sub frmat_date {
+
+	(my $in_date) = @_;
+
+	$in_date =~ s/\s/:/;
+	
+	$time = str2time($in_date); 
+	
+	$frmat = "%b %e, %Y %H:%M:%S";
+	
+	$p_date = strftime($frmat, localtime($time));
+	
 }

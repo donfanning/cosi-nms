@@ -14,6 +14,9 @@
 use CGI;
 use DBD::mysql;
 use DBI;
+use Time::CTime;
+use Date::Parse;
+
 $| = 1;
 
 # - Variables and Setup --------------------------------
@@ -70,23 +73,21 @@ my $year = $q->param('year');
 my $date = "$year-$month-$day";
 
 # ------ Prepare SQL Access and Connect-----------------
-my $user = 'nobody';
-my $pwd = "ibm53tmi";
-#my $dsn = "dbi:mysql:feedback;host=sj-xxx-apps";
-my $dsn = "dbi:mysql:mcrt;host=localhost";
+my $user = $username;
+my $pwd = $password;
+my $dsn = "dbi:mysql:$database;host=$db_hostname";
 my $dbh = DBI->connect($dsn, $user, $pwd )
 or die "Can't connect to mySQL database: $DBI::errstr\n";
 
-#$db = DBI->connect("DBI:mysql:$database:$db_hostname" );
 @columns = qw/server dso_slot dso_contr dso_chan slot port call_id user_id ip calling called std prot comp init_rx init_tx rbs 
 dpad retr sq snr rx_chars tx_chars rx_ec tx_ec bad timeon final_state disc_radius disc_modem disc_local
-disc_remote timestamp date time/;
+disc_remote start_time end_time timestamp/;
 
-#$sql = "\nSELECT * FROM $tablename where server=\"$devname\" AND date='$date';";
-$sql = qq{SELECT * FROM $tablename where server like "%$devname%" AND start_time like "$date%"};
+$sql = qq{SELECT * FROM $tablename where server = "$devname" AND start_time like "$date%" order by start_time};
 print "<!--SQL: $sql-->\n";
 $sth = $dbh->prepare($sql);
 $sth->execute();
+
 # Prints the header with the column names
 print(" <TABLE BGCOLOR=#FFFFFF border=1>\n");
 print("  <TR ALIGN=center>\n");
@@ -102,16 +103,22 @@ while( @row  = $sth->fetchrow_array ) {
 	print(" <TR BGCOLOR=$BG_COLOR ALIGN=center>\n");
         $BG_COLOR = (($rowcount%2) == 0) ? "#CCFFCC" : "#FFFFFF";
         $rowcount++;
-	$col = "";
+	my $col = "";
+	my $i = 0;
 	foreach $col (@row) {
 		if( $col eq "" ) {
 			$col = "NULL";
+		} elsif ($i == 32 || $i == 33) {
+			&frmat_date($row[$i]);
+			$col = $p_date;
 		}
 		print( "   <TD NOWRAP>$col</td>\n" );
+		$i++;
 	}
 	printf("  </tr></font>\n");
 }
 print "</table>\n";
+1;
 print "<BR><H2> $rowcount entries found.</h2>\n";
 print template("$LWTHTML/lwt-end.lbi");
 $sth->finish();
@@ -136,4 +143,18 @@ sub template {
                       : ""
               }gsex;
     return $text;
+}
+
+sub frmat_date {
+
+	(my $in_date) = @_;
+
+	$in_date =~ s/\s/:/;
+	
+	$time = str2time($in_date); 
+	
+	$frmat = "%b %e, %Y %H:%M:%S";
+	
+	$p_date = strftime($frmat, localtime($time));
+	
 }
