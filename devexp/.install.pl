@@ -90,6 +90,22 @@ foreach (@dirs) {
 }
 print " DONE!\n";
 
+# Backup existing files
+return_error( 0, "Backing up files ..." );
+foreach ( keys {%files} ) {
+    if ( -f $files{$_} . $PS . $_ ) {
+        copy( $files{$_} . $PS . $_, $files{$_} . $PS . $_ . ".bak" )
+          or return_error( 2,
+            "Failed to copy file $files{$_}$PS$_ to $files{$_}$PS$_.bak: $!\n"
+        );
+        chown( $uid, $gid, $files{$_} . $PS . $_ . ".bak" )
+          if ( $CRM::CRM_OS ne "WIN" );
+        chmod( $perms{$_}, $files{$_} . $PS . $_ . ".bak" )
+          if ( $CRM::CRM_OS ne "WIN" );
+    }
+}
+print " DONE!\n";
+
 # Copy files to their respective directory
 return_error( 0, "Copying files ..." );
 foreach ( keys(%files) ) {
