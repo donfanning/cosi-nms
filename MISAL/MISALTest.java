@@ -20,7 +20,7 @@ public class MISALTest {
 		}
 
 		try {
-			misal = new MISAL(socket, false);
+			misal = new MISAL(socket);
 		}
 		catch (SocketException se) {
 			System.err.println(se.getMessage());

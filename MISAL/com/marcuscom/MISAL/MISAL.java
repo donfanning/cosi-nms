@@ -67,8 +67,9 @@ public class MISAL implements Runnable {
 	 *
 	 * @param socket	the <em>open</em> java.net.Socket to be 
 	 *			abstracted
-	 * @throws		SocketException
-	 * @throws		IOException
+	 * @throws SocketException
+	            if Socket is not initialized and connected
+	 * @throws IOException
 	 * @see			Socket
 	 * @since		JDK1.1
 	 */
@@ -77,7 +78,7 @@ public class MISAL implements Runnable {
 			throw new SocketException("Socket passed to MISAL cannot be null.");
 		}
 		this._socket = socket;
-		_bis = new BufferedInputStream(this._socket.getInputStream(), bufSize);
+		_bis = new BufferedInputStream(this._socket.getInputStream(), DEFAULT_BUFFER_SIZE);
 		_bos = new BufferedOutputStream(this._socket.getOutputStream());
 		stateTable = new Hashtable();
 	}
