@@ -45,12 +45,18 @@ BEGIN {
 use strict;
 use IO::Socket;
 use CGI;
+use POSIX qw(tmpnam);
 use vars
     qw($rcsid $SERVER_ADDR $SERVER_PORT $ME $q $cookie $client $data $result $size);
+use constant MAX_FILE_SIZE => 1_048_576;
+use constant BUFFER_SIZE   => 16_384;
 
 $rcsid = '$Id$';
 
 $| = 1;
+
+$CGI::DISABLE_UPLOADS = 0;
+$CGI::POST_MAX        = MAX_FILE_SIZE;
 
 $q = new CGI;
 $q->cgi_error
@@ -62,6 +68,9 @@ if (defined($q->param('oid')) && $q->param('oid') eq "") {
 } elsif (defined($q->param('pattern')) && $q->param('pattern') eq "") {
         return_error("SNMP Search Error",
                 "You did not specify a pattern for which to search.");
+} elsif (defined($q->param('bulk_file')) && $q->param('bulk_file') eq "") {
+        return_error("SNMP Bulk Translate Error",
+                "You did not specify a source file to translate.");
 }
 
 # Make the user input ``oid'' string safe for Perl consumption.
@@ -198,6 +207,64 @@ if (defined($q->param('pattern'))) {
                         "Internal server error encountered.");
         }
 
+        return_data($results);
+        exit(0);
+}
+
+if (defined($q->param('bulk_file'))) {
+        my $buffer  = "";
+        my $fh      = $q->upload('bulk_file');
+        my $command = '/usr/local/bin/walkres.pl';
+        $results = "";
+
+        if (defined($fh)) {
+                my $tmp = "";
+
+                while (read($fh, $tmp, BUFFER_SIZE)) {
+                        $buffer .= $tmp;
+                }
+                undef $tmp;
+        }
+
+        close($fh);
+
+        $buffer =~ s/\015$//;
+        $buffer =~ s/\032$//;
+
+        my $tmpfile = "";
+        do { $tmpfile = tmpnam() } while (-f $tmpfile);
+
+        open(TMP, ">" . $tmpfile)
+            or return_error("File Error",
+                "Error opening $tmpfile for writing: $!.");
+        print TMP $buffer;
+        close(TMP);
+
+        my $i = 0;
+        my $pid;
+
+        if (!defined($pid = open(CMD, "-|"))) {
+                unlink($tmpfile);
+                return_error("Fork Error", "Failed to fork $command: $!");
+        }
+
+        if ($pid) {
+                while (<CMD>) {
+                        s/\&/&amp;/g;
+                        s/\</&lt;/g;
+                        s/\>/&gt;/g;
+                        $results .= $_;
+                }
+                close(CMD);
+        } else {
+                if (!exec($command, $tmpfile)) {
+                        unlink($tmpfile);
+                        return_error("Exec Error",
+                                "Failed to exec $command: $!");
+                }
+        }
+
+        unlink($tmpfile);
         return_data($results);
         exit(0);
 }
@@ -435,7 +502,7 @@ EOH
         if (defined($q->param('oid'))) {
                 print <<"EOH";
 
-<H1>SNMP Translate Translate</h1>
+<H1>SNMP Translate</h1>
 
 <P>
 <TABLE BORDER="0">
@@ -460,9 +527,9 @@ EOH
 </I></B>
 <TABLE BORDER="0">
 	<TR>
-		<TD><INPUT TYPE="RADIO" VALUE="" NAME="xOps" CHECKED>
+		<TD><INPUT TYPE="RADIO" VALUE="" NAME="xOps">
 		<B>Simple Translation
-		<TD><INPUT TYPE="RADIO" VALUE="detail" NAME="xOps">
+		<TD><INPUT TYPE="RADIO" VALUE="detail" NAME="xOps" CHECKED>
 		<B>Detailed Translation</B></TD>
 		<TD><INPUT TYPE="RADIO" VALUE="tree" NAME="xOps">
 		<B>Tree Translation</B></TD>
