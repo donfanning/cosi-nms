@@ -7,6 +7,9 @@ use SNMP;
 use SAA::SAA_MIB;
 use Carp;
 
+# XXX I'm thinking the majority of these constants should be moved out
+# to the SAA_MIB module....
+
 # Define global protocols
 $SAA::Operation::PROTO_NA                 = 1;
 $SAA::Operation::PROTO_ICMP_ECHO          = 2;
@@ -58,6 +61,7 @@ $SAA::Operation::MIN_THRESHOLD = 0;
 $SAA::Operation::MIN_TIMEOUT   = 0;
 $SAA::Operation::MIN_SPORT     = 0;
 $SAA::Operation::MIN_TPORT     = 0;
+$SAA::Operation::MIN_FREQUENCY = 0;
 $SAA::Operation::MAX_FREQUENCY = 604800;
 $SAA::Operation::MAX_TIMEOUT   = 604800000;
 $SAA::Operation::MAX_THRESHOLD = 2147483647;
@@ -98,11 +102,12 @@ sub new {
         sourcePort       => $SAA::Operation::DEFAULT_SPORT,
         controlEnable    => $SAA::Operation::DEFAULT_CONTROL_ENABLE,
         dnsTargetAddress => '',
+        httpOperation    => undef,
         error            => undef,
     };
 
     my $rc = _validateTypeProto( $args[1], $args[2] );
-	return unless $rc;
+    return unless $rc;
     $self->{type}     = $args[1];
     $self->{protocol} = $args[2];
     bless( $self, $class );
@@ -221,8 +226,8 @@ sub tos {
     my $self = shift;
 
     # This field is not applicable to DHCP or DNS operations.
-    if ( $self->{type} == $SAA::Operation::TYPE_DNS
-        || $self->{type} == $SAA::Operation::TYPE_DHCP )
+    if ( $self->type() == $SAA::Operation::TYPE_DNS
+        || $self->type() == $SAA::Operation::TYPE_DHCP )
     {
 
         # Return DEFAULT_TOS here (i.e. 0 for now; I guess it could change...)
@@ -240,14 +245,14 @@ sub tos {
     return $self->{tos};
 }
 
-sub sourcePort {
+sub source_port {
     my $self = shift;
 
     # This field is not applicable to DNS, DLSw, or SNA operations.
-    if ( $self->{type} == $SAA::Operation::TYPE_DNS
-        || $self->{type} == $SAA::Operations::TYPE_DLSW
-        || ( $self->{protocol} > $SAA::Operation::PROTO_UDP_ECHO
-            && $self->{protocol} <= $SAA::Operation::PROTO_SNA_LU62_ECHO_APPL )
+    if ( $self->type() == $SAA::Operation::TYPE_DNS
+        || $self->type() == $SAA::Operations::TYPE_DLSW
+        || ( $self->protocol() > $SAA::Operation::PROTO_UDP_ECHO
+            && $self->protocol() <= $SAA::Operation::PROTO_SNA_LU62_ECHO_APPL )
       )
     {
         return $SAA::Operation::DEFAULT_SPORT;
@@ -265,13 +270,13 @@ sub sourcePort {
     return $self->{sourcePort};
 }
 
-sub targetPort {
+sub target_port {
     my $self = shift;
 
     # This field is applicable to udpEcho, tcpConnect, and jitter operations.
-    if ( $self->{type} != $SAA::Operation::TYPE_UDP_ECHO
-        && $self->{type} != $SAA::Operation::TYPE_TCP_CONN
-        && $self->{type} != $SAA::Operation::TYPE_JITTER )
+    if ( $self->type() != $SAA::Operation::TYPE_UDP_ECHO
+        && $self->type() != $SAA::Operation::TYPE_TCP_CONN
+        && $self->type() != $SAA::Operation::TYPE_JITTER )
     {
         return $SAA::Operation::DEFAULT_TPORT;
     }
@@ -292,12 +297,12 @@ sub control_enabled {
     my $self = shift;
 
     # This field is not applicable to echo, pathEcho, dns and http operations.
-    if ( $self->{type} == $SAA::Operations::TYPE_ECHO
-        || $self->{type} == $SAA::Operations::TYPE_PATH_ECHO
-        || $self->{type} == $SAA::Operations::TYPE_DNS
-        || $self->{type} == $SAA::Operations::TYPE_HTTP )
+    if ( $self->type() == $SAA::Operation::TYPE_ECHO
+        || $self->type() == $SAA::Operation::TYPE_PATH_ECHO
+        || $self->type() == $SAA::Operation::TYPE_DNS
+        || $self->type() == $SAA::Operation::TYPE_HTTP )
     {
-        return $SAA::Operations::DEFAULT_CONTROL_ENABLE;
+        return $SAA::Operation::DEFAULT_CONTROL_ENABLE;
     }
 
     if (@_) {
@@ -310,6 +315,32 @@ sub control_enabled {
         $self->{controlEnable} = $control;
     }
     return $self->{controlEnable};
+}
+
+sub http_operation {
+    my $self = shift;
+    my ( $val, $op );
+
+    # This field is only applicable to http operations.
+    if ( $self->type() != $SAA::Operation::TYPE_HTTP ) {
+
+        # This field has no default value.
+        return;
+    }
+    if (@_) {
+        $val = shift;
+        foreach ( keys %{$SAA::SAA_MIB::httpOperationEnum} ) {
+            if ( $val == $SAA::SAA_MIB::httpOperationEnum->{$_} ) {
+                $op = $val;
+                last;
+            }
+        }
+        if ( !$op ) {
+            return $self->{httpOperation};
+        }
+        $self->{httpOperation} = $op;
+    }
+    return $self->{httpOperation};
 }
 
 1;

@@ -45,14 +45,16 @@ sub new {
     }
 
     my $self = {
-        name      => $args[0],
-        id        => undef,
-        source    => $args[1],
-        operation => $args[2],
-        target    => undef,
-        startTime => $SAA::Collector::DEFAULT_START_TIME,
-        life      => $SAA::Collector::DEFAULT_LIFE,
-        error     => undef,
+        name          => $args[0],
+        id            => undef,
+        source        => $args[1],
+        operation     => $args[2],
+        target        => undef,
+        startTime     => $SAA::Collector::DEFAULT_START_TIME,
+        life          => $SAA::Collector::DEFAULT_LIFE,
+        writeNVRAM    => $SAA::SAA_MIB::FALSE,
+        historyFilter => $SAA::SAA_MIB::historFilterEnum->{none},
+        error         => undef,
     };
 
     my $rc = _needTarget( $self->{operation}->type() );
@@ -115,6 +117,37 @@ sub id {
     return $self->{id};
 }
 
+sub write_nvram {
+    my $self = shift;
+    if (@_) {
+        my $val = shift;
+        if ( $val != $SAA::SAA_MIB::TRUE && $val != $SAA::SAA_MIB::FALSE ) {
+            return $self->{writeNVRAM};
+        }
+        $self->{writeNVRAM} = $val;
+    }
+    return $self->{writeNVRAM};
+}
+
+sub history_filter {
+    my $self = shift;
+    my $filter;
+    if (@_) {
+        my $val = shift;
+        foreach ( keys %{$SAA::SAA_MIB::historyFilterEnum} ) {
+            if ( $val == $SAA::SAA_MIB::historyFilterEnum->{$_} ) {
+                $filter = $val;
+                last;
+            }
+        }
+        if ( !$filter ) {
+            return $self->{historyFilter};
+        }
+        $self->{historyFilter} = $filter;
+    }
+    return $self->{historyFilter};
+}
+
 sub life {
     my $self = shift;
     if (@_) {
@@ -151,6 +184,16 @@ sub error {
     my $self = shift;
     if (@_) { $self->{error} = shift; }
     return $self->{error};
+}
+
+sub _addrToOctStr {
+
+    # Private static method to convert an IP address string into a 4-byte
+    # octet string.  
+	# XXX This should be smarter so that SNA address can also be supported.
+    my $addr = shift;
+    my ( $a, $b, $c, $cidr ) = split ( /\./, $addr );
+    return ( sprintf "%.2x %.2x %.2x %.2x", $a, $b, $c, $cidr );
 }
 
 sub install {
@@ -206,14 +249,60 @@ sub install {
     $sess->set(
         new SNMP::Varbind(
             [
-                $SAA::SAA_MIB::rttMonCtrlAdminStatus, $id,
-                $SAA::SAA_MIB::createAndWait, 'INTEGER'
+                $SAA::SAA_MIB::rttMonCtrlAdminStatus,          $id,
+                $SAA::SAA_MIB::rowStatusEnum->{createAndWait}, 'INTEGER'
             ]
         )
     );
 
     if ( $sess->{ErrorNum} ) {
         $self->error("Failed to set row status");
+        return;
+    }
+    my $varlist = new SNMP::VarList(
+        [
+            $SAA::SAA_MIB::rttMonCtrlAdminRttType, $id,
+            $operation->type(),                    'INTEGER'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonEchoAdminProtocol, $id,
+            $operation->protocol(),                 'INTEGER'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonEchoAdminSourceAddress, $id,
+            _addrToOctStr( $source->addr() ),            'OCTETSTR'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonEchoAdminSourcePort, $id,
+            $operation->source_port(),                'INTEGER'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
+            _addrToOctStr( $target->addr() ),            'OCTETSTR'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonEchoAdminTargetPort, $id,
+            $operation->target_port(),                'INTEGER'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonEchoAdminControlEnable, $id,
+            $operation->control_enable(),                'INTEGER'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonEchoAdminTOS, $id,
+            $operation->tos(),                 'INTEGER'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonEchoAdminNameServer,   $id,
+            _addrToOctStr( $operation->name_server() ), 'OCTETSTR'
+        ],
+    );
+
+    # Set the objects on the source router.
+    $sess->set($varlist);
+
+    if ( $sess->{ErrorNum} ) {
+        $self->error( "Failed to set collector, " . $self->{name} );
         return;
     }
 }

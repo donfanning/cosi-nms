@@ -13,9 +13,11 @@ use vars qw(
   $rttMonCtrlAdminTable
   $rttMonCtrlAdminEntry
   $rttMonCtrlAdminStatus
+  $historyFilterEnum
   $FALSE
   $TRUE
-  $createAndWait
+  $rowStatusEnum
+  $httpOperationEnum
   $SNMP_ERR_NOSUCHNAME
   $SNMP_ERR_V2_IN_V1
   $SNMP_ERR_BAD_VERSION
@@ -35,9 +37,11 @@ use Carp;
   $rttMonCtrlAdminTable
   $rttMonCtrlAdminEntry
   $rttMonCtrlAdminStatus
+  $historyFilterEnum
   $FALSE
   $TRUE
-  $createAndWait
+  $rowStatusEnum
+  $httpOperationEnum
   $SNMP_ERR_NOSUCHNAME
   $SNMP_ERR_V2_IN_V1
   $SNMP_ERR_BAD_VERSION
@@ -53,9 +57,33 @@ $rttMonCtrlAdminEntry  = $rttMonCtrlAdminTable . '.1';
 $rttMonCtrlAdminStatus = $rttMonCtrlAdminEntry . '.9';
 
 # These are taken from the SNMPv2-TC definitions.  true is 1 and false is 2.
-$TRUE          = 1;
-$FALSE         = 2;
-$createAndWait = 5;
+$TRUE  = 1;
+$FALSE = 2;
+
+# Row status enum
+$rowStatusEnum = {
+    active        => 1,
+    notInService  => 2,
+    notReady      => 3,
+    createAndGo   => 4,
+    createAndWait => 5,
+    destroy       => 6,
+};
+
+# Ref to hash indicating the values for rttMonHistoryAdminFilter.
+$historyFilterEnum = {
+    none          => 1,
+    all           => 2,
+    overThreshold => 3,
+    failures      => 4,
+};
+
+$httpOperationEnum = {
+    httpGet    => 1,
+    httpRaw    => 2,
+    ftpGet     => 3,
+    ftpPassive => 4,
+};
 
 # Define some common ucd-snmp return codes.
 $SNMP_ERR_NOSUCHNAME  = 2;
