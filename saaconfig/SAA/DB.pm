@@ -18,17 +18,20 @@ sub new {
         Database => $params{Database},
         Hostname => $params{Hostname},
         User     => $params{User},
-        Password => $params{Password}
-
-        #		dbh			=> undef
+        Password => $params{Password},
+		error	 =>	undef,
+       	dbh	  	 => undef
     };
 
     # Create connect to database.
-    #	my $dbh = DBI->connect (
-    #			"DBI:$self{'Driver'}:$self{'Datbase'}:$self{'Hostname'}",
-    #			$self{'User'},
-    #			$self{'Password'}
-    #			);
+    	my $DSN = "DBI:" . $self->{Driver} . ":";
+		$DSN = $DSN . $self->{Database} . ":";
+		$DSN = $DSN . $self->{Hostname};
+#		my $dbh = DBI->connect (
+#    			$DSN,
+#    			$self->{User},
+#    			$self->{Password}
+#    			);
 
     bless( $self, $class );
 
@@ -64,17 +67,44 @@ sub password {
     return $self->{Password};
 }
 
+sub error {
+	my $self = shift;
+	if (@_) {$self->{error} = shift;}
+	return $self->{error};
+}
+
 # XXX This object will create a INSERT Statment and apply it 
 # to the database.  At this point it simply prints the query.
 
 sub setSAAObject {
     my $self  = shift;
-    my $table = shift;
     my $obj   = shift;
-    
-	if ($table != "Sources" || $table != "Targets" || $table != "Operations") {
+	my $ref = ref $obj;
+    my $table;
 	
-		croak "SAA::DB: Table $table is not a valid table.";
+	if ($ref eq "SAA::Source") {
+
+		$table = "Sources";
+	}
+
+	elsif ($ref eq "SAA::Target") {
+
+		$table = "Targets";
+	}
+
+	elsif ($ref eq "SAA::Operation") {
+
+		$table = "Operations";
+	}
+
+	elsif ($ref eq "SAA::Collector") {
+
+		$table = "Collectors";
+	}
+
+	else {
+    
+		croak "SAA::DB->setSAAObject: $ref is not a valid object for this method.";
 	}
 
 	if (!$obj) {
@@ -161,3 +191,48 @@ sub getSAAObject {
     print "Database: " . $self->database() . " \n";
 }
 
+sub searchDB {
+	my $self = shift;
+	my $tables = shift;
+	my $searchType = shift;
+	my %params = @_;
+	my $key;
+	my $query;
+	my $queryHeader = "SELECT Name FROM ";
+	my $queryBody   = "WHERE ";
+
+	foreach $key (@tables) {
+
+		$query = $queryHeader . $key . " ";
+		$query = $query . $queryBody;
+		
+		my $key;
+		my $count = 0;
+		
+		foreach $key (keys %params) {
+			if ($count == 0) {
+				$query = $query . $key . " LIKE " . $params{$key} . " ";
+				$count++;
+			}
+			else {
+				$query = $query . $searchType . $key . " LIKE " . $params{$key} . " ";
+			}
+		}
+	}
+}
+
+
+sub runQuery {
+	my $self = shift;
+	my $query = shift;
+	my $dbh = $self->{dbh};
+	my $sth;
+
+	# XXX How do I actually do this statment.
+	$sth = $dbh->prepare ($query);
+	$sth->execute or die "SAA::DB: Can't Execute SQL Query: $DBI::errstr\n";
+
+	return $sth;
+}
+	
+	
