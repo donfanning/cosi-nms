@@ -1,5 +1,6 @@
 package SAA::User;
 
+
 use strict;
 require 5.002;
 use Carp;
