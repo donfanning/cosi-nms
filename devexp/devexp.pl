@@ -136,8 +136,10 @@ if ($response->is_success) {
         select($old_fh);
         close(OUTFILE);
 } else {
-        die
-            "The request failed.  Please check the config file\nto make sure all the options are correct.\n";
+        print STDERR
+            "The request failed.  Please check the config file\nto make sure all the options are correct.\nHere is the error that occurred:\n";
+        print STDERR $response->error_as_HTML;
+
 }
 
 exit(0);
