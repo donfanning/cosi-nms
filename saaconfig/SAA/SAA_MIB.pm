@@ -11,6 +11,9 @@ use vars qw(
   $rttMonApplVersion
   $FALSE
   $TRUE
+  $SNMP_ERR_NOSUCHNAME
+  $SNMP_ERR_V2_IN_V1
+  $SNMP_ERR_BAD_VERSION
 );
 
 use Exporter;
@@ -25,6 +28,9 @@ use Carp;
   $rttMonApplVersion
   $FALSE
   $TRUE
+  $SNMP_ERR_NOSUCHNAME
+  $SNMP_ERR_V2_IN_V1
+  $SNMP_ERR_BAD_VERSION
 );
 
 $ciscoRttMonMIB     = '.1.3.6.1.4.1.9.9.42';
@@ -35,6 +41,11 @@ $rttMonApplVersion  = $rttMonAppl . '.1';
 # These are taken from the SNMPv2-TC definitions.  true is 1 and false is 2.
 $TRUE  = 1;
 $FALSE = 2;
+
+# Define some common ucd-snmp return codes.
+$SNMP_ERR_NOSUCHNAME  = 2;
+$SNMP_ERR_V2_IN_V1    = -7;
+$SNMP_ERR_BAD_VERSION = -14;
 
 1;
 __END__
