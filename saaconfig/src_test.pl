@@ -1,8 +1,9 @@
 #!/usr/bin/perl
 
 use SAA::Source;
-
-my $src = new SAA::Source("10.5.1.7", "10.5.1.7", "2c");
+my $name = shift || "source_router";
+my  $ip = shift || "14.32.9.2";
+my $src = new SAA::Source($name, $ip, "2c");
 #$src->read_community(1, "52616e646f6d49565c0c4b96bf783e7488261dd66c008271");
 $src->read_community(0, public);
 $src->write_community(0, "private");
