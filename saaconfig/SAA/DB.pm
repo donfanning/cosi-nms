@@ -1,7 +1,9 @@
 package SAA::DB;
 
 # oansari 2.11.2002: adding required methods: add_source
-#notes: need to populate self->error and return gracefully, instead of dying arbitrarily in methods
+# oansari 2.12.2002: added add_user, modified add_source to take object handle
+#					 instead of vars, and populated $self->error and returning, 
+#					 instead of croaking.
 
 use strict;
 require 5.002;
@@ -67,11 +69,9 @@ sub add_source {
 
     #This public method would let callers enter a source in the table SAA_SOURCES
     #Note: this does NOT make changes to already defined source (see &modify_source)
-    #Takes in the following vars in the respective order:
-    #SrcAlias, SrcIpAddr, SrcDescr, SrcHostname, SrcReadComm, SrcWriteComm, SrcSnmpVersion, 
-    #SrcIosVersion, SrcRttAppVersion, SrcSupportedProtocols
-    use vars
-      qw ($SrcAlias $SrcIpAddr $SrcDescr $SrcHostname $SrcReadComm $SrcWriteComm $SrcSnmpVersion $SrcIosVersion $SrcRttAppVersion @SrcSupportedProtocols @ary @IDs @Vals $sth);
+    #Takes in the handle for the source object, and pulls data out from it.
+
+    use vars qw ($src @ary @IDs @Vals $sth @protocols @types);
 
     #note: see conf::tables.pm for hints on schema. do note: if some of the vars 
     #above are not specified by user during configuration, the calling party needs 
@@ -79,43 +79,48 @@ sub add_source {
 
     #also note that SrcSupportedProtocols is an array not a scalar.
     my $self = shift;
-    my @args = shift;
+    my $src  = shift;
     my $dbhx = $self->{dbh};
-    die "Insufficient args passed to add_source()" if ( scalar(@args) < 10 );
-    (
-      $SrcAlias,       $SrcIpAddr,     $SrcDescr,
-      $SrcHostname,    $SrcReadComm,   $SrcWriteComm,
-      $SrcSnmpVersion, $SrcIosVersion, $SrcRttAppVersion,
-      @SrcSupportedProtocols
-      )
-      = @args;
-    die "SrcAlias needs to be defined"  if ( $SrcAlias  eq "_undef_" );
-    die "SrcIpAddr needs to be defined" if ( $SrcIpAddr eq "_undef_" );
 
     my %SrcValHash = (
-        SrcId                 => undef,
-        SrcAlias              => $SrcAlias,
-        SrcIpAddr             => $SrcIpAddr,
-        SrcDescr              => $SrcDescr,
-        SrcHostname           => $SrcHostname,
-        SrcReadComm           => $SrcReadComm,
-        SrcWriteComm          => $SrcWriteComm,
-        SrcSnmpVersion        => $SrcSnmpVersion,
-        SrcIosVersion         => $SrcIosVersion,
-        SrcRttAppVersion      => $SrcRttAppVersion,
-        SrcSupportedProtocols => @SrcSupportedProtocols
-      );
+        SrcId     => undef,
+        SrcAlias  => $src->{name},
+        SrcIpAddr => $src->{addr},
+        SrcDescr    => undef,    #$src->{descr}; method not present in Source.pm
+        SrcHostname => undef,    #$src->{hostname}; ""
+        SrcReadComm           => $src->{read_community},
+        SrcWriteComm          => $src->{write_community},
+        SrcSnmpVersion        => $src->{snmp_version},
+        SrcIosVersion         => $src->{ios_version},
+        SrcRttAppVersion      => $src->{saa_version},
+        SrcSupportedTypes     => $src->{type_supported},       #a ref to a hash
+        SrcSupportedProtocols => $src->{protocol_supported}    #a ref to a hash
+    );
 
-      #check to see if src already exists and if it does, then balk out.
-      my $selector =
-"select \* from SAA_SOURCES where SrcIpAddr=\"$SrcIpAddr\" or SrcAlias=\"$SrcAlias\"";
-    die
+    #some rudimentary checks to ensure we populate the "NOT NULL" fields in the tables.
+    if ( !( $SrcValHash{SrcAlias} ) ) {
+        $self->error("SrcAlias needs to be defined");
+        return;
+    }
+    if ( !( $SrcValHash{SrcIpAddr} ) ) {
+        $self->error("SrcIpAddr needs to be defined");
+        return;
+    }
+
+    #check to see if src already exists and if it does, then balk out.
+    my $selector =
+"select \* from SAA_SOURCES where SrcIpAddr=\"$SrcValHash{SrcIpAddr}\" or SrcAlias=\"$SrcValHash{SrcAlias}\"";
+    if ( scalar( @ary = $dbhx->selectrow_array($selector) ) != 0 ) {
+        $self->error(
 "DB.pm : SrcAlias and.or SrcIpAddr of this source is already present: @ary"
-      if ( scalar( @ary = $dbhx->selectrow_array($selector) ) != 0 );
+        );
+        return;
+    }
 
-      undef @ary;
+    undef @ary;
 
     #everything looks good, so let's insert this source into database:
+
     #first, lets churn up the next available SrcId
     my $srcidchecker = "select \* from  SAA_SOURCES order by SrcId DESC";
     if ( scalar( @ary = $dbhx->selectrow_array($srcidchecker) ) != 0 ) {
@@ -127,23 +132,41 @@ sub add_source {
 
     my $key;
     foreach $key ( keys %SrcValHash ) {
-        if ( "$SrcValHash{$key}" ne "_undef_" ) {
+
+        #put a special catch for the hash refs for supported types
+        if ( $key eq "SrcSupportedTypes" ) {
+            foreach ( keys %{ ( $SrcValHash{SrcSupportedTypes} ) } ) {
+                push ( @types, $_ );
+            }
+            push ( @Vals, "\"@types\"" );
+            next;
+        }
+
+        #also for hash ref for protocols:
+        if ( $key eq "SrcSupportedProtocols" ) {
+            foreach ( keys %{ ( $SrcValHash{SrcSupportedProtocols} ) } ) {
+                push ( @protocols, $_ );
+            }
+            push ( @Vals, "\"@protocols\"" );
+            next;
+        }
+
+        #as for the rest, treat them as regular values..
+        if ( $SrcValHash{$key} ) {
 
             #this is to get rid of all the vars not defined by user, 
             #so we dont bother inserting them into the table
             push ( @IDs,  $key );
             push ( @Vals, "\"$SrcValHash{$key}\"" );
 
-            #this can be tricky business for @SrcSupportedProtocols
         }
     }
 
     my $IDs  = join ( ',', @IDs );
     my $Vals = join ( ',', @Vals );
-
     my $inserter = "insert into SAA_SOURCES \($IDs\) VALUES \($Vals\)";
 
-    if ( !($sth = $dbhx->prepare($inserter) ) ) {
+    if ( !( $sth = $dbhx->prepare($inserter) ) ) {
         $self->error( "Failed to prepare query: " . $dbhx->errstr() );
         return;
     }
@@ -152,6 +175,66 @@ sub add_source {
         $self->error( "Failed to execute query: " . $dbhx->errstr() );
         return;
     }
+
+    1;
+}
+
+sub add_user {
+
+    #this as the name suggests, lets callers add NEW users to the SAA_USERS table.
+    #to modify userfields use &modify_user
+    #simply pass it the handle for the user object and it will pull requsite data itself
+
+    my $self = shift;
+    my $user = shift;
+    my $dbhx = $self->{dbh};
+
+    use vars qw ($key @IDs @Vals @ary);
+
+    my %UserHash = (
+        UserId      => undef,
+        UserName    => $user->{username},
+        FirstName   => $user->{firstname},
+        LastName    => $user->{lastname},
+        Password    => $user->{password},
+        Permissions => $user->{perms}
+    );
+
+    #first, lets churn up the next available UserId
+    my $useridchecker = "select \* from  SAA_USERS order by UserId DESC";
+    if ( scalar( @ary = $dbhx->selectrow_array($useridchecker) ) != 0 ) {
+        $UserHash{UserId} = "0";
+    }
+    else {
+        $UserHash{UserId} = ++$ary[0];
+    }
+
+    #now to pull IDs and values from the %UserHash for the eventual query
+    foreach $key ( keys %UserHash ) {
+
+        if ( $UserHash{$key} ) {
+
+            #this is to get rid of all the vars not defined by user, 
+            #so we dont bother inserting them into the table
+            push ( @IDs,  $key );
+            push ( @Vals, "\"$UserHash{$key}\"" );
+        }
+    }
+    my $IDs  = join ( ',', @IDs );
+    my $Vals = join ( ',', @Vals );
+    my $inserter = "insert into SAA_USERS \($IDs\) VALUES \($Vals\)";
+
+    if ( !( $sth = $dbhx->prepare($inserter) ) ) {
+        $self->error( "Failed to prepare query: " . $dbhx->errstr() );
+        return;
+    }
+
+    if ( !( $sth->execute() ) ) {
+        $self->error( "Failed to execute query: " . $dbhx->errstr() );
+        return;
+    }
+
+    1;
 }
 
 sub error {
