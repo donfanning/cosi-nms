@@ -2,7 +2,7 @@
 
 <!-- $Id$ -->
 
-<!DOCTYPE request SYSTEM "/opt/CSCOpx/objects/devexp/devexp.dtd">
+<!DOCTYPE request PUBLIC "%%DTDPATH%%">
 
 <request responseFormat="%%TYPE%%">
 <!-- the value for responseFormat could be xml or csv -->

@@ -33,10 +33,10 @@ use strict;
 
 use vars qw($VERSION $CONF_FILE %PREFS $URL $DEVSERVLET $XMLFILE);
 
-sub LOCK_SH {1}
-sub LOCK_EX {2}
-sub LOCK_NB {4}
-sub LOCK_UN {8}
+sub LOCK_SH { 1 }
+sub LOCK_EX { 2 }
+sub LOCK_NB { 4 }
+sub LOCK_UN { 8 }
 
 $VERSION    = '1.0';
 $DEVSERVLET = '/CSCOnm/servlet/com.cisco.nm.cmf.servlet.DeviceListService';
@@ -92,6 +92,7 @@ while (<XML>) {
 	         ? "<getDeviceCredentials/>"
 		 : "<listDevices deviceType=\"\%\%DEVS\%\%\"/>"
 	}ex;
+s/\%\%DTDPATH\%\%/$PREFS{'RME_SERVER'}:$PREFS{'RME_PORT'}\/devexp\/devexp.dtd/;
     s/\%\%DEVS\%\%/$PREFS{'DEVICES'}/;
 
     $xmlpacket .= $_;
