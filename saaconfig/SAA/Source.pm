@@ -173,7 +173,7 @@ sub learn {
           new SNMP::VarList( [$SAA::SAA_MIB::rttMonApplVersion], ['system'] );
         @vals = $sess->getbulk( 1, 1, $vars );
 
-        if ( $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_V2_IN_V1 ) {
+        if ( $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_BAD_VERSION ) {
 
             # SNMPv2c not supported!
             $self->snmp_version("1");
