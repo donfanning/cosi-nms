@@ -41,7 +41,7 @@ if ( $CRM::CRM_OS ne "WIN" ) {
         'devexp.pl'   => "/opt/CSCOpx/bin",
         'devexp.xml'  => "/opt/CSCOpx/objects/devexp",
         'devexp.conf' => "/opt/CSCOpx/objects/devexp",
-        'devexp.dtd'  => "/opt/CSCOpx/devexp/devexp",
+        'devexp.dtd'  => "/opt/CSCOpx/htdocs/devexp",
     );
     %perms = (
         'devexp.pl'   => 0750,
@@ -92,7 +92,7 @@ print " DONE!\n";
 
 # Backup existing files
 return_error( 0, "Backing up files ..." );
-foreach ( keys {%files} ) {
+foreach ( keys (%files) ) {
     if ( -f $files{$_} . $PS . $_ ) {
         copy( $files{$_} . $PS . $_, $files{$_} . $PS . $_ . ".bak" )
           or return_error( 2,
