@@ -13,7 +13,7 @@ options, and will reply with DONT or WONT for all options.
 
 MISAL can be extended to support all kinds of specific socket types as well
 as specific network node types.  The default MISAL distribution comes with
-Cisco IOS(tm) and Cisco Catalyst OS subclasses.
+a Cisco IOS subclass.
 
 Right now, MISAL is considered to be beta-quality code.
 
