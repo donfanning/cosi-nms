@@ -1,10 +1,47 @@
 package com.marcuscom.MISAL;
-
+/*-
+ * Copyright (c) 2001 Joe Clarke <marcus@marcuscom.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * $Id$
+ */
 import java.io.*;
 import java.net.*;
 import com.oroinc.text.regex.*;
 
+/** <p>MISALCiscoIOS is an extension of MISAL designed to interact with Cisco
+ * IOS devices.  It allows one to telnet into an IOS device, become enabled, and
+ * execute IOS commands.</p>
+ * @see MISAL
+ * @author Joe Clarke &lt;marcus@marcuscom.com&gt;
+ * @version $Id$
+ * @since MISAL 1.0
+ */
 public class MISALCiscoIOS extends MISAL {
+    /** The state matching the normal Cisco IOS prompt (usually a prompt ending in
+     * '>').
+     */    
 	public static final int DISABLE_MODE = 1;
 	public static final int ENABLE_MODE = 2;
 	public static final int CONFIG_MODE = 3;
@@ -268,4 +305,8 @@ public class MISALCiscoIOS extends MISAL {
 			throw new IllegalMISALStateException("Unable to reach expected state.");
 		}
 	}
+        
+        public void run() {
+        }
+        
 }
