@@ -83,6 +83,12 @@ specified object name pattern.  All POSIX 1003.2 extendend regular expressions
 are supported.  For more information on regular expressions, and regular 
 expression syntax, please see click <A HREF="re_format.html">here</a>.</p>
 
+<P><Em>replace</em> is a checkbox that controls whether or not the MIB parser
+should replace older loaded MIB objects with newer ones.  This can have the
+positive effect of letting newer, more descriptive, objects float to the
+top of the tree.  It can also have the negative effect of causing an
+inconsistent hierarchy in the MIB tree.</p>
+
 <UL>
 <LI>Turning on regular expression support is a way to do case insensitive
 translations.<BR>

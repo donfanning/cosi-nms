@@ -118,8 +118,7 @@ if ( defined( $q->param('security') )
     }
 
     # Use cookies to persist the security info.
-    $cookie =
-      $q->cookie( -name => "security", -value => $security );
+    $cookie = $q->cookie( -name => "security", -value => $security );
 
     if ( !defined($cookie) ) {
         return_error( "SNMP Translate Error",
@@ -144,6 +143,13 @@ if ( defined( $q->param('pattern') ) ) {
         return_error( "Server Error",
           "Error communicating with server (results = \"$results\")." );
     }
+    send_data( $client, "0" );
+
+    if ( $results ne "200" ) {
+        return_error( "Server Error",
+          "Error communicating with server (results = \"$results\")." );
+    }
+
     $results = get_data($client);
     send_data( $client, $pattern );
     $results = get_data($client);
@@ -183,6 +189,15 @@ if ( $q->param('xOps') eq "" ) {
         return_error( "Server Error",
           "Error communicating with server (results = \"$results\")." );
     }
+
+    send_data( $client, "0" ) if ( $q->param('replace') ne "1" );
+    send_data( $client, "1" ) if ( $q->param('replace') eq "1" );
+
+    if ( $results ne "200" ) {
+        return_error( "Server Error",
+          "Error communicating with server (results = \"$results\")." );
+    }
+
     $results = get_data($client);
     send_data( $client, $oid );
     $results = get_data($client);
@@ -208,6 +223,15 @@ elsif ( $q->param('xOps') eq "detail" ) {
         return_error( "Server Error",
           "Error communicating with server (results = \"$results\")." );
     }
+
+    send_data( $client, "0" ) if ( $q->param('replace') ne "1" );
+    send_data( $client, "1" ) if ( $q->param('replace') eq "1" );
+
+    if ( $results ne "200" ) {
+        return_error( "Server Error",
+          "Error communicating with server (results = \"$results\")." );
+    }
+
     $results = get_data($client);
     send_data( $client, $oid );
     $results = get_data($client);
@@ -233,6 +257,15 @@ elsif ( $q->param('xOps') eq "tree" ) {
         return_error( "Server Error",
           "Error communicating with server (results = \"$results\")." );
     }
+
+    send_data( $client, "0" ) if ( $q->param('replace') ne "1" );
+    send_data( $client, "1" ) if ( $q->param('replace') eq "1" );
+
+    if ( $results ne "200" ) {
+        return_error( "Server Error",
+          "Error communicating with server (results = \"$results\")." );
+    }
+
     $results = get_data($client);
     send_data( $client, $oid );
     $results = get_data($client);

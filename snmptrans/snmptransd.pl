@@ -57,15 +57,24 @@ BEGIN {
     # disable by default.  Set this to the name of the password file to 
     # enable security.
     $SECURITY = "";
+
+    # Enable global MIB module replacement.  This is a parsing option that tells
+    # net-snmp to replace older loaded MIB modules with newer ones.  This can 
+    # overwrite older, less-descriptive, MIB objects with newer, more 
+    # descriptive ones (e.g. ifOperStatus from RFC1213 and IF).  
+    # WARNING: this can cause an inconsistent MIB hierarchy.  Use this option 
+    # with care.
+    $REPLACE = 0;
 }
 
 use strict;
 use vars
-qw($rcsid $SECURITY $PIDFILE $LOCAL_PORT $server $MAXLEN $PREFORK $MAX_CLIENTS_PER_CHILD %children $children $ME $MIBS $MIBDIRS $HTTPMIBS %contents @leave_indent $leave_was_simple $tree_buffer $last_ip);
+qw($rcsid $SECURITY $PIDFILE $LOCAL_PORT $REPLACE $server $MAXLEN $PREFORK $MAX_CLIENTS_PER_CHILD %children $children $ME $MIBS $MIBDIRS $HTTPMIBS %contents @leave_indent $leave_was_simple $tree_buffer $last_ip);
 use IO::Socket;
 use Symbol;
 use SNMP;
 $SNMP::save_descriptions = 1;
+$SNMP::replace_newer     = 1 if ($REPLACE);
 $SNMP::use_long_names    = 1;
 $SNMP::use_enums         = 1;
 SNMP::initMib();
@@ -186,8 +195,12 @@ sub make_new_child {
 
 sub snmptrans {
     my ($client) = $_[0];
-    my ( $bg, $type, $size, $request );
+    my ( $bg, $replace, $type, $size, $request );
     my $data;
+
+    # XXX Make all the client/server code a little clearer.  By this, I should
+    # have codes that trigger options being set, and codes that indicate data.
+    # Right now, things are too messy.
 
     if ( $SECURITY ne "" ) {
         use Digest::MD5 qw(md5_hex);
@@ -224,9 +237,16 @@ sub snmptrans {
     send_data( $client, "200" );
     $bg = get_data($client);
     send_data( $client, "200" );
-    $request = get_data($client);
     if ( $bg eq "1" ) {
         $SNMP::best_guess = 1;
+    }
+    send_data( $client, "200" );
+    $replace = get_data($client);
+    send_data( $client, "200" );
+    $request = get_data($client);
+
+    if ( $replace eq "1" ) {
+        $SNMP::replace_newer = 1;
     }
 
     if ( $type eq "pattern" ) {
