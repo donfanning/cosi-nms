@@ -21,9 +21,10 @@ use vars qw(
 	$PROTO_DHCP_APPL
 	$PROTO_FTP_APPL
 );
-
+# XXX So we need a Type for each type of operation?
 use vars qw(
     $TYPE_ECHO
+	$TYPE_TCP_CONN
 );
 
 use vars qw(
