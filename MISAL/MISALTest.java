@@ -1,7 +1,6 @@
 import java.net.*;
 import java.io.*;
 import com.marcuscom.MISAL.*;
-import com.oroinc.text.regex.*;
 
 public class MISALTest {
 	public static void main(String[] argv) {
@@ -34,8 +33,8 @@ public class MISALTest {
 			misal.addState(1, "login: ?$");
 			misal.addState(2, "[Pp]assword: ?$");
 		}
-		catch (MalformedPatternException mfpe) {
-			System.err.println(mfpe.getMessage());
+		catch (MalformedMISALStateException mmse) {
+			System.err.println(mmse.getMessage());
 		}
 		try {
 			misal.send(1, "myusername\r", 2);
