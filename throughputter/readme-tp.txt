@@ -1,0 +1,69 @@
+ 				Throughputter 
+ ------------- Weston Hopkins (weston@computer.org) ---------------
+ in association  with  The Center of Excellence for Internet Access Engineering 
+ 		(home page http://mccain.ots.utexas.edu/)
+				sponsored by Cisco Systems 
+
+			March 5, 2001 NAME: ----- Throughputter 
+
+DESCRIPTION: ------------ 
+Throughputter is a Java applet that estimates the throughput of a dialup modem connection. It does this by retrieving 2 files via http and calculating the kilobits/second rate. 
+Here, kilobit is defined as 1000 bits. The first file is named testfile_w, and 
+is 100Kbytes of the character 'W'. This is a highly compressible stream and is 
+used to test the compressible bandwidth. The second file is named testfile_random, 
+and is a stream of random characters. Since a set of random characters is the 
+least compressible data out there, this is used to estimate the uncompressed bandwidth. 
+
+
+INSTALLATION: ------------- 
+Because Throughputter is a Java Applet, just embed the 
+following tag in your HTML document: 
+
+<APPLET code="Throughputter.class" width=450 height=100></applet> 
+
+You must also copy the files "testfile_w" and "testfile_random" into the 
+directory containing Throughputter.class so the applet will have something to 
+transfer. This applet should be installed on a fast server which is located close 
+to the dialup connections that are being tested. 
+
+
+Frequently Asked Questions: --------------------------- 
+
+1. I am on an OC192 and the applet is on a local apache server. Why are my numbers 
+inaccurate? 
+Throughputter is only intended to be used with analog modem connections. 
+With Java under Windows machines, the resolution for timing is about 10ms, and 
+given that the test files are only 100k, the measurements for high-bandwidth connections are very inaccurate. 
+
+2. My connection speed says something like: 128kbps is too 
+fast for a modem. If you are using an analog modem, then this is most likely caused 
+by Netscape's cache. Just clear the cache by going under Edit | Preferences | 
+Advanced | Cache, and clicking on Clear Memory and Clear Disk. 
+
+3. I don't see a start button (or anything...) to click on! 
+You most likely don't have Java enabled. 
+
+4. I have a 56K modem, but the applet says I only have 40kbps throughput! 
+
+There 
+are several reasons for this. First of all, the rates reported are lower than 
+the connection rates. This is because protocols like TCP are using some of the 
+bandwidth to transfer the files. Secondly, you more than likely did not connection 
+at 56kpbs when you dialed your service provider. A drop of 10% to 30% from your 
+connection rate is normal. 
+
+5. My uncompressed speed is MORE than my compressed 
+speed! 
+
+If you are not on a compressed link, then this is normal. 
+
+AUTHOR: ------- 
+Cisco Systems COE-IAE (http://mccain.ots.utexas.edu/) and Weston Hopkins <weston@computer.org> 
+
+REPORTING BUGS: --------------- 
+I am sure there are bugs, so send an email to weston@computer.org if you find one. 
+Thanks! 
+
+COPYRIGHT: ---------- Freeware. 
+REFERENCES: ----------- 
+HISTORY: --------First release 
