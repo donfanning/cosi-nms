@@ -156,7 +156,7 @@ sub learn {
     my $self = shift;
     return 0
       unless ( defined $self->addr() && defined $self->read_community()
-        && defined $self->writeCommunity );
+        && defined $self->write_community );
 
     $self->snmp_version("1") unless defined $self->snmp_version();
 
