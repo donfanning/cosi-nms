@@ -102,7 +102,6 @@ public class MISAL implements Runnable {
      * @throws SocketException
      * if Socket is not initialized and connected
      * @throws IOException if there is a problem reading or writing Socket
-     * @see java.net.Socket
      * @since MISAL1.0
      */
     public MISAL(Socket socket) throws SocketException,IOException {
@@ -119,8 +118,7 @@ public class MISAL implements Runnable {
      * Returns the MISAL socket's output stream as a
      * java.io.BufferedOutputStream.
      *
-     * @see Socket#getOutputStream
-     * @see BufferedOutputStream#
+     * @see #getOutputStream()
      * @since MISAL1.0
      * @return BufferedInputStream used by MISAL
      */
@@ -132,8 +130,7 @@ public class MISAL implements Runnable {
      * Returns the MISAL socket's input stream as a
      * java.io.BufferedInputStream.
      *
-     * @see Socket#getInputStream
-     * @see BufferedInputStream#
+     * @see #getInputStream()
      * @since MISAL1.0
      * @return BufferedOutputStream used by MISAL
      */
@@ -148,8 +145,8 @@ public class MISAL implements Runnable {
      * expression <code>/login: ?$/</code> and a constant
      * STATE_LOGIN_PROMPT.
      *
-     * @see #removeState
-     * @see com.oroinc.text.regex.Pattern#
+     * @see #removeState(int)
+     * @see Pattern
      * @since MISAL1.0
      * @param state an integer (usually defined as a constant)
      * 			that uniquely identifies this state.  Classes
@@ -178,7 +175,7 @@ public class MISAL implements Runnable {
      * Removes a MISAL state from the state machine.
      *
      * @param state		integer representing the state to remove
-     * @see			#addState
+     * @see			#addState(int,String)
      * @since		MISAL1.0
      */
     public synchronized void removeState(int state) {
@@ -188,7 +185,7 @@ public class MISAL implements Runnable {
     /**
      * Starts the state checking thread.
      *
-     * @see		#stopCheckingState
+     * @see		#stopCheckingState()
      * @since	MISAL1.0
      */
     protected void startCheckingState() {
@@ -201,7 +198,7 @@ public class MISAL implements Runnable {
     /**
      * Stops the state checking thread.
      *
-     * @see		#startCheckingState
+     * @see		#startCheckingState()
      * @since	MISAL1.0
      */
     protected void stopCheckingState() {
@@ -217,8 +214,8 @@ public class MISAL implements Runnable {
      * <code>stopCheckingState()</code> and 
      * <code>startCheckingState()</code> methods.
      *
-     * @see		#startCheckingState
-     * @see		#stopCheckingState
+     * @see		#startCheckingState()
+     * @see		#stopCheckingState()
      * @since	MISAL1.0
      */
     public void run() {
@@ -268,7 +265,7 @@ public class MISAL implements Runnable {
      * the state of the socket.
      *
      * @param interval	integer sleep interval
-     * @see			#getSleepInterval
+     * @see			#getSleepInterval()
      * @since		MISAL1.0
      */
     protected void setSleepInterval(int interval) {
@@ -282,7 +279,7 @@ public class MISAL implements Runnable {
      * number of milliseconds the state checking thread will wait before
      * checking the socket state again.
      *
-     * @see #setSleepInterval
+     * @see #setSleepInterval(int)
      * @since MISAL1.0
      * @return the sleep interval in number of milliseconds.
      */
@@ -295,9 +292,9 @@ public class MISAL implements Runnable {
      *
      * @param state		the state ID of a state already in the state
      *			machine
-     * @see			#getState
-     * @see			#addState
-     * @see			#removeState
+     * @see			#getState()
+     * @see			#addState(int,String)
+     * @see			#removeState(int)
      * @since		MISAL1.0
      */
     protected synchronized void setState(int state) {
@@ -308,9 +305,9 @@ public class MISAL implements Runnable {
     /**
      * Returns the current MISAL state.
      *
-     * @see #getState
-     * @see #addState
-     * @see #removeState
+     * @see #getState()
+     * @see #addState(int,String)
+     * @see #removeState(int)
      * @since MISAL1.0
      * @return the current state id.
      */
@@ -321,9 +318,9 @@ public class MISAL implements Runnable {
     /**
      * Returns the maximum allowed size of the main accumulator buffer.
      *
-     * @see #setBufferSize
-     * @see #getBuffer
-     * @see #clearBuffer
+     * @see #setBufferSize(int)
+     * @see #getBuffer()
+     * @see #clearBuffer()
      * @since MISAL1.0
      * @return the buffer size in bytes.
      */
@@ -335,9 +332,9 @@ public class MISAL implements Runnable {
      * Sets the maximum allowed size of the main accumulator buffer.
      *
      * @param size	size of the buffer in bytes
-     * @see		#getBufferSize
-     * @see		#getBuffer
-     * @see		#clearBuffer
+     * @see		#getBufferSize()
+     * @see		#getBuffer()
+     * @see		#clearBuffer()
      */
     public synchronized void setBufferSize(int size) {
         this._bufferSize = size;
@@ -347,8 +344,8 @@ public class MISAL implements Runnable {
      * Clears the main accumulator buffer.  Usually, this method is called
      * right before running a command for which you wish to save output.
      *
-     * @see		#getBufferSize
-     * @see		#getBuffer
+     * @see		#getBufferSize()
+     * @see		#getBuffer()
      * @since	MISAL1.0
      */
     public synchronized void clearBuffer() {
@@ -376,7 +373,7 @@ public class MISAL implements Runnable {
      * stores the output from the last run command.  It is useful for
      * doing error checking.
      *
-     * @see #getBuffer
+     * @see #getBuffer()
      * @since MISAL1.0
      * @return the contents of the last read from the MISAL socket as a string.
      */
@@ -390,8 +387,8 @@ public class MISAL implements Runnable {
      * call to <code>clearBuffer</code>.  The output will include the
      * contents of the current temporary buffer as well.
      *
-     * @see #clearBuffer
-     * @see #getLastBuffer
+     * @see #clearBuffer()
+     * @see #getLastBuffer()
      * @since MISAL1.0
      * @return the accumulated MISAL buffer as a string.
      */
@@ -402,7 +399,7 @@ public class MISAL implements Runnable {
     /**
      * Tells whether or not debugging is enabled.
      *
-     * @see #toggleDebug
+     * @see #toggleDebug()
      * @since MISAL1.0
      * @return true if debugging is enabled, false otherwise.
      */
@@ -414,7 +411,7 @@ public class MISAL implements Runnable {
      * Toggle the debugging state.
      *
      * @return	The debugging state after being toggled
-     * @see		#getDebug
+     * @see		#getDebug()
      * @since	MISAL1.0
      */
     public boolean toggleDebug() {
@@ -520,7 +517,7 @@ public class MISAL implements Runnable {
          * Send data on the MISAL socket.  This overloaded version of send() should
          * not be normally used.  Instead, use one of the other send() methods.
          *
-         * @see #expect
+         * @see #expect(int,int)
          * @since MISAL 1.0
          * @param state the initial state to require before sending data on the
          * socket
@@ -577,7 +574,7 @@ public class MISAL implements Runnable {
 	/**
          * Wait for a certain state for proceeding.
          *
-         * @see #send
+         * @see #send(int,String,String,int,int)
          * @since MISAL 1.0
          * @param state an integer indicating the state to wait for
          * @return true if state is reached, fales otherwise
@@ -591,7 +588,7 @@ public class MISAL implements Runnable {
          * proceeding.  For example, wait for an enable prompt before doing
          * a <code>show run</code>.
          *
-         * @see #send
+         * @see #send(int,String,String,int,int)
          * @since MISAL 1.0
          * @param prompt string to expect from remote host
          * @return true if <CODE>prompt</CODE> is reached, false otherwise.
@@ -603,7 +600,7 @@ public class MISAL implements Runnable {
 	/**
          * Wait for a certain state for proceeding.
          *
-         * @see #send
+         * @see #send(int,String,String,int,int)
          * @since MISAL 1.0
          * @param state an integer indicating the state to wait for
          * @param tries number of tries before giving up on the expected state
@@ -629,7 +626,7 @@ public class MISAL implements Runnable {
          * proceeding.  For example, wait for an enable prompt before doing
          * a <code>show run</code>.
          *
-         * @see #send
+         * @see #send(int,String,String,int,int)
          * @since MISAL 1.0
          * @param prompt string to expect from remote host
          * @param tries number of tries before giving up on the expected state
@@ -668,8 +665,8 @@ public class MISAL implements Runnable {
      * if debugging is enabled.
      *
      * @param msg	The message to be printed
-     * @see		#getDebug
-     * @see		#toggleDebug
+     * @see		#getDebug()
+     * @see		#toggleDebug()
      * @since	MISAL1.0
      */
     public void debug(String msg) {

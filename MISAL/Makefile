@@ -9,13 +9,14 @@ package_os=	com/marcuscom/MISAL
 
 RM=	/bin/rm
 
-JAVAC=	/usr/local/jdk1.1.8/bin/javac
+JAVAC=	/usr/local/jdk1.3.1/bin/javac
 JAVAC_FLAGS=	-O
+CLASSPATH=.:/usr/local/share/java/classes/PerlTools.jar
 
-JAVADOC=	/usr/local/jdk1.1.8/bin/javadoc
+JAVADOC=	/usr/local/jdk1.3.1/bin/javadoc
 JAVADOC_FLAGS=	-author -version -d $(docdir)
 
-JAR=	/usr/local/jdk1.1.8/bin/jar
+JAR=	/usr/local/jdk1.3.1/bin/jar
 JAR_FLAGS=	-cf
 
 all: jar docs
@@ -24,10 +25,10 @@ jar: classes
 	$(JAR) $(JAR_FLAGS) $(srcdir)/MISAL.jar $(srcdir)/$(package_os)/*.class
 
 classes:
-	$(JAVAC) $(JAVAC_FLAGS) $(srcdir)/$(package_os)/*.java
+	$(JAVAC) $(JAVAC_FLAGS) -classpath $(CLASSPATH) $(srcdir)/$(package_os)/*.java
 
 docs:
-	$(JAVADOC) $(JAVADOC_FLAGS) $(package)
+	$(JAVADOC) $(JAVADOC_FLAGS) -classpath $(CLASSPATH) $(package)
 
 clean:
 	$(RM) -f $(srcdir)/MISAL.jar
