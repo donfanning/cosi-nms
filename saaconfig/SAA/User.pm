@@ -3,13 +3,15 @@ package SAA::User;
 use strict;
 require 5.002;
 use Carp;
+use vars qw(@ISA @EXPORT);
 use Exporter;
-use SAA::Globals;
 use Carp;
 use Crypt::CBC;
+use lib qw(..);
+use conf::prefs qw(KEY);
 
-my @ISA    = qw(Exporter);
-my @EXPORT = qw(
+@ISA    = qw(Exporter);
+@EXPORT = qw(
   PERMS_GUEST
   PERMS_USER
   PERMS_ADMIN
@@ -32,7 +34,7 @@ sub new {
         password  => undef,
         firstname => undef,
         lastname  => undef,
-        perms     => SAA::User::PERMS_GUEST,
+        perms     => PERMS_GUEST,
     };
 
     bless( $self, $class );
@@ -58,7 +60,7 @@ sub password {
             $self->{password} = $pass;
             return $self->{password};
         }
-        my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
+        my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
 
         $self->{password} = $cipher->encrypt_hex($pass);
     }
@@ -66,7 +68,7 @@ sub password {
     if ($encrypted) {
         return $self->{password};
     }
-    my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
+    my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
     my $pass = $cipher->decrypt_hex( $self->{password} );
 
     return $pass;
@@ -88,8 +90,8 @@ sub perms {
     my $self = shift;
     if (@_) {
         my $perms = shift;
-        if ( $perms < SAA::User::PERMS_GUEST
-            || $perms > SAA::User::PERMS_ADMIN )
+        if ( $perms < PERMS_GUEST
+            || $perms > PERMS_ADMIN )
         {
             croak "SAA::User::perms: Invalid user permissions: $perms";
         }

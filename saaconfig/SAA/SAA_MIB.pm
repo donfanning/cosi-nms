@@ -55,11 +55,12 @@ use vars qw(
   $operationTypeEnum
 );
 
+use vars qw(@ISA @EXPORT);
 use Exporter;
 use Carp;
 
-my @ISA    = qw(Exporter);
-my @EXPORT =
+@ISA    = qw(Exporter);
+@EXPORT =
   qw(
   $ciscoRttMonMIB
   $ciscoRttMonObjects

@@ -30,11 +30,11 @@ sub new {
         source        => $args[1],
         operation     => $args[2],
         target        => undef,
-        startTime     => SAA::SAA_MIB::DEFAULT_START_TIME,
-        life          => SAA::SAA_MIB::DEFAULT_LIFE,
-        writeNVRAM    => SAA::SAA_MIB::FALSE,
-        historyFilter => $SAA::SAA_MIB::historyFilterEnum->{none},
-        startTime     => SAA::SAA_MIB::DEFAULT_START_TIME,
+        startTime     => DEFAULT_START_TIME,
+        life          => DEFAULT_LIFE,
+        writeNVRAM    => FALSE,
+        historyFilter => $historyFilterEnum->{none},
+        startTime     => DEFAULT_START_TIME,
         error         => undef,
     };
 
@@ -73,10 +73,10 @@ sub _needTarget {
     # needs a target.  HTTP, DNS, FTP and DHCP operations do not need targets.
     my $type = shift;
 
-    if ( $type == $SAA::SAA_MIB::operationTypeEnum->{dns}
-        || $type == $SAA::SAA_MIB::operationTypeEnum->{http}
-        || $type == $SAA::SAA_MIB::operationTypeEnum->{dhcp}
-        || $type == $SAA::SAA_MIB::operationTypeEnum->{ftp} )
+    if ( $type == $operationTypeEnum->{dns}
+        || $type == $operationTypeEnum->{http}
+        || $type == $operationTypeEnum->{dhcp}
+        || $type == $operationTypeEnum->{ftp} )
     {
         return 0;
     }
@@ -119,7 +119,7 @@ sub write_nvram {
     my $self = shift;
     if (@_) {
         my $val = shift;
-        if ( $val != SAA::SAA_MIB::TRUE && $val != SAA::SAA_MIB::FALSE ) {
+        if ( $val != TRUE && $val != FALSE ) {
             return $self->{writeNVRAM};
         }
         $self->{writeNVRAM} = $val;
@@ -132,9 +132,9 @@ sub history_filter {
     my $filter;
     if (@_) {
         my $val = shift;
-        foreach ( keys %{$SAA::SAA_MIB::historyFilterEnum} ) {
+        foreach ( keys %{$historyFilterEnum} ) {
 
-            if ( $val == $SAA::SAA_MIB::historyFilterEnum->{$_} ) {
+            if ( $val == $historyFilterEnum->{$_} ) {
                 $filter = $val;
                 last;
             }
@@ -152,9 +152,7 @@ sub life {
     my $self = shift;
     if (@_) {
         my $duration = shift;
-        if ( $duration < SAA::SAA_MIB::MIN_LIFE
-            || $duration > SAA::SAA_MIB::MAX_LIFE )
-        {
+        if ( $duration < MIN_LIFE || $duration > MAX_LIFE ) {
             return $self->{life};
         }
         else {
@@ -172,7 +170,7 @@ sub start_time {
     if (@_) {
         my $time = shift;
         if ( $time < 0 ) {    # We can't time travel.
-            return SAA::SAA_MIB::DEFAULT_START_TIME;
+            return DEFAULT_START_TIME;
         }
         $self->{startTime} = int($time);
     }
@@ -196,15 +194,16 @@ sub install {
     $target = $self->target();
     $id     = $self->id();
 
-    if ( $source->status() != SAA::Globals::HOST_UP_SNMP ) {
-        $self->error( "Status for host " . $source->name()
+    if ( $source->status() != HOST_UP_SNMP ) {
+        $self->error( "Status for host "
+            . $source->name()
             . " indicates it is not SNMP reachable" );
         return;
     }
 
     # A start time of 0 (the current default) is invalid.  A positive start time
     # must be specified in order for the collector to run.
-    if ( $self->start_time() == SAA::SAA_MIB::DEFAULT_START_TIME ) {
+    if ( $self->start_time() == DEFAULT_START_TIME ) {
         $self->error("Start time has not been set");
         return;
     }
@@ -222,8 +221,7 @@ sub install {
     # row id.
     my $i;
     for ( $i = 0 ; $i < 10 ; $i++ ) {
-        my $val =
-          $sess->get( $SAA::SAA_MIB::rttMonCtrlAdminStatus . '.' . $id );
+        my $val = $sess->get( $rttMonCtrlAdminStatus . '.' . $id );
         last if ( $sess->{ErrorNum} );
         $id = $self->id(1);    # Force a new id to be generated.
     }
@@ -245,10 +243,10 @@ sub install {
     $sess->set(
         new SNMP::Varbind(
             [
-                $SAA::SAA_MIB::rttMonCtrlAdminStatus,          $id,
-                $SAA::SAA_MIB::rowStatusEnum->{createAndWait}, 'INTEGER'
+                $rttMonCtrlAdminStatus,          $id,
+                $rowStatusEnum->{createAndWait}, 'INTEGER'
             ]
-        )
+          )
     );
 
     if ( $sess->{ErrorNum} ) {
@@ -256,34 +254,22 @@ sub install {
         return;
     }
     my $varlist = new SNMP::VarList(
+        [ $rttMonCtrlAdminRttType,  $id, $operation->type(),     'INTEGER' ],
+        [ $rttMonEchoAdminProtocol, $id, $operation->protocol(), 'INTEGER' ],
         [
-            $SAA::SAA_MIB::rttMonCtrlAdminRttType, $id,
-            $operation->type(),                    'INTEGER'
+            $rttMonEchoAdminSourcePort, $id,
+            $operation->source_port(),  'INTEGER'
         ],
         [
-            $SAA::SAA_MIB::rttMonEchoAdminProtocol, $id,
-            $operation->protocol(),                 'INTEGER'
+            $rttMonEchoAdminTargetPort, $id,
+            $operation->target_port(),  'INTEGER'
         ],
         [
-            $SAA::SAA_MIB::rttMonEchoAdminSourcePort, $id,
-            $operation->source_port(),                'INTEGER'
+            $rttMonEchoAdminControlEnable, $id,
+            $operation->control_enable(),  'INTEGER'
         ],
-        [
-            $SAA::SAA_MIB::rttMonEchoAdminTargetPort, $id,
-            $operation->target_port(),                'INTEGER'
-        ],
-        [
-            $SAA::SAA_MIB::rttMonEchoAdminControlEnable, $id,
-            $operation->control_enable(),                'INTEGER'
-        ],
-        [
-            $SAA::SAA_MIB::rttMonEchoAdminTOS, $id,
-            $operation->tos(),                 'INTEGER'
-        ],
-        [
-            $SAA::SAA_MIB::rttMonEchoAdminCache, $id,
-            $operation->admin_cache(),           'INTEGER'
-        ],
+        [ $rttMonEchoAdminTOS,   $id, $operation->tos(),         'INTEGER' ],
+        [ $rttMonEchoAdminCache, $id, $operation->admin_cache(), 'INTEGER' ],
     );
 
     # Add objects that may be undef for certain operations.
@@ -291,25 +277,25 @@ sub install {
     if ($target) {
         push @{$varlist},
           [
-            $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
-            addrToOctStr( $target->addr() ),             'OCTSTR'
-        ];
+            $rttMonEchoAdminTargetAddress,   $id,
+            addrToOctStr( $target->addr() ), 'OCTSTR'
+          ];
     }
 
     if ( $operation->name_server() ) {
         push @{$varlist},
           [
-            $SAA::SAA_MIB::rttMonEchoAdminNameServer,  $id,
+            $rttMonEchoAdminNameServer,                $id,
             addrToOctStr( $operation->name_server() ), 'OCTSTR'
-        ];
+          ];
     }
 
     if ( $operation->admin_operation() ) {
         push @{$varlist},
           [
-            $SAA::SAA_MIB::rttMonEchoAdminOperation, $id,
-            $operation->admin_operation(),           'INTEGER'
-        ];
+            $rttMonEchoAdminOperation,     $id,
+            $operation->admin_operation(), 'INTEGER'
+          ];
     }
 
     if ( $operation->admin_strings() ) {
@@ -317,7 +303,7 @@ sub install {
         for ( $i = 0 ; $i < scalar( @{ $operation->admin_strings() } ) ; $i++ )
         {
             if ( $operation->admin_strings()->[$i] ) {
-                my $var = "SAA::SAA_MIB::rttMonEchoAdminString" . ( $i + 1 );
+                my $var = "rttMonEchoAdminString" . ( $i + 1 );
                 no strict 'refs';    # We need to do this to allow $$var
                 push @{$varlist},
                   [ $$var, $id, $operation->admin_strings()->[$i], 'OCTSTR' ];
@@ -327,10 +313,7 @@ sub install {
 
     if ( $operation->admin_url() ) {
         push @{$varlist},
-          [
-            $SAA::SAA_MIB::rttMonEchoAdminURL, $id,
-            $operation->admin_url(),           'OCTSTR'
-        ];
+          [ $rttMonEchoAdminURL, $id, $operation->admin_url(), 'OCTSTR' ];
     }
 
     # Set the objects on the source router.
@@ -342,26 +325,11 @@ sub install {
     }
 
     $varlist = new SNMP::VarList(
-        [
-            $SAA::SAA_MIB::rttMonScheduleAdminRttLife, $id,
-            $self->life(),                             'INTEGER'
-        ],
-        [
-            $SAA::SAA_MIB::rttMonScheduleAdminRttStartTime, $id,
-            $self->start_time(),                            'TICKS'
-        ],
-        [
-            $SAA::SAA_MIB::rttMonHistoryAdminFilter, $id,
-            $self->history_filter(),                 'INTEGER'
-        ],
-        [
-            $SAA::SAA_MIB::rttMonCtrlAdminNvgen, $id,
-            $self->write_nvram(),                'INTEGER'
-        ],
-        [
-            $SAA::SAA_MIB::rttMonCtrlAdminStatus,   $id,
-            $SAA::SAA_MIB::rowStatusEnum->{active}, 'INTEGER'
-        ]
+        [ $rttMonScheduleAdminRttLife, $id, $self->life(), 'INTEGER' ],
+        [ $rttMonScheduleAdminRttStartTime, $id, $self->start_time(), 'TICKS' ],
+        [ $rttMonHistoryAdminFilter, $id, $self->history_filter(),  'INTEGER' ],
+        [ $rttMonCtrlAdminNvgen,     $id, $self->write_nvram(),     'INTEGER' ],
+        [ $rttMonCtrlAdminStatus,    $id, $rowStatusEnum->{active}, 'INTEGER' ]
     );
 
     # Turn it on!
@@ -395,10 +363,10 @@ sub uninstall {
     $sess->set(
         new SNMP::Varbind(
             [
-                $SAA::SAA_MIB::rttMonCtrlAdminStatus,    $self->id(),
-                $SAA::SAA_MIB::rowStatusEnum->{destroy}, 'INTEGER'
+                $rttMonCtrlAdminStatus,    $self->id(),
+                $rowStatusEnum->{destroy}, 'INTEGER'
             ]
-        )
+          )
     );
 
     if ( $sess->{ErrorNum} ) {

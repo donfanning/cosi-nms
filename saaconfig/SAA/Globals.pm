@@ -6,13 +6,12 @@ package SAA::Globals;
 use strict;
 require 5.002;
 
+use vars qw(@ISA @EXPORT);
 use Exporter;
 use Carp;
 
-my @ISA    = qw(Exporter);
-my @EXPORT = qw(
-  KEY
-  PAD
+@ISA    = qw(Exporter);
+@EXPORT = qw(
   HOST_DOWN
   HOST_UP_IP
   HOST_UP_SNMP
@@ -22,12 +21,6 @@ my @EXPORT = qw(
   addrToOctStr
   checkIPAddr
 );
-
-# Random key used in Blowfish ciphering.
-# XXX This key should not be statically defined here.  In the release, this
-# should be configurable by the end user so that all keys will be different.
-use constant KEY => pack( "H16", 'aIC9e8!Cmtdyu4GV' );
-use constant PAD => 'aBcDeFg';
 
 use constant HOST_DOWN    => 0;
 use constant HOST_UP_IP   => 1;

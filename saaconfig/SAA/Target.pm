@@ -20,7 +20,7 @@ sub new {
     my $self = {
         name    => $args[0],
         address => undef,
-        status  => SAA::Globals::HOST_UP_IP,
+        status  => HOST_UP_IP,
         error   => undef,
     };
 

@@ -29,21 +29,21 @@ sub new {
 
     my $self = {
         name             => $args[0],
-        type             => $SAA::SAA_MIB::operationTypeEnum->{na},
-        protocol         => $SAA::SAA_MIB::operationProtocolEnum->{na},
-        threshold        => SAA::SAA_MIB::DEFAULT_THRESHOLD,
-        frequency        => SAA::SAA_MIB::DEFAULT_FREQUENCY,
-        timeout          => SAA::SAA_MIB::DEFAULT_TIMEOUT,
-        verify           => SAA::SAA_MIB::DEFAULT_VERIFY,
-        tos              => SAA::SAA_MIB::DEFAULT_TOS,
-        targetPort       => SAA::SAA_MIB::DEFAULT_TPORT,
-        sourcePort       => SAA::SAA_MIB::DEFAULT_SPORT,
-        controlEnable    => SAA::SAA_MIB::DEFAULT_CONTROL_ENABLE,
+        type             => $operationTypeEnum->{na},
+        protocol         => $operationProtocolEnum->{na},
+        threshold        => DEFAULT_THRESHOLD,
+        frequency        => DEFAULT_FREQUENCY,
+        timeout          => DEFAULT_TIMEOUT,
+        verify           => DEFAULT_VERIFY,
+        tos              => DEFAULT_TOS,
+        targetPort       => DEFAULT_TPORT,
+        sourcePort       => DEFAULT_SPORT,
+        controlEnable    => DEFAULT_CONTROL_ENABLE,
         dnsTargetAddress => undef,
         adminOperation   => undef,
         adminStrings     => undef,
         adminURL         => undef,
-        adminCache       => SAA::SAA_MIB::DEFAULT_ADMIN_CACHE,
+        adminCache       => DEFAULT_ADMIN_CACHE,
         error            => undef,
     };
 
@@ -66,36 +66,33 @@ sub _validateTypeProto {
     # This is a private static method for testing whether or not the type and
     # protocol are compatible.  It returns 1 if they are, undef otherwise.
 
-    if ( $type == $SAA::SAA_MIB::operationTypeEnum->{echo} ) {
+    if ( $type == $operationTypeEnum->{echo} ) {
         return
-          unless ( $proto == $SAA::SAA_MIB::operationProtocolEnum->{icmpEcho}
-            || $proto == $SAA::SAA_MIB::operationProtocolEnum->{snaRUEcho}
-            || $proto == $SAA::SAA_MIB::operationProtocolEnum->{snaLU0EchoAppl}
-            || $proto == $SAA::SAA_MIB::operationProtocolEnum->{snaLU2EchoAppl}
-            || $proto == $SAA::SAA_MIB::operationProtocolEnum->{snaLU62Echo}
-            || $proto ==
-            $SAA::SAA_MIB::operationProtocolEnum->{snaLU62EchoAppl} );
+          unless ( $proto == $operationProtocolEnum->{icmpEcho}
+            || $proto == $operationProtocolEnum->{snaRUEcho}
+            || $proto == $operationProtocolEnum->{snaLU0EchoAppl}
+            || $proto == $operationProtocolEnum->{snaLU2EchoAppl}
+            || $proto == $operationProtocolEnum->{snaLU62Echo}
+            || $proto == $operationProtocolEnum->{snaLU62EchoAppl} );
     }
-    elsif ( $type == $SAA::SAA_MIB::operationTypeEnum->{pathEcho} ) {
+    elsif ( $type == $operationTypeEnum->{pathEcho} ) {
         return
-          unless ( $proto == $SAA::SAA_MIB::operationProtocolEnum->{icmpEcho} );
+          unless ( $proto == $operationProtocolEnum->{icmpEcho} );
     }
-    elsif ( $type == $SAA::SAA_MIB::operationTypeEnum->{tcpConnect} ) {
-        return
-          unless (
-            $proto == $SAA::SAA_MIB::operationProtocolEnum->{ipTcpConn} );
+    elsif ( $type == $operationTypeEnum->{tcpConnect} ) {
+        return unless ( $proto == $operationProtocolEnum->{ipTcpConn} );
     }
-    elsif ( $type == $SAA::SAA_MIB::operationTypeEnum->{http} ) {
+    elsif ( $type == $operationTypeEnum->{http} ) {
         return
-          unless ( $proto == $SAA::SAA_MIB::operationProtocolEnum->{httpAppl} );
+          unless ( $proto == $operationProtocolEnum->{httpAppl} );
     }
-    elsif ( $type == $SAA::SAA_MIB::operationTypeEnum->{dns} ) {
+    elsif ( $type == $operationTypeEnum->{dns} ) {
         return
-          unless ( $proto == $SAA::SAA_MIB::operationProtocolEnum->{dnsAppl} );
+          unless ( $proto == $operationProtocolEnum->{dnsAppl} );
     }
-    elsif ( $type == $SAA::SAA_MIB::operationTypeEnum->{dhcp} ) {
+    elsif ( $type == $operationTypeEnum->{dhcp} ) {
         return
-          unless ( $proto == $SAA::SAA_MIB::operationProtocolEnum->{dhcpAppl} );
+          unless ( $proto == $operationProtocolEnum->{dhcpAppl} );
     }
     else {
         return;
@@ -131,8 +128,9 @@ sub threshold {
     # Threshold is valid for all SAA operations.
     if (@_) {
         my $th = shift;
-        if ( $th < SAA::SAA_MIB::MIN_THRESHOLD || $th > $self->timeout()
-            || $th > SAA::SAA_MIB::MAX_THRESHOLD )
+        if ( $th < MIN_THRESHOLD
+            || $th > $self->timeout()
+            || $th > MAX_THRESHOLD )
         {
             return $self->{threshold};
         }
@@ -147,9 +145,9 @@ sub timeout {
     # Timeout is valid for all SAA operations.
     if (@_) {
         my $timeout = shift;
-        if ( $timeout < SAA::SAA_MIB::MIN_TIMEOUT
+        if ( $timeout < MIN_TIMEOUT
             || $timeout < $self->threshold()
-            || $timeout > SAA::SAA_MIB::MAX_TIMEOUT )
+            || $timeout > MAX_TIMEOUT )
         {
             return $self->{timeout};
         }
@@ -164,9 +162,9 @@ sub frequency {
     # Frequency is valid for all SAA operations.
     if (@_) {
         my $frequency = shift;
-        if ( $frequency < SAA::SAA_MIB::MIN_FREQUENCY
+        if ( $frequency < MIN_FREQUENCY
             || $frequency < $self->timeout()
-            || $frequency > SAA::SAA_MIB::MAX_FREQUENCY )
+            || $frequency > MAX_FREQUENCY )
         {
             return $self->{frequency};
         }
@@ -179,16 +177,16 @@ sub tos {
     my $self = shift;
 
     # This field is not applicable to DHCP or DNS operations.
-    if ( $self->type() == $SAA::SAA_MIB::operationTypeEnum->{dns}
-        || $self->type() == $SAA::SAA_MIB::operationTypeEnum->{dhcp} )
+    if ( $self->type() == $operationTypeEnum->{dns}
+        || $self->type() == $operationTypeEnum->{dhcp} )
     {
 
         # Return DEFAULT_TOS here (i.e. 0 for now; I guess it could change...)
-        return SAA::SAA_MIB::DEFAULT_TOS;
+        return DEFAULT_TOS;
     }
     if (@_) {
         my $tos = shift;
-        if ( $tos < SAA::SAA_MIB::MIN_TOS || $tos > SAA::SAA_MIB::MAX_TOS ) {
+        if ( $tos < MIN_TOS || $tos > MAX_TOS ) {
             return $self->{tos};
         }
         $self->{tos} = $tos;
@@ -200,20 +198,19 @@ sub source_port {
     my $self = shift;
 
     # This field is not applicable to DNS, DLSw, or SNA operations.
-    if ( $self->type() == $SAA::SAA_MIB::operationTypeEnum->{dns}
-        || $self->type() == $SAA::SAA_MIB::operationTypeEnum->{dlsw}
-        || ( $self->protocol() > $SAA::SAA_MIB::operationProtocolEnum->{udpEcho}
-            && $self->protocol() <=
-            $SAA::SAA_MIB::operationProtocolEnum->{snaLU62EchoAppl} ) )
+    if (
+        $self->type() == $operationTypeEnum->{dns}
+        || $self->type() == $operationTypeEnum->{dlsw}
+        || ( $self->protocol() > $operationProtocolEnum->{udpEcho}
+            && $self->protocol() <= $operationProtocolEnum->{snaLU62EchoAppl} )
+      )
     {
-        return SAA::SAA_MIB::DEFAULT_SPORT;
+        return DEFAULT_SPORT;
     }
 
     if (@_) {
         my $sport = shift;
-        if ( $sport < SAA::SAA_MIB::MIN_SPORT
-            || $sport > SAA::SAA_MIB::MAX_SPORT )
-        {
+        if ( $sport < MIN_SPORT || $sport > MAX_SPORT ) {
             return $self->{sourcePort};
         }
         $self->{sourcePort} = $sport;
@@ -225,18 +222,16 @@ sub target_port {
     my $self = shift;
 
     # This field is applicable to udpEcho, tcpConnect, and jitter operations.
-    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{udpEcho}
-        && $self->type() != $SAA::SAA_MIB::operationTypeEnum->{tcpConnect}
-        && $self->type() != $SAA::SAA_MIB::operationTypeEnum->{jitter} )
+    if ( $self->type() != $operationTypeEnum->{udpEcho}
+        && $self->type() != $operationTypeEnum->{tcpConnect}
+        && $self->type() != $operationTypeEnum->{jitter} )
     {
-        return SAA::SAA_MIB::DEFAULT_TPORT;
+        return DEFAULT_TPORT;
     }
 
     if (@_) {
         my $tport = shift;
-        if ( $tport < SAA::SAA_MIB::MIN_TPORT
-            || $tport > SAA::SAA_MIB::MAX_TPORT )
-        {
+        if ( $tport < MIN_TPORT || $tport > MAX_TPORT ) {
             return $self->{targetPort};
         }
         $self->{targetPort} = $tport;
@@ -248,18 +243,17 @@ sub control_enabled {
     my $self = shift;
 
     # This field is not applicable to echo, pathEcho, dns and http operations.
-    if ( $self->type() == $SAA::SAA_MIB::operationTypeEnum->{echo}
-        || $self->type() == $SAA::SAA_MIB::operationTypeEnum->{pathEcho}
-        || $self->type() == $SAA::SAA_MIB::operationTypeEnum->{dns}
-        || $self->type() == $SAA::SAA_MIB::operationTypeEnum->{http} )
+    if ( $self->type() == $operationTypeEnum->{echo}
+        || $self->type() == $operationTypeEnum->{pathEcho}
+        || $self->type() == $operationTypeEnum->{dns}
+        || $self->type() == $operationTypeEnum->{http} )
     {
-        return SAA::SAA_MIB::DEFAULT_CONTROL_ENABLE;
+        return DEFAULT_CONTROL_ENABLE;
     }
 
     if (@_) {
         my $control = shift;
-        if ( $control != SAA::SAA_MIB::TRUE && $control != SAA::SAA_MIB::FALSE )
-        {
+        if ( $control != TRUE && $control != FALSE ) {
             return $self->{controlEnable};
         }
         $self->{controlEnable} = $control;
@@ -272,8 +266,8 @@ sub admin_operation {
     my ( $val, $op );
 
     # This field is only applicable to http and ftp operations.
-    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http}
-        && $self->type() != $SAA::SAA_MIB::operationTypeEnum->{ftp} )
+    if ( $self->type() != $operationTypeEnum->{http}
+        && $self->type() != $operationTypeEnum->{ftp} )
     {
 
         # This field has no default value.
@@ -281,9 +275,9 @@ sub admin_operation {
     }
     if (@_) {
         $val = shift;
-        foreach ( keys %{$SAA::SAA_MIB::adminOperationEnum} ) {
+        foreach ( keys %{$adminOperationEnum} ) {
 
-            if ( $val == $SAA::SAA_MIB::adminOperationEnum->{$_} ) {
+            if ( $val == $adminOperationEnum->{$_} ) {
                 $op = $val;
                 last;
             }
@@ -301,8 +295,8 @@ sub admin_strings {
     my $self = shift;
 
     # This field is only applicable to http and dhcp operations.
-    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http}
-        && $self->type() != $SAA::SAA_MIB::operationTypeEnum->{dhcp} )
+    if ( $self->type() != $operationTypeEnum->{http}
+        && $self->type() != $operationTypeEnum->{dhcp} )
     {
         return;
     }
@@ -315,17 +309,18 @@ sub admin_strings {
 
         # The dhcp operation only uses AdminString1.
         $limit =
-          ( $self->type() == $SAA::SAA_MIB::operationTypeEnum->{http} ) ?
-          SAA::SAA_MIB::MAX_ADMIN_STRINGS: 1;
+          ( $self->type() == $operationTypeEnum->{http} ) 
+          ? MAX_ADMIN_STRINGS
+          : 1;
 
         # This string has a cap.  If this string is longer than the max, we need
         # to chop it, and fit it into an array.
 
         while ( $i < $limit ) {
             while ( $length < length $string ) {
-                push @{ $self->{adminStrings} }, substr( $string, $length,
-                    SAA::SAA_MIB::MAX_ADMIN_STRING_LEN );
-                $length += SAA::SAA_MIB::MAX_ADMIN_STRING_LEN;
+                push @{ $self->{adminStrings} },
+                  substr( $string, $length, MAX_ADMIN_STRING_LEN );
+                $length += MAX_ADMIN_STRING_LEN;
             }
             $i++;
         }
@@ -337,8 +332,8 @@ sub admin_url {
     my $self = shift;
 
     # This field is only applicable to http and ftp operations.
-    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http}
-        && $self->type() != $SAA::SAA_MIB::operationTypeEnum->{ftp} )
+    if ( $self->type() != $operationTypeEnum->{http}
+        && $self->type() != $operationTypeEnum->{ftp} )
     {
         return;
     }
@@ -346,7 +341,7 @@ sub admin_url {
     if (@_) {
         my $url = shift;
 
-        if ( length $url > SAA::SAA_MIB::MAX_URL_LEN ) {
+        if ( length $url > MAX_URL_LEN ) {
             return $self->{adminURL};
         }
         $self->{adminURL} = $url;
@@ -358,14 +353,14 @@ sub admin_cache {
     my $self = shift;
 
     # This field is only applicable to http operations.
-    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http} ) {
-        return SAA::SAA_MIB::DEFAULT_ADMIN_CACHE;
+    if ( $self->type() != $operationTypeEnum->{http} ) {
+        return DEFAULT_ADMIN_CACHE;
     }
 
     if (@_) {
         my $cache = shift;
 
-        if ( $cache != SAA::SAA_MIB::TRUE && $cache != SAA::SAA_MIB::FALSE ) {
+        if ( $cache != TRUE && $cache != FALSE ) {
             return $self->{adminCache};
         }
         $self->{adminCache} = $cache;
@@ -377,7 +372,7 @@ sub name_server {
     my $self = shift;
     my $addr;
 
-    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{dns} ) {
+    if ( $self->type() != $operationTypeEnum->{dns} ) {
         return;
     }
     if (@_) {
