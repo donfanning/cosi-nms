@@ -45,7 +45,7 @@ if ($CRM::CRM_OS ne "WIN") {
                 'DEEsv.pl'  => 06550,
                 'deesv.jar' => 00640,
         );
-        %requires = ('DEEv2' => 'CSCOdeev2',);
+        %requires = ();
         $PERL = "/opt/CSCOpx/bin/perl";
 
         if (defined($ENV{'PX_USER'})) {
@@ -62,7 +62,7 @@ if ($CRM::CRM_OS ne "WIN") {
                 'DEEsv.pl'  => "$NMSROOT\\bin",
                 'deesv.jar' => "$NMSROOT\\lib\\classpath",
         );
-        %requires = ('DEEv2' => 'CSCOdeev2',);
+        %requires = ();
 
         $PERL = "$NMSROOT\\bin\\perl";
         $PS   = "\\";
