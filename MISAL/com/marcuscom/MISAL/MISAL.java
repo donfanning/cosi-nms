@@ -246,6 +246,7 @@ public class MISAL implements Runnable {
                 this.setLastBuffer(buffer);
                 while(keys.hasMoreElements()) {
                     int state = ((Integer)keys.nextElement()).intValue();
+		    p5m.setMultiline(true);
                     pattern = (Pattern)stateTable.get(new Integer(state));
                     if (p5m.contains(buffer, pattern)) {
                         this.setState(state);
@@ -645,6 +646,7 @@ public class MISAL implements Runnable {
             if (buffer == null) continue;
             this.debug("Try number " + i + ", buffer = \"" + buffer + "\"");
             try {
+		matcher.setMultiline(true);
                 pattern = compiler.compile(prompt);
             }
             catch (MalformedPatternException mpe) {
