@@ -6,6 +6,7 @@ use lib qw(..);
 use SNMP;
 use SAA::Globals;
 use SAA::SAA_MIB;
+use Carp;
 use Crypt::CBC;
 
 # Right now, we'll configure for v1/v2c.
@@ -14,7 +15,10 @@ sub new {
     my $class = ref($that) || $that;
 
     if ( scalar(@args) != 3 ) {
-        return;
+
+        # This is an extremely fatal error.  This keeps a Source from being
+        # properly instantiated.
+        croak "SAA::Source: Insufficient arguments passed to constructor";
     }
 
     my $self = {
@@ -26,10 +30,17 @@ sub new {
         SAAVersion     => undef,
         IOSVersion     => undef,
         status         => $SAA::Globals::HOST_DOWN,
+        error          => undef,
     };
 
     bless( $self, $class );
     $self;
+}
+
+sub error {
+    my $self = shift;
+    if (@_) { $self->{error} = shift; }
+    return $self->{error};
 }
 
 sub name {
@@ -154,9 +165,15 @@ sub learn {
     # This method will try v2c if the device claims to support v2c.  If v2c
     # fails, it will fallback to v1.
     my $self = shift;
-    return 0
-      unless ( defined $self->addr() && defined $self->read_community()
-        && defined $self->write_community );
+
+    if ( !defined( $self->addr() ) || !defined( $self->read_community() )
+        || !defined( $self->write_community() ) )
+    {
+        $self->error(
+"Source must have IP address, read community, and read-write community set"
+        );
+        return;
+    }
 
     $self->snmp_version("1") unless defined $self->snmp_version();
 
@@ -191,12 +208,10 @@ sub learn {
         {
             ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
             ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
-            $self->_status($SAA::Globals::HOST_UP_SNMP);
-            $self->_ios_version($iosvers);
-            return 0 unless length $saavers;
         }
         else {
-            return 0;
+            $self->error("Unable to get IOS and SAA versions using SNMPv2c");
+            return;
         }
     }
 
@@ -205,17 +220,13 @@ sub learn {
           new SNMP::VarList( [ $SAA::SAA_MIB::rttMonApplVersion, 0 ],
             [ 'sysDescr', 0 ] );
         @vals = $sess->get($vars);
-        if ( $sess->{ErrorNum}
-            && $sess->{ErrorNum} != $SAA::SAA_MIB::SNMP_ERR_NOSUCHNAME )
-        {
-            return 0;
+        if ( $sess->{ErrorNum} ) {
+            $self->error("Unable to get IOS and SAA versions using SNMPv1");
+            return;
         }
         else {
             ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
             ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
-            $self->_status($SAA::Globals::HOST_UP_SNMP);
-            $self->_ios_version($iosvers);
-            return 0 unless length $saavers;
         }
     }
 
@@ -230,7 +241,12 @@ sub learn {
     );
     my $loc = $sess->get('sysLocation.0');
 
-    return 0 if ( $sess->{ErrorNum} );
+    if ( $sess->{ErrorNum} ) {
+        $self->error(
+            "Failed checking read-write community string (" . $sess->{ErrorNum}
+            . ")" );
+        return;
+    }
 
     $sess = new SNMP::Session(
         DestHost  => $self->addr(),
@@ -240,12 +256,21 @@ sub learn {
 
     $sess->set( new SNMP::Varbind( [ 'sysLocation', 0, $loc, 'OCTETSTR' ] ) );
 
-    return 0 if ( $sess->{ErrorNum} );
+    if ( $sess->{ErrorNum} ) {
+        $self->error("Read-write community string is invalid");
+        return;
+    }
 
     $self->_saa_version($saavers);
+    $self->_status($SAA::Globals::HOST_UP_SNMP);
+    $self->_ios_version($iosvers);
+
+    if ( !length($saavers) ) {
+        $self->error("Unable to get SAA version");
+        return;
+    }
 
     1;
-
 }
 
 1;
