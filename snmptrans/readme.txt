@@ -12,14 +12,18 @@ command in the net-snmp SNMP stack.
 REQUIREMENTS:
 -------------
 This tool requires Perl 5, net-snmp and the associated SNMP.pm Perl modules, 
-and a web server capable of serving out Perl CGI scripts.
+and a web server capable of serving out Perl CGI scripts.  net-snmp is
+available for download from http://net-snmp.sourceforge.net.
 
 If you wish to use the CHAP-like authentication security, the 
-Digest::MD5 Perl module is also needed.
+Digest::MD5 Perl module is also needed.  Digest::MD5 is available for 
+download from any CPAN mirror (see http://www.cpan.org/SITES.html for a 
+list of mirrors).
 
 The CGI.pm module is also needed for the CGI side of things.  This is
 a new requirement that enables easy use of cookies.  In the past, I
-used my own CGI parsing routines.
+used my own CGI parsing routines.  CGI.pm is available for download from
+any CPAN mirror (see http://www.cpan.org/SITES.html for a list of mirrors).
 
 INSTALLATION and USE:
 ---------------------
@@ -57,6 +61,13 @@ and to ignore the hangup signal.
 Use the sample snmptrans.html page to test SNMP Search & Translate.  If
 it works, you can modify the HTML as well as the CGI-returned HTML to
 meet your needs.
+
+If you get an error:
+
+Undefined subroutine &SNMP::initMib called at ./snmptransd.pl line 71.
+
+Chances are you have the wrong SNMP.pm module loaded.  The one needed for
+snmptrans is available via the net-snmp package found at the URL above.
 
 NOTES:
 ------
