@@ -15,6 +15,8 @@ echo If you want to install this package, press Enter to continue.
 echo.
 pause
 "perl.exe" _install.pl
+pause
+pause
 goto exit
 
 :exit
