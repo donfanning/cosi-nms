@@ -289,8 +289,26 @@ sub targetPort {
 
 sub control_enabled {
     my $self = shift;
-    if (@_) { $self->{controlEnabled} = shift; }
-    return $self->{controlEnabled};
+
+    # This field is not applicable to echo, pathEcho, dns and http operations.
+    if ( $self->{type} == $SAA::Operations::TYPE_ECHO
+        || $self->{type} == $SAA::Operations::TYPE_PATH_ECHO
+        || $self->{type} == $SAA::Operations::TYPE_DNS
+        || $self->{type} == $SAA::Operations::TYPE_HTTP )
+    {
+        return $SAA::Operations::DEFAULT_CONTROL_ENABLE;
+    }
+
+    if (@_) {
+        my $control = shift;
+        if ( $control != $SAA::SAA_MIB::TRUE
+            && $control != $SAA::SAA_MIB::FALSE )
+        {
+            return $self->{controlEnable};
+        }
+        $self->{controlEnable} = $control;
+    }
+    return $self->{controlEnable};
 }
 
 1;
