@@ -1,0 +1,38 @@
+#!/bin/sh
+# $Id$
+
+PATH=/usr/bin:/usr/local/bin
+
+USER=ciscobackup
+ROUTER=${1}
+LOGLINE=${2}
+HOSTN=`/bin/hostname`
+
+FILE=/tftpboot/config/cisco/${HOSTN}/${ROUTER}.conf
+
+ROUTER_CFG=running-config
+SWITCH_CFG=slot1:/nvram
+
+# rcs ...
+
+co -l ${FILE}
+
+# routery
+
+rcp ${USER}@${ROUTER}:${ROUTER_CFG} /dev/stdout | \
+							sed 's///' >${FILE}
+
+# sprawdzamy czy urzadzenie to catalist
+
+`echo $ROUTER | grep cat | grep -v grep >/dev/null 2>&1`
+if [ "$?" = "0" ]; then
+	echo >>$FILE
+	echo "ATM Module: " >>${FILE}
+	rcp $USER@$ROUTER:$SWITCH_CFG /dev/stdout | \
+							sed 's///' >>${FILE}
+fi
+
+# rcs ...
+echo "$LOGLINE" | ci -u $FILE
+
+# end
