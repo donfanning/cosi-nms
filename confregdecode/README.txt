@@ -11,26 +11,15 @@ Requirements:
 * 32 MB or RAM
 * Color monitor with display set to 256 or more colors
 
-Installation (From Precompiled Package):
-----------------------------------------
-
-* Unpack the confregdecode-1.0.tar.gz or confregdecode-1.0.zip file 
-(both contain identical contents)
-* Change directory to the confregdecode-1.0 directory.
-* On UNIX, you must edit confregdecode.sh, and change the JRE variable to
-point to the location where jre is installed your system.  On Windows, this
-should be in your path.
-* On Windows, run confregdecode, on UNIX, run ./confregdecode.sh
-
 Installation (From Java Source):
 --------------------------------
 
-* Unpack the confregdecode-src-1.0.tar.gz or confregdecode-src-1.0.zip file 
+* Unpack the confregdecode-src-1.2.1.tar.gz or confregdecode-src-1.2.1zip file 
 (both contain identical contents)
-* Change directory to the confregdecode-src-1.0 directory.
+* Change directory to the confregdecode-src-1.2.1 directory.
 * On UNIX, edit the Makefile so that all the paths are correct, and type
 ``make jar''.  You will need javac (the Java compiler) 1.1.5 or later.
-On Windows, you may be able to use the Makefile, else, type
+On Windows, you may not be able to use the Makefile.  If not, type
 ``javac com/marcuscom/confregdecode/ConfregDecode.java''
 * On Windows, run confregdecode, on UNIX, run ./confregdecode.sh
 
