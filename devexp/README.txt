@@ -1,6 +1,6 @@
 Project DevExp for Resource Manager Essentials 3.1 and Higher
 
-Author: Joe Clarke <jclarke@cisco.com>
+Author: Joe Clarke <marcus@marcuscom.com>
 
 $Id$
 
