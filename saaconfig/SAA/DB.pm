@@ -19,8 +19,8 @@ sub new {
         Hostname => $params{Hostname},
         User     => $params{User},
         Password => $params{Password},
-		error	 =>	undef,
-       	dbh	  	 => undef
+	error	 =>	undef,
+       	dbh 	 => undef
     };
 
     # Create connect to database.
@@ -164,7 +164,17 @@ sub setSAAObject {
         # Collectors object. (Maybe we can sell it on Ebay)
 
         my $query =
-"INSERT INTO $table (sourceName,targetName,operationName,Description,startTime,NVRam,RowAge,Owner,Status,Life) values ('";
+"INSERT INTO $table (Name,ID,sourceName,targetName,operationName,startTime,Life,Description,NVRam,RowAge,Owner,Status) values ('";
+	$query = $query . $obj->name . "','";
+	$query = $query . $obj->id . "','";
+	$query = $query . $obj->source . "','";
+	$query = $query . $obj->target . "','";
+	$query = $query . $obj->operation . "','";
+	$query = $query . $obj->startTime . "','";
+	$query = $query . $obj->life . "')";
+
+	print "$table Query: $query\n";
+
 
     }
 
