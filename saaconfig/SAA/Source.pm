@@ -22,15 +22,17 @@ sub new {
     }
 
     my $self = {
-        name           => $args[0],
-        address        => $args[1],
-        readCommunity  => undef,
-        writeCommunity => undef,
-        SNMPVersion    => $args[2],
-        SAAVersion     => undef,
-        IOSVersion     => undef,
-        status         => SAA::Globals::HOST_DOWN,
-        error          => undef,
+        name               => $args[0],
+        address            => $args[1],
+        readCommunity      => undef,
+        writeCommunity     => undef,
+        SNMPVersion        => $args[2],
+        SAAVersion         => undef,
+        IOSVersion         => undef,
+        supportedTypes     => {},
+        supportedProtocols => {},
+        status             => SAA::Globals::HOST_DOWN,
+        error              => undef,
     };
 
     bless( $self, $class );
@@ -126,10 +128,54 @@ sub saa_version {
 }
 
 sub _saa_version {
-    my $self = shift;
-	my $class = ref $self;
-	croak "Attempt to call private method" if ($class ne __PACKAGE__);
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
     $self->{SAAVersion} = shift;
+}
+
+sub _add_type_supported {
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+    my $type = shift;
+    $self->{supportedTypes}->{$type} = 1;
+}
+
+sub type_supported {
+
+    # If an argument is specified, this method will return 1 if the 
+    # type is supported, undef otherwise.  If no arguments are
+    # specified, this method will return a reference to a hash
+    # of supported types.
+    my $self = shift;
+    if (@_) {
+        my $type = shift;
+        return $self->{supportedTypes}->{$type};
+    }
+    return $self->{supportedTypes};
+}
+
+sub _add_protocol_supported {
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+    my $protocol = shift;
+    $self->{supportedProtocols}->{$protocol} = 1;
+}
+
+sub protocol_supported {
+
+    # If an argument is specified, this method will return 1 if the 
+    # protocol is supported, undef otherwise.  If no arguments are
+    # specified, this method will return a reference to a hash
+    # of supported protocols.
+    my $self = shift;
+    if (@_) {
+        my $protocol = shift;
+        return $self->{supportedProtocols}->{$protocol};
+    }
+    return $self->{supportedProtocols};
 }
 
 sub ios_version {
@@ -141,9 +187,9 @@ sub ios_version {
 }
 
 sub _ios_version {
-    my $self = shift;
-	my $class = ref $self;
-	croak "Attempt to call private method" if ($class ne __PACKAGE__);
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
     $self->{IOSVersion} = shift;
 }
 
@@ -155,9 +201,9 @@ sub status {
 }
 
 sub _status {
-    my $self = shift;
-	my $class = ref $self;
-	croak "Attempt to call private method" if ($class ne __PACKAGE__);
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
     $self->{status} = shift;
 }
 
@@ -274,6 +320,33 @@ sub learn {
     if ( !length($saavers) ) {
         $self->error("Router does not support SAA");
         return;
+    }
+
+    # Now we need to check to see what operations are actually supported.
+    # Yes, we could hard-code this since we know the version number, but
+    # what if a new version comes out?  Best to ask the router.
+    $sess = new SNMP::Session(
+        DestHost  => $self->addr(),
+        Community => $self->read_community(),
+        Version   => $self->snmp_version()
+    );
+
+    # First get a list of the supported types.
+    foreach ( keys %{$SAA::SAA_MIB::operationTypeEnum} ) {
+        my $isSupported =
+          $sess->get( $SAA::SAA_MIB::rttMonApplSupportedRttTypesValid . '.'
+            . $SAA::SAA_MIB::operationTypeEnum->{$_} );
+        $self->_add_type_supported($_)
+          if ( $isSupported == SAA::SAA_MIB::TRUE );
+    }
+
+    # Now we get a list of the supported protocols.
+    foreach ( keys %{$SAA::SAA_MIB::operationProtocolEnum} ) {
+        my $isSupported =
+          $sess->get( $SAA::SAA_MIB::rttMonApplSupportedProtocolsValid . '.'
+            . $SAA::SAA_MIB::operationProtocolEnum->{$_} );
+        $self->_add_protocol_supported($_)
+          if ( $isSupported == SAA::SAA_MIB::TRUE );
     }
 
     1;
