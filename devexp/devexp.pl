@@ -41,73 +41,75 @@ sub LOCK_UN { 8 }
 $VERSION    = '1.3';
 $DEVSERVLET = '/CSCOnm/servlet/com.cisco.nm.cmf.servlet.DeviceListService';
 
-if ( $^O eq "MSWin32" ) {
-    use CRM;
-    $CONF_FILE = $ENV{'NMSROOT'} . "\\objects\\devexp\\devexp.conf";
-    $XMLFILE   = $ENV{'NMSROOT'} . "\\objects\\devexp\\devexp.xml";
-}
-else {
-    $CONF_FILE = "/opt/CSCOpx/objects/devexp/devexp.conf";
-    $XMLFILE   = "/opt/CSCOpx/objects/devexp/devexp.xml";
+if ($^O eq "MSWin32") {
+	use CRM;
+	$CONF_FILE = $ENV{'NMSROOT'} . "\\objects\\devexp\\devexp.conf";
+	$XMLFILE   = $ENV{'NMSROOT'} . "\\objects\\devexp\\devexp.xml";
+} else {
+	$CONF_FILE = "/opt/CSCOpx/objects/devexp/devexp.conf";
+	$XMLFILE   = "/opt/CSCOpx/objects/devexp/devexp.xml";
 }
 
 local *CONF;
-unless ( open( CONF, $CONF_FILE ) ) {
-    die "Unable to open $CONF_FILE: $!\n";
+unless (open(CONF, $CONF_FILE)) {
+	die "Unable to open $CONF_FILE: $!\n";
 }
-flock( CONF, LOCK_SH );
+flock(CONF, LOCK_SH);
 
 while (<CONF>) {
-    chomp;
-    s/#.*//;
-    s/^\s+//;
-    s/\s+$//;
-    next unless length;
-    my ( $name, $value ) = split ( /\s*=\s*/, $_, 2 );
-    $PREFS{$name} = $value;
+	chomp;
+	s/#.*//;
+	s/^\s+//;
+	s/\s+$//;
+	next unless length;
+	my ($name, $value) = split (/\s*=\s*/, $_, 2);
+	$PREFS{$name} = $value;
 }
 close(CONF);
 
 ### The password needs to be Base64 encoded.
-$PREFS{'ADMIN_PASSWD'} = encode_base64( $PREFS{'ADMIN_PASSWD'} );
+$PREFS{'ADMIN_PASSWD'} = encode_base64($PREFS{'ADMIN_PASSWD'});
 
 ### Take off the '\n' at the end of the encoded password.
-chomp( $PREFS{'ADMIN_PASSWD'} );
+chomp($PREFS{'ADMIN_PASSWD'});
 
 local *XML;
-unless ( open( XML, $XMLFILE ) ) {
-    die "Unable to open file $XMLFILE: $!\n";
+unless (open(XML, $XMLFILE)) {
+	die "Unable to open file $XMLFILE: $!\n";
 }
-flock( XML, LOCK_SH );
+flock(XML, LOCK_SH);
 
 my $xmlpacket = "";
 while (<XML>) {
-    s/\%\%TYPE\%\%/$PREFS{'OUTPUT_FORMAT'}/;
-    s/\%\%PASSWD\%\%/$PREFS{'ADMIN_PASSWD'}/;
-    s/\%\%HOST\%\%/$PREFS{'RME_SERVER'}/;
-    s/\%\%PROD\%\%/DevExp/;
-    s/\%\%VERS\%\%/$VERSION/;
-    s{ \%\%OP\%\% }
+	s/\%\%TYPE\%\%/$PREFS{'OUTPUT_FORMAT'}/;
+	s/\%\%PASSWD\%\%/$PREFS{'ADMIN_PASSWD'}/;
+	s/\%\%HOST\%\%/$PREFS{'RME_SERVER'}/;
+	s/\%\%PROD\%\%/DevExp/;
+	s/\%\%VERS\%\%/$VERSION/;
+	s{ \%\%OP\%\% }
 	   { ($PREFS{'OUTPUT_DEVICE_CREDENTIALS'} =~ /yes/i)
 	         ? "<getDeviceCredentials/>"
 		 : "<listDevices deviceType=\"\%\%DEVS\%\%\"/>"
 	}ex;
-    s/\%\%DEVS\%\%/$PREFS{'DEVICES'}/;
-    s{ \%\%DTDPATH\%\% }
+	s/\%\%DEVS\%\%/$PREFS{'DEVICES'}/;
+	s{ \%\%DTDPATH\%\% }
 		{ ($PREFS{'DTD_PATH'} eq "")
 			? "$PREFS{'RME_SERVER'}:$PREFS{'RME_PORT'}\/devexp\/devexp.dtd"
 		  : $PREFS{'DTD_PATH'}
 	}ex;
 
-    $xmlpacket .= $_;
+	$xmlpacket .= $_;
 }
 close(XML);
 
 $URL =
-  'http://' . $PREFS{'RME_SERVER'} . ':' . $PREFS{'RME_PORT'} . $DEVSERVLET;
+    $PREFS{'RME_PROTOCOL'} . '://'
+    . $PREFS{'RME_SERVER'} . ':'
+    . $PREFS{'RME_PORT'}
+    . $DEVSERVLET;
 
 my $ua = new LWP::UserAgent;
-$ua->agent( "DevExp/$VERSION " . $ua->agent );
+$ua->agent("DevExp/$VERSION " . $ua->agent);
 
 ### Create a request
 my $request = new HTTP::Request POST => $URL;
@@ -117,23 +119,22 @@ $request->content($xmlpacket);
 my $response = $ua->request($request);
 
 ### Check the outcome of the response 
-if ( $response->is_success ) {
-    local *OUTFILE;
-    unless ( open( OUTFILE, ">" . $PREFS{'OUTPUT_FILE'} ) ) {
-        die "Unable to open $PREFS{'OUTPUT_FILE'}: $!\n";
-    }
-    flock( OUTFILE, LOCK_EX );
-    my $old_fh = select(OUTFILE);
-    $| = 1;
+if ($response->is_success) {
+	local *OUTFILE;
+	unless (open(OUTFILE, ">" . $PREFS{'OUTPUT_FILE'})) {
+		die "Unable to open $PREFS{'OUTPUT_FILE'}: $!\n";
+	}
+	flock(OUTFILE, LOCK_EX);
+	my $old_fh = select(OUTFILE);
+	$| = 1;
 
-    print $response->content;
+	print $response->content;
 
-    select($old_fh);
-    close(OUTFILE);
-}
-else {
-    die
-"The request failed.  Please check the config file\nto make sure all the options are correct.\n";
+	select($old_fh);
+	close(OUTFILE);
+} else {
+	die
+	    "The request failed.  Please check the config file\nto make sure all the options are correct.\n";
 }
 
 exit(0);

@@ -15,8 +15,8 @@ REQUIREMENTS:
 -------------
 
 * CiscoWorks 2000 Resource Manager Essentials 3.1 or higher on Windows NT, 
-  Windows 2000, Solaris 2.6, Solaris 7, HP/UX 11.0, or AIX 4.3.3 (note: some 
-  versions of RME will not run on all listed operating systems).
+  Windows 2000, Solaris 2.6, Solaris 7, Solaris 8, HP/UX 11.0, or AIX 4.3.3 
+  (note: some versions of RME will not run on all listed operating systems).
 * ALL of the prerequisites for RME are met.
 
 INSTALLATION:
@@ -25,9 +25,9 @@ INSTALLATION:
 Installation under Windows NT or 2000:
 --------------------------------------
 
-* Unzip devexp-win-v12.zip
+* Unzip devexp-win-v13.zip
 
-* Change directory to devexp-win-v12
+* Change directory to devexp-win-v13
 
 * Run install.cmd
 
@@ -35,9 +35,9 @@ Installation under Windows NT or 2000:
 Installation under UNIX:
 ------------------------
 
-* Run 'uncompress -c devexp-unix-v12.tar.Z | tar -xvf -'
+* Run 'uncompress -c devexp-unix-v13.tar.Z | tar -xvf -'
 
-* Change directory to devexp-unix-v12
+* Change directory to devexp-unix-v13
 
 * Run ./install.sh
 
