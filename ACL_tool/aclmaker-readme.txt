@@ -1,0 +1,31 @@
+This is the usage file for the ACL Manipulation tool.
+This script is released under the GPL license.
+
+Usage: aclmaker [-v] [-d dir] [-f file] {command} access-list-name
+
+Manipulate Cisco access control lists on a session previously opened
+on file descriptor 3.  Invoke via subshell from "telnet", "kermit" or other
+Telnet client that allows subshell to inherit telnet session on fd3.
+
+Options:
+   -f file       # use "file" instead of same name as ACL
+   -d dir        # use "dir" to store local copy instead of current dir
+   -v            # verbose mode - show progress of all router operations
+
+Advanced options:
+    -b len      # change maximum buffer length [256k]
+    -q          # quiet mode, only show errors
+    -D          # turn on script debugging
+    -E timeout  # set Expect timeout [10]
+    -F fdnum    # use a different file descriptor (or device path)
+    -V {1|2|3}  # turn on verbose Expect debugging
+
+Commands:
+    list [aclname]  # list out acl, or list names of all acls on router
+    get   aclname   # copy acl from router to local file
+    test  aclname   # send acl to router (with dummy name) and check for errors
+    put   aclname   # tests acl, saves it to router if it has no errors
+    del   aclname   # deletes acl from router
+    list config     # print out router's running configuration
+    get  config     # copy router's running configuration to local file
+    cmd  IOS-CMD    # send arbitrary command to router and display results
