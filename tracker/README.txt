@@ -1,0 +1,55 @@
+Intro
+-----
+This set of documents and programs adds up to a database backed web-app called tracker.  It allows network managers and engineers to track nodes on their network and the switch ports they are attached to.  It was written by me (Steve Roylance, sroylance@partners.org) and can be used and distributed freely under the terms of the Free Software Foundation GPL.  
+
+General
+-------
+The major components of tracker are:
+- The postgres database
+tracker uses the open-source database back-end postgresql.
+
+- The collector scripts
+arp_collector.pl uses the net::telnet library to telnet to a list of rotuers and collects mac_addr->ip_addr informatiion.
+switch_collector.pl uses the net::telnet library to telnet to a list of switches and collect mac_addr->switch port information.
+snmp_collector.pl uses the snmp-util library (which relies on net::snmp) to collect basic statistics on all the ports on a list of switches.
+
+- The query cgi's
+perl cgi scripts accept a query string and return matching database entries.
+
+
+
+Installing (getting it to run)
+------------------------------
+You must have postgresql installed and working before you begin, as well as have the pg.pm library installed.
+create a database called network, and use the command in sql_commands.txt to create the switches, routers, nodes and switch_ports tables.
+populate switches and routers with the devices you want to manage.
+create a postgres account to the user that cgi scripts run as on your system (www-data on Debian Linux).
+grant the right to select on nodes and switch ports to that user.
+
+put tracker.pm somewhere in your perl module include path (/usr/lib/perl5 works for me).
+
+pick or create a directory for the collector scripts.  put all the files from the 'home' directory in the distribution in this directory. 
+customize the scripts with your login information, SNMP community string and location for the Cisco MIBS  The snmp_collector will require the following snmp mibs from Cisco:
+CISCO-C2900-MIB.my
+CISCO-SMI.my
+CISCO-STACK-MIB.my
+CISCO-VLAN-MEMBERSHIP-MIB.my
+ENTITY-MIB.my
+
+you should now be able to run the collectors from the command line, and see the data in the database using select queries.
+Setup crontab entries to run the collectors at sensible intervals.
+
+put all the cgi scripts in the 'cgi-bin' directory from the distribution somewhere under your cgi-bin directory.
+optionally fix some of the hard-coded domain names in them :)
+put all the html files from the www directory from the distribution in your web servers document root, and make sure the forms point to the correct path for the location of the tracker cgi's.
+
+
+todo
+----
+clean-up, generalist, make install easier.  automatically discover new network devices, and delete ones that are unreachable.
+
+
+
+Bugs
+----
+If I knew about them, I would've fixed them :).
