@@ -4,11 +4,11 @@
 
 SRCDIR=	.
 DOCDIR=	${SRCDIR}/doc/api
+JARDIR=		/usr/local/share/java/classes
 CLASSPATH=	.:${JARDIR}/jakarta-oro.jar
 
-JARDIR=		/usr/local/share/java/classes
 JAVADOC=	/usr/local/jdk1.3.1/bin/javadoc
-JAVADOC_FLAGS=	-author -version -d $(docdir)
+JAVADOC_FLAGS=	-author -version -d $(DOCDIR)
 JAVAC=		/usr/local/jdk1.3.1/bin/javac
 JAVAC_FLAGS=	-O
 JAR=		/usr/local/jdk1.3.1/bin/jar
