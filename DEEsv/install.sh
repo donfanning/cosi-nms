@@ -2,6 +2,11 @@
 
 rcsid='$Id$'
 
+if [ `/bin/id | /usr/bin/sed -e 's/(.*$//' -e 's/^.*=//'` != 0 ] ; then
+    echo "You must be root to install this package."
+    exit 1
+fi
+
 echo '***************************************************************'
 
 echo "This will install DEEsv for Resource Manager Essentials 3.4."
