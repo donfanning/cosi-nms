@@ -173,10 +173,7 @@ sub learn {
           new SNMP::VarList( [$SAA::SAA_MIB::rttMonApplVersion], ['system'] );
         @vals = $sess->getbulk( 1, 1, $vars );
 
-        # XXX Note, -7 may change as the ErrorNum in the future.  However,
-        # for now, it is the best way of determining if we're hitting a PDU
-        # version problem.
-        if ( $sess->{ErrorNum} == -7 ) {
+        if ( $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_V2_IN_V1 ) {
 
             # SNMPv2c not supported!
             $self->snmp_version("1");
@@ -189,12 +186,17 @@ sub learn {
             );
 
         }
-        else {
+        elsif ( $sess->{ErrorNum} == 0
+            || $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_NOSUCHNAME )
+        {
             ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
             ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
             $self->_status($SAA::Globals::HOST_UP_SNMP);
             $self->_ios_version($iosvers);
             return 0 unless length $saavers;
+        }
+        else {
+            return 0;
         }
     }
 
@@ -203,7 +205,9 @@ sub learn {
           new SNMP::VarList( [ $SAA::SAA_MIB::rttMonApplVersion, 0 ],
             [ 'sysDescr', 0 ] );
         @vals = $sess->get($vars);
-        if ( $sess->{ErrorNum} ) {
+        if ( $sess->{ErrorNum}
+            && $sess->{ErrorNum} != $SAA::SAA_MIB::SNMP_ERR_NOSUCHNAME )
+        {
             return 0;
         }
         else {
