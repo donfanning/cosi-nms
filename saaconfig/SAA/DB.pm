@@ -167,21 +167,25 @@ sub setSAAObject {
         # Collectors object. (Maybe we can sell it on Ebay)
 
         my $query =
-"INSERT INTO $table (Name,ID,sourceName,targetName,operationName,startTime,Life,Description,NVRam,RowAge,Owner,Status) values ('";
+	"INSERT INTO $table (Name,ID,sourceName,targetName,operationName,startTime,Life,NVRam,historyFilter) values ('";
         $query = $query . $obj->name . "','";
         $query = $query . $obj->id . "','";
         $query = $query . $obj->source . "','";
         $query = $query . $obj->target . "','";
         $query = $query . $obj->operation . "','";
         $query = $query . $obj->startTime . "','";
-        $query = $query . $obj->life . "')";
+        $query = $query . $obj->life . "','";
+        $query = $query . $obj->writeNVRAM . "','";
+        $query = $query . $obj->historyFilter . "')";
 
         print "$table Query: $query\n";
 
     }
 
 }
-
+# This method will actually return a object created from the database
+# Give it a table name to represent the type of object to create.
+# and give it a name to find the correct object.
 sub getSAAObject {
     my $self = shift;
 
@@ -194,12 +198,9 @@ sub getSAAObject {
     my $table = shift;
     my $name  = @_;
     my $key;
-    my $query = "SELECT * FROM $table WHERE ";
-    foreach $key ( keys %name ) {
-        print "Key: $key Value: $name{$key}\n";
-    }
-    print "--Database stuff--\n";
-    print "Database: " . $self->database() . " \n";
+    my $query = "SELECT * FROM $table WHERE Name like '$name{'Name'}";
+    # Okay got our query and now we would have data.
+    tbl2obj ($table);
 }
 
 sub searchDB {
