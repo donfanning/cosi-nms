@@ -131,6 +131,7 @@ while ( $line = <IN> ) {
     s/\s+$//;
     next unless length $line;
     my ($name) = split ( /,/, $line );
+	$name =~ s/\s//g;
     my ( $rule, $match );
     $match = 0;
 
