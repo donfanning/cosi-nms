@@ -7,14 +7,14 @@
 <h1>DevExp for Resource Manager Essentials</h1>
 
 <h3>Introduction</h3>
-<p>This tool is designed for CiscoWorks 2000 users running Resource 
+<p>This tool is designed for CiscoWorks users running Resource 
 Manager Essentials 3.1 or higher.  It automates the devices export
 functionality in RME.  This tool can be run from <code>cron</code> or <code>at</code> to produce
 regular CSV or XML ``dumps'' of the RME inventory.</p>
 
 <h3>Requirements</h3>
 <ul>
-<li>Cisco Works 2000 Resource Manager Essentials 3.1 or higher on Windows NT,
+<li>Cisco Works Resource Manager Essentials 3.1 or higher on Windows NT,
 Windows 2000, Solaris 2.6, Solaris 7, Solaris 8, HP/UX 11.0, or AIX 4.3.3 
 (note, some versions of RME will not run on all listed operating systems)</li>
 <li><b>All</b> of the prerequisites for RME are met</li>
@@ -34,15 +34,15 @@ Windows 2000, Solaris 2.6, Solaris 7, Solaris 8, HP/UX 11.0, or AIX 4.3.3
 </ul>
 
 <h3>Using DevExp</h3>
-<p>DevExp installs most things in <code>{CW2000}/objects/devexp</code>, with the actual
-script in <code>{CW2000}/bin</code>.  First, edit the configuration file in 
-<code>{CW2000}/objects/devexp/devexp.conf</code>.  The options are all commented.  The
+<p>DevExp installs most things in <code>$NMSROOT/objects/devexp</code>, with the actual
+script in <code>$NMSROOT/bin</code>.  First, edit the configuration file in 
+<code>$NMSROOT/objects/devexp/devexp.conf</code>.  The options are all commented.  The
 defaults are usually acceptable for most options, but you will want to
 change the host, and specify an output file.</p>
 
 <p>Once the configuration file is to your liking, run 
-<code>{CW2000}/bin/devexp.pl</code> (on Windows, you will need to run:
-<code>perl.exe {CW2000}\bin\devexp.pl</code>).  Then, check the file
+<code>$NMSROOT/bin/devexp.pl</code> (on Windows, you will need to run:
+<code>perl.exe %NMSROOT%\bin\devexp.pl</code>).  Then, check the file
 you specified in the <code>OUTPUT_FILE</code> variable in the configuration
 file.  Make sure things look correct.  If not, double-check your config file,
 and, if things still don't look right, please <a href="mailto:marcus@marcuscom.com">email</a> me.</p>
@@ -60,18 +60,18 @@ Please refer to the cron and at documentation for more specific information.</p>
 <p>Windows <code>at</code> command (run once nightly at 1:00 am):</p>
 
 <pre>
-at 01:00 /every:M,T,W,Th,F,S,Su perl.exe {CW2000}\bin\devexp.pl
+at 01:00 /every:M,T,W,Th,F,S,Su perl.exe %NMSROOT%\bin\devexp.pl
 </pre>
 
 <h3>Additional Notes</h3>
 <p>While most of this is Open Source, it still relies on components from
-CiscoWorks 2000 which is copyright of Cisco Systems, Inc.</p>
+CiscoWorks which is copyright of Cisco Systems, Inc.</p>
 
 <hr>
 
 <small>
 $Id$<br>
-CiscoWorks 2000 and Resource Manager Essentials are registered trademarks of
+CiscoWorks and Resource Manager Essentials are registered trademarks of
 Cisco Systems, Inc.<br>All rights reserved.
 
 </body>

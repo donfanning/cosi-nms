@@ -7,14 +7,14 @@ $Id$
 INTRODUCTION:
 -------------
 
-This tool is designed for CiscoWorks 2000 users running RME 3.1 or higher.  
+This tool is designed for CiscoWorks users running RME 3.1 or higher.  
 It automates the device export functionality in RME.  This tool can be run 
 from cron or at to produce regular CSV or XML "dumps" of the RME inventory.
 
 REQUIREMENTS:
 -------------
 
-* CiscoWorks 2000 Resource Manager Essentials 3.1 or higher on Windows NT, 
+* CiscoWorks Resource Manager Essentials 3.1 or higher on Windows NT, 
   Windows 2000, Solaris 2.6, Solaris 7, Solaris 8, HP/UX 11.0, or AIX 4.3.3 
   (note: some versions of RME will not run on all listed operating systems).
 * ALL of the prerequisites for RME are met.
@@ -45,15 +45,15 @@ Installation under UNIX:
 USING DevExp:
 -------------
 
-DevExp installs most things in {CW2000}/objects/devexp, with the actual
-script in {CW2000}/bin.  First, edit the configuration file in
-{CW2000}/objects/devexp/devexp.conf.  The options are all commented.  The
+DevExp installs most things in $NMSROOT/objects/devexp, with the actual
+script in $NMSROOT/bin.  First, edit the configuration file in
+$NMSROOT/objects/devexp/devexp.conf.  The options are all commented.  The
 defaults are usually acceptable for most options, but you will want to
 change the host, and specify an output file.
 
 Once the configuration file is to your liking, run 
-{CW2000}/bin/devexp.pl (on Windows, you will need to run:
-perl.exe {CW2000}\bin\devexp.pl).  Then, check the file you specified in
+$NMSROOT/bin/devexp.pl (on Windows, you will need to run:
+perl.exe %NMSROOT%\bin\devexp.pl).  Then, check the file you specified in
 the OUTPUT_FILE variable in the configuration file.  Make sure things look 
 correct.  If not, double-check your config file, and, if things
 still don't work right, please email marcus@marcuscom.com.
@@ -66,15 +66,15 @@ UNIX crontab entry (run once nightly at 1:00 am):
 0	1	*	*	*	/opt/CSCOpx/bin/devexp.pl 2>&1 | /usr/lib/sendmail root
 
 Windows at command (run once nightly at 1:00 am):
-at 01:00 /every:M,T,W,Th,F,S,Su perl.exe {CW2000}\bin\devexp.pl
+at 01:00 /every:M,T,W,Th,F,S,Su perl.exe %NMSROOT%\bin\devexp.pl
 
 ADDITIONAL NOTES:
 -----------------
 
 While most of this is Open Source, it still relies on components from
-CiscoWorks 2000 which is copyright of Cisco Systems, Inc.
+CiscoWorks which is copyright of Cisco Systems, Inc.
 
 
-CiscoWorks 2000 and Resource Manager Essentials are registered trademarks of 
+CiscoWorks and Resource Manager Essentials are registered trademarks of 
 Cisco Systems, Inc.
 All rights reserved.
