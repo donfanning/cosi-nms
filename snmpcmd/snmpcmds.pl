@@ -1,0 +1,223 @@
+#!/usr/local/bin/perl -w
+#-------------------------------------------------------
+# Script Name: snmpcmds.pl 
+# Version: 0.4 
+# Last modified by: Kris Thompson Sep 22, 2000 
+# Requirements: snmpcmds.dat, ucd-snmp, mibs, CGI_Lite.pm                
+# Description: supports easy access to common SNMP MIBs/Tables/OIDs.
+#   Bookmarking to MIB locations provided by $LWTCONFIG/snmpcmds.dat
+# Created by: Kris Thompson 
+# Date: June 10, 2000
+# Contact: coe-iae@cisco.com 
+#-------------------------------------------------------
+# Main program first....
+# Using the lightweight CGI Perl Module by ....
+
+use CGI_Lite;
+
+# Edit $LWTCONF if neeeded to point to config folder.
+$LWTCONF = "/opt/CSCOlwt/conf";
+
+# Read default and over-ride variables...
+# customizations should go into lwt.cfg.
+
+do "$LWTCONF/lwt-defaults.cfg";
+do "$LWTCONF/lwt.cfg";
+
+# other intializations....
+my $devicelist_fn = "$DEVLISTFILE";  # Device List File
+my $snmpcmds_fn = "$LWTCONFIG/snmpcmds.dat";   # SNMP Commands File
+# to be added: read only Community String to config file....
+
+# ------HTML Components-----------------
+
+$pagespot = "/graphics/supportal_spot.jpg";
+$pagebanner = "/graphics/snmpcmdr_bn.gif";
+$title = "SNMP Commander";
+$version = "0.4";
+
+#  --------Local Variables-------------
+my $i = 0;                                   # the universal counter
+
+# Create debug and UI messaging variable.
+# via a decent text editor, yo can now turn on and off debug messages in the code.
+my $messages = ""; 
+
+# ---- Parse the CGI Data ---------------
+#   $cmdreq = "snmp pseudo-code" requested,
+#   $agent = selected node.
+
+my $cgi = new CGI_Lite;
+my %form = $cgi->parse_form_data;
+$cgi->create_variables (\%form);
+
+#
+# ========= Parse Lightweight Tools files into VARIABLES ===========
+
+# Read Files, and set more variables based on them. 
+#   The  snmpcmds.dat file is inspected for command definitions. Format by example at this time. No whitespace.
+#   1) snmpcmds.dat file is inspected for command definitions. 
+
+open (SNMPCMDS, $snmpcmds_fn) || ($messages .= "Can't open SNMP_Commander Data: file: $snmpcmds_fn<br>\n");
+   @snmplines  = <SNMPCMDS>;
+close(SNMPCMDS);
+
+# prepare SNMP Command Arrays for Commander Interface and Command Execution. 
+# this routine defines the file input format. 5 fields seperated by "," only. 
+# i.e. Psuedo-Command,ucd-snmpcmd,numeric_oid,MIB-NAME,symbolic_oid
+
+foreach $snmpline (@snmplines) {
+      ($cmd_text[$i], $cmd_verb[$i], $oid[$i], $mib[$i], $oid_symb[$i]) = split (",", $snmpline);
+      $i++;
+}
+# remove all leading and trailing whilespace
+foreach (@cmd_text, @cmd_verb, @oid, @mib, @oid_symb) {
+    s/^\s+//;
+    s/\s+$//;
+}
+
+# Next, we open and parse the the device_list.dat file. 
+# The file format is one Device Name per line, no whitespace.
+
+open (DEVLIST, $devicelist_fn) || ($messages .= "Can't open Device List Data: file: $devicelist_fn\n");
+   @devices = <DEVLIST>;
+close(DEVLIST);
+   chomp @devices;
+
+# ------Start HTML --------------------------------------
+
+print "content-type: text/html\n\n";	# start the html page for report
+print template("$LWTHTML/lwt-start.lbi", {
+    'title' => $title,
+    'banner' => $pagebanner,
+    'spot' => $pagespot,
+    'version' => $version
+});
+   
+# ========= Generate Dynamic HTML Components ===========
+
+## First prepare parts
+# Spin command text into HTML form selection list.  
+
+$html_cmdlist = "";                        # text string to hold the <select> form <option>s.
+$selected = "";                            # creates the selected attribute if POSTed by last visit
+foreach $cmdtext (@cmd_text) {
+      if ($cmdtext eq $cmdreq) {$selected = " selected"} else {$selected = ""}
+      $html_cmdlist .= "<option$selected>$cmdtext</option>\n";
+}
+
+# Spin device names into HTML form selection list.  
+$html_devlist = "";                        # text string to hold the <select> form <option>s.
+$selected = "";                            # creates the selected attribute if POSTed by last visit
+
+foreach $device (@devices) {
+      if ($device eq $agent) {$selected = " selected"} else {$selected = ""}
+      $html_devlist .= "<option$selected>$device</option>\n";
+}            
+
+# If SNMP output was requested, go get it from &snmp_commander in HTML format.
+if ($cmdreq ne "") {	
+    for ($i=0; $i < @cmd_text; $i++) {
+        if ($cmdreq eq $cmd_text[$i]) {
+            if ($agent) {
+                $snmp_results = &snmp_commander($agent, $cmd_verb[$i], $oid[$i]);
+            } else {$messages .= "Command $cmd_text[$i] found, but no agent requested!\n"}
+            $choice = $i;
+            $found = "true";
+            last;
+        }
+    } 
+    if (!$found) {$messages .= "requested command $cmdreq not found\n"} 
+} elsif ($agent) {$messages .= "Device $agent requested, but no snmp command selected!\n"}  
+
+# ----- Generate Info about last requested Action --------
+#
+
+if ($found) {
+    $messages .= "Requested Cmd: $cmdreq\n";
+    $messages .= "Requested Device: $agent\n";
+    $messages .= "MIB: $mib[$choice]\n";
+    $messages .= "OID: Numberic = $oid[$choice], Symbolic = $oid_symb[$choice]\n";
+}
+
+
+# Location to add debug output to $messages
+# uncomment or add other lines as needed to check script state
+# $messages .= "passed command was !$cmdreq!\n";
+# $messages .= "agent passed was !$agent!\n";
+# $messages .= "choice was was !$choice!\n";
+# $messages .= "mib[choice] = !$mib[$choice]!\n";
+# $messages .= "leftmenu is:\n$leftmenu\n";
+
+# ====================================================
+print <<SNMP_CMDR;
+<form method="GET" enctype="application/x-www-form-urlencoded">
+  <p><b> Select SNMP Command * OID: <select name="cmdreq">$html_cmdlist</select><br>
+      Select SNMP Agent:    <select name="agent">$html_devlist</select>   Go: <input type="submit" value="Submit">
+  </b></p>
+</form>
+<hr width="650" align="left">
+  <table border="1" bgcolor="#FFFF99" width="100%"> 
+      <tr>
+         <td width="100%">
+            <b>Program messages:</b>
+            <pre width="80">$messages</pre>
+         </td>
+      </tr>
+  </table>
+
+  <table border="1" bgcolor="#AAFFFF" width="100%"> 
+      <tr>
+         <td width="100%">
+            <pre width="80">
+            $snmp_results
+            </pre>
+         </td>
+      </tr>
+  </table>  
+SNMP_CMDR
+
+#---------End HTML-----------------
+print template("$LWTHTML/lwt-end.lbi");
+
+
+# ----- fini -----
+exit 0;
+# end of main program
+#
+#
+# ===Subroutines========================================
+#
+# SNMP Command Execution Subroutine
+
+sub snmp_commander {
+my $lagent = $_[0];
+my $lverb = $_[1];
+my $loid = $_[2];
+my $results = "";
+my $comm_string = "underdog";
+
+$results .= "<h3>Query was: $lverb -m all $lagent comm-string $loid 2>/dev/null</h3>\n";
+$results .= `/usr/local/bin/$lverb -m all $lagent $comm_string $loid 2>/dev/null\n`;
+
+return $results;
+}
+
+# --- Subroutine: Print Template ----
+
+sub template {
+    my ($filename, $fillings) = @_;
+    my $text;
+    local $/;                   # slurp mode (undef)
+    local *F;                   # create local filehandle
+    open(F, "< $filename")      || return;
+    $text = <F>;                # read whole file
+    close(F);                   # ignore retval
+    # replace quoted words with value in %$fillings hash
+    $text =~ s{ %% ( .*? ) %% }
+              { exists( $fillings->{$1} )
+                      ? $fillings->{$1}
+                      : ""
+              }gsex;
+    return $text;
+}
