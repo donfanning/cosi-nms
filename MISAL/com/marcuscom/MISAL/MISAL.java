@@ -262,7 +262,7 @@ public class MISAL implements Runnable {
 	}
 
 	public synchronized String getBuffer() {
-		return this._buffer;
+		return this._buffer.concat(this.getLastBuffer());
 	}
 
 	public synchronized boolean getDebug() {
