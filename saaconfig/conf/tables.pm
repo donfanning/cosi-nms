@@ -27,6 +27,7 @@ $Create_Src = "CREATE TABLE IF NOT EXISTS SAA_SOURCES (
         SrcId int PRIMARY KEY,
         SrcAlias varchar(64) NOT NULL UNIQUE, 
         SrcIpAddr varchar(127) NOT NULL UNIQUE,
+		SrcStatus int,
         SrcDescr varchar(255),
         SrcHostName varchar(64), 
         SrcReadComm varchar(32),
@@ -42,9 +43,11 @@ $Create_Target = "CREATE TABLE IF NOT EXISTS SAA_TARGETS (
         TgtId int PRIMARY KEY,
         TgtAlias varchar(64) NOT NULL UNIQUE,
         TgtIpAddr varchar(127) NOT NULL UNIQUE,
+		TgtStatus int,
         TgtDescr varchar(255),
         TgtHostName varchar (64),
         TgtReadComm varchar (32),
+        TgtWriteComm varchar (32),
         TgtIosVersion varchar (64),
         TgtRttAppVersion varchar (64)
         )";
