@@ -38,7 +38,7 @@ sub LOCK_EX { 2 }
 sub LOCK_NB { 4 }
 sub LOCK_UN { 8 }
 
-$VERSION    = '1.0';
+$VERSION    = '1.3';
 $DEVSERVLET = '/CSCOnm/servlet/com.cisco.nm.cmf.servlet.DeviceListService';
 
 if ( $^O eq "MSWin32" ) {
