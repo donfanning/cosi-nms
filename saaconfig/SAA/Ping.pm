@@ -13,12 +13,18 @@ use Carp;
 
 use vars qw(@PING $PING_OPTIONS $REDIRECT);
 
+# XXX We should check to see which ping to use.  On Windows, there is only one
+# real choice.  On UNIX, however, ping could reside in a variety of places.
+# It's not safe just to say "ping".  One might think it's better to use
+# Net::Ping, but ICMP sockets require root privilege on UNIX.  If someone can
+# find a better solution than this, feel free to code it.
 if ( $^O eq "MSWin32" ) {
     @PING = ('ping');
 }
 else {
     @PING = ( '/sbin/ping', '/usr/sbin/ping' );
 }
+# XXX These options should probably be OS (or platform) dependent.
 $PING_OPTIONS = '-c 1';                          # Stop pinging after one packet
 $REDIRECT     = '2>&1 >/dev/null';
 $REDIRECT     = '> nul' if ( $^O eq "MSWin32" );
