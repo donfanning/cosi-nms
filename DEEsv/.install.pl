@@ -30,7 +30,7 @@
 use strict;
 use File::Copy;
 use CRM;
-use vars qw($uid $gid %files %perms $PS @dirs $PERL $NMSROOT);
+use vars qw($uid $gid %files %perms %requires $PS @dirs $PERL $NMSROOT);
 
 $| = 1;
 
@@ -45,6 +45,7 @@ if ($CRM::CRM_OS ne "WIN") {
                 'DEEsv.pl'  => 06550,
                 'deesv.jar' => 00640,
         );
+        %requires = ('DEEv2' => 'CSCOdeev2',);
         $PERL = "/opt/CSCOpx/bin/perl";
 
         if (defined($ENV{'PX_USER'})) {
@@ -61,14 +62,26 @@ if ($CRM::CRM_OS ne "WIN") {
                 'DEEsv.pl'  => "$NMSROOT\\bin",
                 'deesv.jar' => "$NMSROOT\\lib\\classpath",
         );
+        %requires = ('DEEv2' => 'CSCOdeev2',);
 
         $PERL = "$NMSROOT\\bin\\perl";
         $PS   = "\\";
 
 }
 
-# Make the directories for install
+# Check to make sure all the dependencies are there.
+return_error(0, "Checking for dependencies ...");
+foreach (keys(%requires)) {
+        my $dep = join ($PS, $NMSROOT, "setup", $requires{$_} . ".info");
+        if (!-f $dep) {
+                print " FAILED\n";
+                return_error(2,
+                        "This package requires $_ which is not installed.");
+        }
+}
+print " DONE\n";
 
+# Make the directories for install
 return_error(0, "Creating install directories ...");
 foreach (@dirs) {
         if (!-d $_) {
@@ -78,7 +91,7 @@ foreach (@dirs) {
         chown($uid, $gid, $_) if ($CRM::CRM_OS ne "WIN");
 
 }
-print " DONE!\n";
+print " DONE\n";
 
 # Backup existing files
 return_error(0, "Backing up files ...");
@@ -95,7 +108,7 @@ foreach (keys(%files)) {
                     if ($CRM::CRM_OS ne "WIN");
         }
 }
-print " DONE!\n";
+print " DONE\n";
 
 # Copy files to their respective directory
 return_error(0, "Copying files ...");
@@ -106,7 +119,7 @@ foreach (keys(%files)) {
         chown($uid, $gid, $files{$_} . $PS . $_) if ($CRM::CRM_OS ne "WIN");
         chmod($perms{$_}, $files{$_} . $PS . $_) if ($CRM::CRM_OS ne "WIN");
 }
-print " DONE!\n";
+print " DONE\n";
 
 return_error(0, "Install completed successfully.\n");
 exit(0);
