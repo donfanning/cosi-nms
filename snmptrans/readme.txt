@@ -48,7 +48,8 @@ to net-snmp 4.2.1's SNMP.pm.
 
 To apply the patch, run the command ``patch -p0 <SNMP.patch'' from the
 perl/SNMP directory in the net-snmp source directory, then compile the
-Perl module.
+Perl module.  See the block in snmptransd.pl for turning this feature on
+once you have the correct version of the Perl module loaded.
 
 Copy the snmptransc.pl script to your web server's cgi-bin directory, and
 edit the variables in the BEGIN { } clause to your environment.
