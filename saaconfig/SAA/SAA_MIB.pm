@@ -3,7 +3,6 @@ package SAA::SAA_MIB;
 use strict;
 require 5.002;
 
-use vars qw(@EXPORT_OK);
 use vars qw(
   $ciscoRttMonMIB
   $ciscoRttMonObjects
@@ -14,20 +13,17 @@ use vars qw(
   $rttMonCtrlAdminEntry
   $rttMonCtrlAdminStatus
   $historyFilterEnum
-  $FALSE
-  $TRUE
   $rowStatusEnum
   $httpOperationEnum
-  $SNMP_ERR_NOSUCHNAME
-  $SNMP_ERR_V2_IN_V1
-  $SNMP_ERR_BAD_VERSION
+  $operationProtocolEnum
+  $operationTypeEnum
 );
 
 use Exporter;
 use Carp;
 
-*import    = \&Exporter::import;
-@EXPORT_OK =
+my @ISA    = qw(Exporter);
+my @EXPORT =
   qw(
   $ciscoRttMonMIB
   $ciscoRttMonObjects
@@ -38,13 +34,39 @@ use Carp;
   $rttMonCtrlAdminEntry
   $rttMonCtrlAdminStatus
   $historyFilterEnum
-  $FALSE
-  $TRUE
+  FALSE
+  TRUE
   $rowStatusEnum
   $httpOperationEnum
-  $SNMP_ERR_NOSUCHNAME
-  $SNMP_ERR_V2_IN_V1
-  $SNMP_ERR_BAD_VERSION
+  $operationProtocolEnum
+  $operationTypeEnum
+  DEFAULT_THRESHOLD
+  DEFAULT_FREQUENCY
+  DEFAULT_TIMEOUT
+  DEFAULT_VERIFY
+  DEFAULT_TOS
+  DEFAULT_CONTROL_ENABLE
+  DEFAULT_SPORT
+  DEFAULT_TPORT
+  MIN_THRESHOLD
+  MIN_TIMEOUT
+  MIN_SPORT
+  MIN_TPORT
+  MIN_FREQUENCY
+  MAX_FREQUENCY
+  MIN_TOS
+  MAX_TOS
+  MAX_TIMEOUT
+  MAX_THRESHOLD
+  CONTROL
+  MAX_SPORT
+  MAX_TPORT
+  MIX_LIFE
+  MAX_LIFE
+  DEFAULT_START_TIME
+  DEFAULT_LIFE
+  LIVE_FOREVER
+  START_TIME_NOW
 );
 
 $ciscoRttMonMIB        = '.1.3.6.1.4.1.9.9.42';
@@ -57,8 +79,8 @@ $rttMonCtrlAdminEntry  = $rttMonCtrlAdminTable . '.1';
 $rttMonCtrlAdminStatus = $rttMonCtrlAdminEntry . '.9';
 
 # These are taken from the SNMPv2-TC definitions.  true is 1 and false is 2.
-$TRUE  = 1;
-$FALSE = 2;
+use constant TRUE  => 1;
+use constant FALSE => 2;
 
 # Row status enum
 $rowStatusEnum = {
@@ -85,10 +107,97 @@ $httpOperationEnum = {
     ftpPassive => 4,
 };
 
-# Define some common ucd-snmp return codes.
-$SNMP_ERR_NOSUCHNAME  = 2;
-$SNMP_ERR_V2_IN_V1    = -7;
-$SNMP_ERR_BAD_VERSION = -14;
+# Define global protocols
+$operationProtocolEnum = {
+    na                => 1,
+    icmpEcho          => 2,
+    udpEcho           => 3,
+    snaRUEcho         => 4,
+    snaLU0EchoAppl    => 5,
+    snaLU2EchoAppl    => 6,
+    snaLU62Echo       => 7,
+    snaLU62EchoAppl   => 8,
+    appleTalkEcho     => 9,
+    appleTalkEchoAppl => 10,
+    decNetEcho        => 11,
+    decNetEchoAppl    => 12,
+    ipxEcho           => 13,
+    ipxEchoAppl       => 14,
+    isoClnsEcho       => 15,
+    isoClnsEchoAppl   => 16,
+    vinesEcho         => 17,
+    vinesEchoAppl     => 18,
+    xnsEcho           => 19,
+    xnsEchoAppl       => 20,
+    apolloEcho        => 21,
+    apolloEchoAppl    => 22,
+    netbiosEchoAppl   => 23,
+    ipTcpConn         => 24,
+    httpAppl          => 25,
+    dnsAppl           => 26,
+    jitterAppl        => 27,
+    dlswAppl          => 28,
+    dhcpAppl          => 29,
+    ftpAppl           => 30,
+  },
+
+  # End protocol definitions
+
+  # Define global operation types
+  $operationTypeEnum = {
+    na         => 0,    # Note: this is not defined in the MIB
+    echo       => 1,
+    pathEcho   => 2,
+    fileIO     => 3,    # NOT SUPPORTED
+    script     => 4,    # NOT SUPPORTED
+    udpEcho    => 5,
+    tcpConnect => 6,
+    http       => 7,
+    dns        => 8,
+    jitter     => 9,
+    dlsw       => 10,
+    dhcp       => 11,
+    ftp        => 12,
+};
+
+# End type definitions
+
+# Define global defaults
+use constant DEFAULT_THRESHOLD      => 5000;
+use constant DEFAULT_FREQUENCY      => 60;
+use constant DEFAULT_TIMEOUT        => 5000;
+use constant DEFAULT_VERIFY         => FALSE;
+use constant DEFAULT_TOS            => 0;
+use constant DEFAULT_CONTROL_ENABLE => TRUE;
+use constant DEFAULT_SPORT          => 0;
+use constant DEFAULT_TPORT          => 0;
+use constant DEFAULT_START_TIME     => 0;
+use constant DEFAULT_LIFE           => 3600;
+
+# Define global limits
+use constant MIN_THRESHOLD => 0;
+use constant MIN_TIMEOUT   => 0;
+use constant MIN_SPORT     => 0;
+use constant MIN_TPORT     => 0;
+use constant MIN_FREQUENCY => 0;
+use constant MAX_FREQUENCY => 604800;
+use constant MIN_TOS       => 0;
+use constant MAX_TOS       => 255;
+use constant MAX_TIMEOUT   => 604800000;
+use constant MAX_THRESHOLD => 2147483647;
+use constant CONTROL       => 0;
+use constant MAX_SPORT     => 65536;
+use constant MAX_TPORT     => 65536;
+use constant MIN_LIFE      => 0;
+use constant MAX_LIFE      => 2147483647;
+
+# End limit definitions
+
+# Collector globals
+use constant START_TIME_NOW => 1;
+use constant LIVE_FOREVER   => MAX_LIFE;
+
+# End globals
 
 1;
 __END__

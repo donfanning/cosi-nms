@@ -29,7 +29,7 @@ sub new {
         SNMPVersion    => $args[2],
         SAAVersion     => undef,
         IOSVersion     => undef,
-        status         => $SAA::Globals::HOST_DOWN,
+        status         => SAA::Globals::HOST_DOWN,
         error          => undef,
     };
 
@@ -75,7 +75,7 @@ sub read_community {
             $self->{readCommunity} = $comm;
             return $self->{readCommunity};
         }
-        my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
+        my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
 
         $self->{readCommunity} = $cipher->encrypt_hex($comm);
     }
@@ -83,7 +83,7 @@ sub read_community {
     if ($encrypted) {
         return $self->{readCommunity};
     }
-    my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
+    my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
     my $comm = $cipher->decrypt_hex( $self->{readCommunity} );
 
     return $comm;
@@ -103,7 +103,7 @@ sub write_community {
             $self->{writeCommunity} = $comm;
             return $self->{writeCommunity};
         }
-        my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
+        my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
 
         $self->{writeCommunity} = $cipher->encrypt_hex($comm);
     }
@@ -111,7 +111,7 @@ sub write_community {
     if ($encrypted) {
         return $self->{writeCommunity};
     }
-    my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
+    my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
     my $comm = $cipher->decrypt_hex( $self->{writeCommunity} );
 
     return $comm;
@@ -127,6 +127,8 @@ sub saa_version {
 
 sub _saa_version {
     my $self = shift;
+	my $class = ref $self;
+	croak "Attempt to call private method" if ($class ne __PACKAGE__);
     $self->{SAAVersion} = shift;
 }
 
@@ -140,6 +142,8 @@ sub ios_version {
 
 sub _ios_version {
     my $self = shift;
+	my $class = ref $self;
+	croak "Attempt to call private method" if ($class ne __PACKAGE__);
     $self->{IOSVersion} = shift;
 }
 
@@ -152,6 +156,8 @@ sub status {
 
 sub _status {
     my $self = shift;
+	my $class = ref $self;
+	croak "Attempt to call private method" if ($class ne __PACKAGE__);
     $self->{status} = shift;
 }
 
@@ -190,7 +196,7 @@ sub learn {
           new SNMP::VarList( [$SAA::SAA_MIB::rttMonApplVersion], ['system'] );
         @vals = $sess->getbulk( 1, 1, $vars );
 
-        if ( $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_BAD_VERSION ) {
+        if ( $sess->{ErrorNum} == SAA::Globals::SNMP_ERR_BAD_VERSION ) {
 
             # SNMPv2c not supported!
             $self->snmp_version("1");
@@ -204,7 +210,7 @@ sub learn {
 
         }
         elsif ( $sess->{ErrorNum} == 0
-            || $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_NOSUCHNAME )
+            || $sess->{ErrorNum} == SAA::Globals::SNMP_ERR_NOSUCHNAME )
         {
             ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
             ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
@@ -262,7 +268,7 @@ sub learn {
     }
 
     $self->_saa_version($saavers);
-    $self->_status($SAA::Globals::HOST_UP_SNMP);
+    $self->_status(SAA::Globals::HOST_UP_SNMP);
     $self->_ios_version($iosvers);
 
     if ( !length($saavers) ) {

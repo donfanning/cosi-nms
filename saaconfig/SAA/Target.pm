@@ -17,7 +17,7 @@ sub new {
     my $self = {
         name    => $args[0],
         address => $args[1],
-        status  => $SAA::Globals::HOST_UP_IP,
+        status  => SAA::Globals::HOST_UP_IP,
         error   => undef,
     };
 
@@ -47,6 +47,8 @@ sub status {
 
 sub _status {
     my $self = shift;
+	my $class = ref $self;
+	croak "Attempt to call private method" if ($class ne __PACKAGE__);
     $self->{status} = shift;
 }
 

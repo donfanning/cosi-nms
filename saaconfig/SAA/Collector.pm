@@ -6,30 +6,7 @@ use lib qw(..);    # XXX This is for testing only.
 use SNMP;
 use SAA::Globals;
 use SAA::SAA_MIB;
-use SAA::Operation;
 use Carp;
-
-# Default collector values
-$SAA::Collector::DEFAULT_START_TIME = 0;
-$SAA::Collector::DEFAULT_LIFE       = 3600;
-
-# End defaults
-
-# Collector maximums
-$SAA::Collector::MAX_LIFE = 2147483647;
-
-# End maximums
-
-# Collector minimums
-$SAA::Collector::MIN_LIFE = 0;
-
-# End minimums
-
-# Collector globals
-$SAA::Collector::START_TIME_NOW = 1;
-$SAA::Collector::LIVE_FOREVER   = $SAA::Collector::MAX_LIFE;
-
-# End globals
 
 sub new {
 
@@ -50,9 +27,9 @@ sub new {
         source        => $args[1],
         operation     => $args[2],
         target        => undef,
-        startTime     => $SAA::Collector::DEFAULT_START_TIME,
-        life          => $SAA::Collector::DEFAULT_LIFE,
-        writeNVRAM    => $SAA::SAA_MIB::FALSE,
+        startTime     => SAA::SAA_MIB::DEFAULT_START_TIME,
+        life          => SAA::SAA_MIB::DEFAULT_LIFE,
+        writeNVRAM    => SAA::SAA_MIB::FALSE,
         historyFilter => $SAA::SAA_MIB::historFilterEnum->{none},
         error         => undef,
     };
@@ -72,13 +49,17 @@ sub new {
 
 sub _needTarget {
 
+    if ( scalar(@_) != 1 ) {
+        croak "SAA::Collector::_needTarget: method requires one argument";
+    }
+
     # This is a private static method to determine if a given operation type
     # needs a target.  HTTP, DNS, and DHCP operations do not need targets.
     my $type = shift;
 
-    if ( $type == $SAA::Operation::TYPE_DNS
-        || $type == $SAA::Operation::TYPE_HTTP
-        || $type == $SAA::Operations::TYPE_DHCP )
+    if ( $type == $SAA::SAA_MIB::operationTypeEnum->{dns}
+        || $type == $SAA::SAA_MIB::operationTypeEnum->{http}
+        || $type == $SAA::SAA_MIB::operationTypeEnum->{dhcp} )
     {
         return 0;
     }
@@ -121,7 +102,7 @@ sub write_nvram {
     my $self = shift;
     if (@_) {
         my $val = shift;
-        if ( $val != $SAA::SAA_MIB::TRUE && $val != $SAA::SAA_MIB::FALSE ) {
+        if ( $val != SAA::SAA_MIB::TRUE && $val != SAA::SAA_MIB::FALSE ) {
             return $self->{writeNVRAM};
         }
         $self->{writeNVRAM} = $val;
@@ -152,8 +133,8 @@ sub life {
     my $self = shift;
     if (@_) {
         my $duration = shift;
-        if ( $duration < $SAA::Collector::MIN_LIFE
-            || $duration > $SAA::Collector::MAX_LIFE )
+        if ( $duration < SAA::SAA_MIB::MIN_LIFE
+            || $duration > SAA::SAA_MIB::MAX_LIFE )
         {
             return $self->{life};
         }
@@ -166,17 +147,10 @@ sub life {
 
 sub start_time {
     my $self = shift;
-    if (@_) {
-        my $start = shift;
-        if ( $start < $SAA::Collector::MIN_START_TIME
-            || $start > $SAA::MAX_START_TIME )
-        {
-            return $self->{startTime};
-        }
-        else {
-            $self->{startTime} = $start;
-        }
-    }
+
+    # Since this objet represents TimeTicks, it can have pretty much any range.
+    # We cast the value to an int which should make things safe.
+    if (@_) { $self->{startTime} = int(shift); }
     return $self->{startTime};
 }
 
@@ -188,9 +162,13 @@ sub error {
 
 sub _addrToOctStr {
 
+    if ( scalar(@_) != 1 ) {
+        croak "SAA::Collector::_addrToOctStr: method requires one argument";
+    }
+
     # Private static method to convert an IP address string into a 4-byte
     # octet string.  
-	# XXX This should be smarter so that SNA address can also be supported.
+    # XXX This should be smarter so that SNA address can also be supported.
     my $addr = shift;
     my ( $a, $b, $c, $cidr ) = split ( /\./, $addr );
     return ( sprintf "%.2x %.2x %.2x %.2x", $a, $b, $c, $cidr );
@@ -207,7 +185,7 @@ sub install {
     $target = $self->target();
     $id     = $self->id();
 
-    if ( $source->status() != $SAA::Globals::HOST_UP_SNMP ) {
+    if ( $source->status() != SAA::Globals::HOST_UP_SNMP ) {
         $self->error( "Status for host " . $source->name()
             . " indicates it is not SNMP reachable" );
         return;

@@ -3,25 +3,35 @@ package SAA::Globals;
 use strict;
 require 5.002;
 
-# Module export
-use vars qw(@EXPORT_OK);
-use vars qw($KEY $PAD $HOST_DOWN $HOST_UP_IP $HOST_UP_SNMP);
-
 use Exporter;
 use Carp;
 
-*import = \&Exporter::import;
-@EXPORT_OK = qw($KEY $PAD $HOST_DOWN $HOST_UP_IP $HOST_UP_SNMP);
+my @ISA    = qw(Exporter);
+my @EXPORT = qw(
+  KEY
+  PAD
+  HOST_DOWN
+  HOST_UP_IP
+  HOST_UP_SNMP
+  SNMP_ERR_NOSUCHNAME
+  SNMP_ERR_V2_IN_V1
+  SNMP_ERR_BAD_VERSION
+);
 
 # Random key used in Blowfish ciphering.
 # XXX This key should not be statically defined here.  In the release, this
 # should be configurable by the end user so that all keys will be different.
-$KEY = pack("H16", 'aIC9e8!Cmtdyu4GV');
-$PAD = 'aBcDeFg';
+use constant KEY => pack( "H16", 'aIC9e8!Cmtdyu4GV' );
+use constant PAD => 'aBcDeFg';
 
-$HOST_DOWN    = 0;
-$HOST_UP_IP   = 1;
-$HOST_UP_SNMP = 2;
+use constant HOST_DOWN    => 0;
+use constant HOST_UP_IP   => 1;
+use constant HOST_UP_SNMP => 2;
+
+# Define some common ucd-snmp return codes.
+use constant SNMP_ERR_NOSUCHNAME  => 2;
+use constant SNMP_ERR_V2_IN_V1    => -7;
+use constant SNMP_ERR_BAD_VERSION => -14;
 
 1;
 __END__
