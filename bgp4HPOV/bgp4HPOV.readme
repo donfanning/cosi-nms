@@ -1,6 +1,6 @@
 $Id$
 
----------> bgp_trap.sh
+--------> bgp_trap.sh
 
 This script replaces no so good descriptive BGP trap messages 
 from HPOV or Cisco BGP MIBs Script sends new event
