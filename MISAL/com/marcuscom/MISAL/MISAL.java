@@ -155,16 +155,22 @@ public class MISAL implements Runnable {
 	 *			String.  When this expression is matched, the
 	 *			MISAL state will be set to the value of the
 	 *			<code>state</code> argument
-	 * @throws MalformedPatternException
-	 * @exception MalformedPatternException
+	 * @throws MalformedMISALStateException
+	 * @exception MalformedMISALStateException
 	 *             if the prompt is not a valid Perl regular expression.
 	 * @see			#removeState
 	 * @see			com.oroinc.text.regex.Pattern
 	 * @since		MISAL1.0
 	 */
-	public synchronized void addState(int state, String prompt) throws MalformedPatternException {
+	public synchronized void addState(int state, String prompt) throws MalformedMISALStateException {
 		Perl5Compiler compiler = new Perl5Compiler();
-		Pattern pattern = compiler.compile(prompt);
+		Pattern pattern = null;
+		try {
+			pattern = compiler.compile(prompt);
+		}
+		catch (MalformedPatternException mfpe) {
+			throw new MalformedMISALStateException(mfpe.getMessage());
+		}
 		stateTable.put(new Integer(state), pattern);
 		startCheckingState();
 	}
@@ -381,6 +387,14 @@ public class MISAL implements Runnable {
 		this.debug("Debugging set to " + this._debug);
 		return this._debug;
 	}
+
+        public void send(String data, String expect) throws IllegalMISALStateException, IOException {
+                this.send(MISAL_STATE_UNKNOWN, data, expect, 0, 0);
+        }
+
+        public void send(String data, int expectState) throws IllegalMISALStateException, IOException {
+                this.send(MISAL_STATE_UNKNOWN, data, null, expectState, 0);
+        }
 
 	public void send(int state, String data, String expect) throws IllegalMISALStateException, IOException {
 		this.send(state, data, expect, 0, 0);

@@ -45,7 +45,7 @@ public class MISALCiscoIOS extends MISAL {
 		}
 		/* This code should not generate an exception.  These
 		   patterns are tested. */
-		catch (MalformedPatternException mfpe) {}
+		catch (MalformedMISALStateException mmse) {}
 	}
 
 	public void setEnablePassword(String enablePw) {
@@ -64,11 +64,11 @@ public class MISALCiscoIOS extends MISAL {
 		this._userPw = userPw;
 	}
 
-	public void setUserPrompt(String prompt) throws MalformedPatternException {
+	public void setUserPrompt(String prompt) throws MalformedMISALStateException {
 		addState(this.USER_PROMPT, prompt);
 	}
 
-	public void setPasswordPrompt(String prompt) throws MalformedPatternException {
+	public void setPasswordPrompt(String prompt) throws MalformedMISALStateException {
 		addState(this.PASSWORD_PROMPT, prompt);
 	}
 
@@ -200,19 +200,6 @@ public class MISALCiscoIOS extends MISAL {
 		return false;
 	}
 		
-
-	public void send(int state, String data, int expectState) throws IllegalMISALStateException, IOException {
-		this.send(state, data, null, expectState, 0);
-	}
-
-	public void send(String data, String expect) throws IllegalMISALStateException, IOException {
-		this.send(MISAL_STATE_UNKNOWN, data, expect, 0, 0);
-	}
-
-	public void send(String data, int expectState) throws IllegalMISALStateException, IOException {
-		this.send(MISAL_STATE_UNKNOWN, data, null, expectState, 0);
-	}
-
 	protected void send(int state, String data, String expect, int expectState, int wait) throws IllegalMISALStateException, IOException {
 		boolean result = false;
 		int currState = MISAL_STATE_UNKNOWN;
