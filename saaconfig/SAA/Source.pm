@@ -192,8 +192,9 @@ sub learn {
         else {
             ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
             ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
-            return 0 unless length $saavers;
             $self->_status($SAA::Globals::HOST_UP_SNMP);
+            $self->_ios_version($iosvers);
+            return 0 unless length $saavers;
         }
     }
 
@@ -208,8 +209,9 @@ sub learn {
         else {
             ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
             ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
-            return 0 unless length $saavers;
             $self->_status($SAA::Globals::HOST_UP_SNMP);
+            $self->_ios_version($iosvers);
+            return 0 unless length $saavers;
         }
     }
 
@@ -237,7 +239,6 @@ sub learn {
     return 0 if ( $sess->{ErrorNum} );
 
     $self->_saa_version($saavers);
-    $self->_ios_version($iosvers);
 
     1;
 
