@@ -1,0 +1,20 @@
+MarcusCom Intelligent Socket Abstraction Library (MISAL)
+--------------------------------------------------------
+
+$Id$
+
+MISAL is a multi-threaded Java library that allows for manipulation of TCP
+sockets.  MISAL is designed to wrap around sockets and give an easy interface
+to sending an receiving data on a socket.
+
+MISAL itself is fairly generic, and can be used for almost any type of TCP 
+socket.  It is mostly used for things like telnet.  MISAL knows about telnet
+options, and will reply with DONT or WONT for all options.
+
+MISAL can be extended to support all kinds of specific socket types as well
+as specific network node types.  The default MISAL distribution comes with
+Cisco IOS(tm) and Cisco Catalyst OS subclasses.
+
+Right now, MISAL is considered to be beta-quality code.
+
+MISAL is distributed under the BSD license.
