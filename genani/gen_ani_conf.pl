@@ -134,8 +134,9 @@ while ( $line = <IN> ) {
     $match = 0;
 
     foreach $rule ( @{$rulesIndex} ) {
-        if ( $name =~ /$rulesRef->{$rule}->{name}/i
-            && $rulesRef->{$rule}->{type} !~ /static/i )
+        if ( $rulesRef->{$rule}->{type} !~ /static/i
+            && $name =~ /$rulesRef->{$rule}->{name}/i )
+
         {
 
             # We have a match.
@@ -150,8 +151,12 @@ while ( $line = <IN> ) {
               . ( ( $actions->{$rule}->{writecomm} ) ?
               $actions->{$rule}->{writecomm} : $vars->{WRITE_COMM} ) . "\n";
         }
-        elsif ( $rulesRef->{$rule}->{type} =~ /static/i ) {
-            print STDERR "INFO: Adding static rule, $rule" if ($VERBOSE);
+        elsif ( $rulesRef->{$rule}->{type} =~ /static/i
+            && $name eq $rulesRef->{$rule}->{name} )
+        {
+            $match = 1;
+            print STDERR "INFO: $name matches static rule $rule\n"
+              if ($VERBOSE);
             print OUT $name . ":" . ( ( $actions->{$rule}->{readcomm} ) ?
               $actions->{$rule}->{readcomm} : $vars->{READ_COMM} ) . "::"
               . ( ( $actions->{$rule}->{timeout} ) ?
