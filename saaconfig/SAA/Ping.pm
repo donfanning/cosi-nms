@@ -1,7 +1,5 @@
 package SAA::Ping;
 
-BEGIN { $ENV{'PATH'} = '/bin:/sbin:/usr/bin:/usr/sbin'; }
-
 use strict;
 require 5.002;
 
@@ -13,20 +11,40 @@ use Carp;
 *import    = \&Exporter::import;
 @EXPORT_OK = qw(saa_ping);
 
-use vars qw($PING $PING_OPTIONS $REDIRECT);
+use vars qw(@PING $PING_OPTIONS $REDIRECT);
 
-$PING         = '/sbin/ping';
+if ( $^O eq "MSWin32" ) {
+    @PING = ('ping');
+}
+else {
+    @PING = ( '/sbin/ping', '/usr/sbin/ping' );
+}
 $PING_OPTIONS = '-c 1';                          # Stop pinging after one packet
 $REDIRECT     = '2>&1 >/dev/null';
-$REDIRECT     = '> nul' if ( $^O eq "Win32" );
+$REDIRECT     = '> nul' if ( $^O eq "MSWin32" );
 
 sub saa_ping {
     my $addr = shift;
+    my $ping = "";
 
     return 0 unless defined $addr;
 
+    if ( $^O eq "MSWin32" ) {
+        $ping = $PING[0];
+    }
+    else {
+        foreach (@PING) {
+            if ( -x $_ ) {
+                $ping = $_;
+                last;
+            }
+        }
+    }
+
+    return 0 unless $ping;
+
     my $result =
-      system( $PING . " " . $PING_OPTIONS . " " . $addr . " " . $REDIRECT );
+      system( $ping . " " . $PING_OPTIONS . " " . $addr . " " . $REDIRECT );
 
     return 0 if $result;
 
