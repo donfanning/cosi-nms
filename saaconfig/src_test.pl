@@ -2,8 +2,9 @@
 
 use SAA::Source;
 
-my $src = new SAA::Source("nms-7507", "10.29.8.2", "2c");
-$src->read_community(1, "52616e646f6d49565c0c4b96bf783e7488261dd66c008271");
+my $src = new SAA::Source("10.5.1.7", "10.5.1.7", "2c");
+#$src->read_community(1, "52616e646f6d49565c0c4b96bf783e7488261dd66c008271");
+$src->read_community(0, public);
 $src->write_community(0, "private");
 print "learn result = " . (($src->learn() == 1) ? "SUCCESS" : "FAILED"), "\n";
 if ($src->error()) {
