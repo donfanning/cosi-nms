@@ -60,12 +60,13 @@ else {
 }
 
 $ANI_SNMP_CONF = join ( $PS, $ENV{'NMSROOT'}, 'etc', 'cwsi', 'anisnmp.conf' );
+$RULES = join ( $PS, $ENV{'NMSROOT'}, 'objects', 'genani', 'ani_rules.dat' );
+$PDTERM = join ( $PS, $ENV{'NMSROOT'}, 'bin', 'pdterm' );
+$PDEXEC = join ( $PS, $ENV{'NMSROOT'}, 'bin', 'pdexec' );
+
 $VERSION = '1.0';
 $OUTFILE = $ANI_SNMP_CONF;
 $OFFLINE = 0;
-$RULES   = join ( $PS, $ENV{'NMSROOT'}, 'objects', 'genani', 'ani_rules.dat' );
-$PDTERM = join ( $PS, $ENV{'NMSROOT'}, 'bin', 'pdterm' );
-$PDEXEC = join ( $PS, $ENV{'NMSROOT'}, 'bin', 'pdexec' );
 
 if ( $CRM::CRM_OS eq "WIN" ) {
     $NULL = "2>&1 >nul";
@@ -83,8 +84,8 @@ if ( $opts->{'h'} ) {
 }
 
 $OUTFILE = $opts->{'o'} if ( $opts->{'o'} );
+$RULES   = $opts->{'r'} if ( $opts->{'r'} );
 $OFFLINE = 1 if ( $opts->{'s'} );
-$RULES = $opts->{'r'} if ( $opts->{'r'} );
 $VERBOSE = 1 if ( $opts->{'v'} );
 
 $SIG{TERM} = 'IGNORE';    # Ignore SIGTERM to help keep us out of dmgtd grasp.
@@ -142,14 +143,19 @@ while ( $line = <IN> ) {
             # We have a match.
             print STDERR "INFO: $name matches rule $rule\n" if ($VERBOSE);
             $match = 1;
-            print OUT $name . ":" . ( ( $actions->{$rule}->{readcomm} ) ?
-              $actions->{$rule}->{readcomm} : $vars->{READ_COMM} ) . "::"
-              . ( ( $actions->{$rule}->{timeout} ) ?
-              $actions->{$rule}->{timeout} : $vars->{TIMEOUT} ) . ":"
-              . ( ( $actions->{$rule}->{retries} ) ?
-              $actions->{$rule}->{retries} : $vars->{RETRIES} ) . ":::"
-              . ( ( $actions->{$rule}->{writecomm} ) ?
-              $actions->{$rule}->{writecomm} : $vars->{WRITE_COMM} ) . "\n";
+            print OUT $name . ":"
+              . ( ( $actions->{$rule}->{readcomm} )
+              ? $actions->{$rule}->{readcomm}
+              : $vars->{READ_COMM} ) . "::"
+              . ( ( $actions->{$rule}->{timeout} )
+              ? $actions->{$rule}->{timeout}
+              : $vars->{TIMEOUT} ) . ":"
+              . ( ( $actions->{$rule}->{retries} )
+              ? $actions->{$rule}->{retries}
+              : $vars->{RETRIES} ) . ":::"
+              . ( ( $actions->{$rule}->{writecomm} )
+              ? $actions->{$rule}->{writecomm}
+              : $vars->{WRITE_COMM} ) . "\n";
         }
         elsif ( $rulesRef->{$rule}->{type} =~ /static/i
             && $name eq $rulesRef->{$rule}->{name} )
@@ -157,14 +163,19 @@ while ( $line = <IN> ) {
             $match = 1;
             print STDERR "INFO: $name matches static rule $rule\n"
               if ($VERBOSE);
-            print OUT $name . ":" . ( ( $actions->{$rule}->{readcomm} ) ?
-              $actions->{$rule}->{readcomm} : $vars->{READ_COMM} ) . "::"
-              . ( ( $actions->{$rule}->{timeout} ) ?
-              $actions->{$rule}->{timeout} : $vars->{TIMEOUT} ) . ":"
-              . ( ( $actions->{$rule}->{retries} ) ?
-              $actions->{$rule}->{retries} : $vars->{RETRIES} ) . ":::"
-              . ( ( $actions->{$rule}->{writecomm} ) ?
-              $actions->{$rule}->{writecomm} : $vars->{WRITE_COMM} ) . "\n";
+            print OUT $name . ":"
+              . ( ( $actions->{$rule}->{readcomm} )
+              ? $actions->{$rule}->{readcomm}
+              : $vars->{READ_COMM} ) . "::"
+              . ( ( $actions->{$rule}->{timeout} )
+              ? $actions->{$rule}->{timeout}
+              : $vars->{TIMEOUT} ) . ":"
+              . ( ( $actions->{$rule}->{retries} )
+              ? $actions->{$rule}->{retries}
+              : $vars->{RETRIES} ) . ":::"
+              . ( ( $actions->{$rule}->{writecomm} )
+              ? $actions->{$rule}->{writecomm}
+              : $vars->{WRITE_COMM} ) . "\n";
         }
 
     }
@@ -173,15 +184,21 @@ while ( $line = <IN> ) {
         print STDERR
           "INFO: Unable to find a rule to match $name; will use default\n"
           if ($VERBOSE);
-        print OUT $name . ":" . $vars->{READ_COMM} . "::" . $vars->{TIMEOUT}
-          . ":" . $vars->{RETRIES} . ":::" . $vars->{WRITE_COMM} . "\n";
+        print OUT $name . ":"
+          . $vars->{READ_COMM} . "::"
+          . $vars->{TIMEOUT} . ":"
+          . $vars->{RETRIES} . ":::"
+          . $vars->{WRITE_COMM} . "\n";
     }
 
 }
 
 print STDERR "INFO: Adding default rule ..." if ($VERBOSE);
-print OUT "*.*.*.*:" . $vars->{READ_COMM} . "::" . $vars->{TIMEOUT} . ":"
-  . $vars->{RETRIES} . ":::" . $vars->{WRITE_COMM} . "\n";
+print OUT "*.*.*.*:"
+  . $vars->{READ_COMM} . "::"
+  . $vars->{TIMEOUT} . ":"
+  . $vars->{RETRIES} . ":::"
+  . $vars->{WRITE_COMM} . "\n";
 print STDERR " DONE\n";
 
 close(OUT);
