@@ -2,12 +2,12 @@ package SAA::Sources::Source;
 
 use strict;
 require 5.002;
-use lib qw(/home/marcus/src/saa);
+use lib qw(../..);
 use SNMP;
 use SAA::Globals;
 use SAA::SAA_MIB;
 use SAA::Ping qw(saa_ping);
-use Crypt::Blowfish;
+use Crypt::CBC;
 
 # Right now, we'll configure for v1/v2c.
 sub new {
@@ -18,7 +18,6 @@ sub new {
         Name         => undef,
         Address      => undef,
         Community    => undef,
-        Comm_Length  => 0,
         SNMP_Version => undef,
         SAA_Version  => undef,
         IOS_Version  => undef,
@@ -37,7 +36,6 @@ use vars qw(
   $Name
   $Address
   $Community
-  $Comm_Length
   $SNMP_Version
   $IOS_Version
   $SAA_Version $Status
@@ -71,53 +69,22 @@ sub community {
         # Store the community string in a Blowfish cipher in the memory
         # and in the database.
         my $comm       = shift;
-        my $length     = length($comm);
-        my $ciphercomm = "";
         if ($encrypted) {
-			return 0 unless (@_);
-            $Comm_Length = shift;
             $Community   = $comm;
-            return $comm;
+            return $Community;
         }
-        my $cipher = new Crypt::Blowfish $SAA::Globals::KEY;
+		my $cipher = new Crypt::CBC($SAA::Globals::KEY, 'Crypt::Blowfish');
 
-        while ( length $comm > 8 ) {
-            my $substr = substr( $comm, 0, 8 );
-            $ciphercomm .= unpack( "H16", $cipher->encrypt($substr) );
-            $comm = substr( $comm, 7 );
-        }
-
-        if ( length $comm ) {
-            $comm .= substr( $SAA::Globals::PAD, 0, ( 8 - length($comm) ) );
-            $ciphercomm .= unpack( "H16", $cipher->encrypt($comm) );
-        }
-        $Community   = $ciphercomm;
-        $Comm_Length = $length;
+        $Community   = $cipher->encrypt_hex($comm);
     }
 
     if ($encrypted) {
         return $Community;
     }
-    my $ciphercomm = $Community;
-    my $cipher     = new Crypt::Blowfish $SAA::Globals::KEY;
-    my $comm       = "";
-    my $length     = 0;
-    while ( length $ciphercomm > 16 ) {
-        my $substr = substr( $ciphercomm, 0, 16 );
-        $comm .= $cipher->decrypt( pack( "H16", $substr ) );
-        $ciphercomm = substr( $ciphercomm, 15 );
-        $length += 8;
-    }
-    $comm .=
-      substr( $cipher->decrypt( pack( "H16", $ciphercomm ) ), 0,
-      $Comm_Length - $length );
+    my $cipher     = new Crypt::CBC($SAA::Globals::KEY, 'Crypt::Blowfish');
+    my $comm       = $cipher->decrypt_hex($Community);
 
     return $comm;
-}
-
-sub comm_length {
-	my $self = attr shift;
-	return $Comm_Length;
 }
 
 sub saa_version {
