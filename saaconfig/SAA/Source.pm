@@ -170,7 +170,7 @@ sub learn {
 
     if ( $self->snmp_version() eq "2c" ) {
         $vars =
-          new SNMP::VarList( ['system'], [$SAA::SAA_MIB::rttMonApplVersion]);
+          new SNMP::VarList( ['system'], [$SAA::SAA_MIB::rttMonApplVersion] );
         @vals = $sess->getbulk( 1, 1, $vars );
 
         if ( $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_BAD_VERSION ) {
@@ -202,7 +202,8 @@ sub learn {
 
     if ( $self->snmp_version() eq "1" ) {
         $vars =
-          new SNMP::VarList( [ 'sysDescr', 0 ], [ $SAA::SAA_MIB::rttMonApplVersion, 0 ] );
+          new SNMP::VarList( [ 'sysDescr', 0 ],
+            [ $SAA::SAA_MIB::rttMonApplVersion, 0 ] );
         @vals = $sess->get($vars);
         if ( $sess->{ErrorNum}
             && $sess->{ErrorNum} != $SAA::SAA_MIB::SNMP_ERR_NOSUCHNAME )
