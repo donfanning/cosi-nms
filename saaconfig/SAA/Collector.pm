@@ -21,7 +21,7 @@ sub new {
     my $class = ref($that) || $that;
 
     if ( scalar(@args) < 3 || scalar(@args) > 4 ) {
-        croak "SAA::Collector: Insufficient arguments passed to constructor";
+        croak "SAA::Collector: Wrong number of arguments passed to constructor";
     }
 
     my $self = {
@@ -47,14 +47,29 @@ sub new {
           "SAA::Collector: The specified operation requires a target argument";
     }
 
-    if (
-        !$self->{source}->protocol_supported( $self->{operation}->{protocol} ) )
-    {
+    #bugfix for proto support
+    #values stored in SAA::Operation's operation for protocol are
+    #numerical while values stored in SAA::Source's list of supported
+    #protocols are textual as per operationProtocolEnum
+    #FIX:feeding SAA::Source's object textual info after converting numerical
+    #info from SAA::Operations object.
+    # 12/16/2001 knail1
+
+    my %operationProtocolEnum_rev = reverse %$operationProtocolEnum;
+    my $protocol_textual          =
+      $operationProtocolEnum_rev{ $self->{operation}->{protocol} };
+
+    if ( !$self->{source}->protocol_supported($protocol_textual) ) {
         croak
 "SAA::Collector: The specified protocol is not supported by this source router";
     }
 
-    if ( !$self->{source}->type_supported( $self->{operation}->{type} ) ) {
+    #bugfix for type support: same problem as protocol entry, similar fix:
+    # 12/16/2001 knail1
+    my %operationTypeEnum_rev = reverse %$operationTypeEnum;
+    my $type_textual = $operationTypeEnum_rev{ $self->{operation}->{type} };
+
+    if ( !$self->{source}->type_supported($type_textual) ) {
         croak
 "SAA::Collector: The specified RTT type is not supported by this source router";
     }
@@ -222,7 +237,14 @@ sub install {
     my $i;
     for ( $i = 0 ; $i < 10 ; $i++ ) {
         my $val = $sess->get( $rttMonCtrlAdminStatus . '.' . $id );
-        last if ( $sess->{ErrorNum} );
+
+        #last if ( $sess->{ErrorNum} ); <----
+
+        last if ( $val eq 'NOSUCHINSTANCE' );
+
+        #bugfix: $sess->ErrorNum returns 0 for each query on non-extistant
+        #row. thus we need to exit out of loop using something else like $val
+        # knail1 12/16/2001
         $id = $self->id(1);    # Force a new id to be generated.
     }
 
@@ -254,22 +276,33 @@ sub install {
         return;
     }
     my $varlist = new SNMP::VarList(
-        [ $rttMonCtrlAdminRttType,  $id, $operation->type(),     'INTEGER' ],
-        [ $rttMonEchoAdminProtocol, $id, $operation->protocol(), 'INTEGER' ],
+
+        #below: fixing calls to pull $operation data from $self instead of attempting locally
+        # old:  $operation->protocol
+        # new: $self->{operation}->{protocol}
+        #knail1 12.16.2001
+        [ $rttMonCtrlAdminRttType, $id, $self->{operation}->{type}, 'INTEGER' ],
         [
-            $rttMonEchoAdminSourcePort, $id,
-            $operation->source_port(),  'INTEGER'
+            $rttMonEchoAdminProtocol,       $id,
+            $self->{operation}->{protocol}, 'INTEGER'
         ],
         [
-            $rttMonEchoAdminTargetPort, $id,
-            $operation->target_port(),  'INTEGER'
+            $rttMonEchoAdminSourcePort,        $id,
+            $self->{operation}->source_port(), 'INTEGER'
         ],
         [
-            $rttMonEchoAdminControlEnable, $id,
-            $operation->control_enable(),  'INTEGER'
+            $rttMonEchoAdminTargetPort,        $id,
+            $self->{operation}->target_port(), 'INTEGER'
         ],
-        [ $rttMonEchoAdminTOS,   $id, $operation->tos(),         'INTEGER' ],
-        [ $rttMonEchoAdminCache, $id, $operation->admin_cache(), 'INTEGER' ],
+        [
+            $rttMonEchoAdminControlEnable,         $id,
+            $self->{operation}->control_enabled(), 'INTEGER'
+        ],
+        [ $rttMonEchoAdminTOS, $id, $self->{operation}->tos(), 'INTEGER' ],
+        [
+            $rttMonEchoAdminCache,             $id,
+            $self->{operation}->admin_cache(), 'INTEGER'
+        ],
     );
 
     # Add objects that may be undef for certain operations.
@@ -282,41 +315,60 @@ sub install {
           ];
     }
 
-    if ( $operation->name_server() ) {
+    if ( $self->{operation}->name_server() ) {
         push @{$varlist},
           [
-            $rttMonEchoAdminNameServer,                $id,
-            addrToOctStr( $operation->name_server() ), 'OCTSTR'
+            $rttMonEchoAdminNameServer,                        $id,
+            addrToOctStr( $self->{operation}->name_server() ), 'OCTSTR'
           ];
     }
 
-    if ( $operation->admin_operation() ) {
+    if ( $self->{operation}->admin_operation() ) {
         push @{$varlist},
           [
-            $rttMonEchoAdminOperation,     $id,
-            $operation->admin_operation(), 'INTEGER'
+            $rttMonEchoAdminOperation,             $id,
+            $self->{operation}->admin_operation(), 'INTEGER'
           ];
     }
 
-    if ( $operation->admin_strings() ) {
+    if ( $self->{operation}->admin_strings() ) {
         my $i;
-        for ( $i = 0 ; $i < scalar( @{ $operation->admin_strings() } ) ; $i++ )
+        for ( $i = 0 ; $i < scalar( @{ $self->{operation}->admin_strings() } ) ;
+            $i++ )
         {
-            if ( $operation->admin_strings()->[$i] ) {
+            if ( $self->{operation}->admin_strings()->[$i] ) {
                 my $var = "rttMonEchoAdminString" . ( $i + 1 );
                 no strict 'refs';    # We need to do this to allow $$var
                 push @{$varlist},
-                  [ $$var, $id, $operation->admin_strings()->[$i], 'OCTSTR' ];
+                  [
+                    $$var, $id,
+                    $self->{operation}->admin_strings()->[$i], 'OCTSTR'
+                  ];
             }
         }
     }
 
-    if ( $operation->admin_url() ) {
+    if ( $self->{operation}->admin_url() ) {
         push @{$varlist},
-          [ $rttMonEchoAdminURL, $id, $operation->admin_url(), 'OCTSTR' ];
+          [
+            $rttMonEchoAdminURL,             $id,
+            $self->{operation}->admin_url(), 'OCTSTR'
+          ];
     }
 
     # Set the objects on the source router.
+
+##test: leaving test code in module as this would be used
+    # to fix the snmp set failure bug.
+    #foreach (@$varlist)	{
+    #	my $tmp = $_;
+    #	foreach (@$tmp){
+    #	chomp;
+    #	print $_." ";
+    #			}
+    #	print "\n";
+    #			}
+##end_test
     $sess->set($varlist);
 
     if ( $sess->{ErrorNum} ) {
