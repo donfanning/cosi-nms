@@ -8,7 +8,6 @@ use Exporter;
 use Carp;
 use Digest::MD5 qw(md5_hex);
 use lib qw(..);
-use conf::prefs qw(KEY);
 
 @ISA       = qw(Exporter);
 @EXPORT_OK = qw(

@@ -8,7 +8,7 @@ require 5.002;
 use lib qw(..);
 use SNMP;
 use SAA::Globals;
-use conf::prefs qw(KEY);
+use conf::prefs qw($KEY);
 use SAA::SAA_MIB;
 use Carp;
 use Crypt::CBC;
@@ -84,7 +84,7 @@ sub read_community {
             $self->{readCommunity} = $comm;
             return $self->{readCommunity};
         }
-        my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
+        my $cipher = new Crypt::CBC( $KEY, 'Crypt::Blowfish' );
 
         $self->{readCommunity} = $cipher->encrypt_hex($comm);
     }
@@ -92,7 +92,7 @@ sub read_community {
     if ($encrypted) {
         return $self->{readCommunity};
     }
-    my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
+    my $cipher = new Crypt::CBC( $KEY, 'Crypt::Blowfish' );
     my $comm = $cipher->decrypt_hex( $self->{readCommunity} );
 
     return $comm;
@@ -112,7 +112,7 @@ sub write_community {
             $self->{writeCommunity} = $comm;
             return $self->{writeCommunity};
         }
-        my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
+        my $cipher = new Crypt::CBC( $KEY, 'Crypt::Blowfish' );
 
         $self->{writeCommunity} = $cipher->encrypt_hex($comm);
     }
@@ -120,7 +120,7 @@ sub write_community {
     if ($encrypted) {
         return $self->{writeCommunity};
     }
-    my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
+    my $cipher = new Crypt::CBC( $KEY, 'Crypt::Blowfish' );
     my $comm = $cipher->decrypt_hex( $self->{writeCommunity} );
 
     return $comm;
