@@ -104,10 +104,16 @@ public class DEEsv {
         int debugLevel = 0;
         char separator = ',';
 
+        if (argv.length == 0) {
+            usage();
+            System.exit(1);
+        }
+
         // Extract the output filename from argv.
         for (int i = 0; i < argv.length; i++) {
             if (argv[i].equals("-f")) {
                 if (i == (argv.length - 1)) {
+                    System.err.println("* Error * The -f flag requires an argument.");
                     usage();
                     System.exit(1);
                 }
@@ -121,6 +127,7 @@ public class DEEsv {
 
             if (argv[i].equals("-d")) {
                 if (i == (argv.length - 1)) {
+                    System.err.println("* Error * The -d flag requires an argument.");
                     usage();
                     System.exit(1);
                 }
@@ -128,7 +135,7 @@ public class DEEsv {
                     debugLevel = Integer.parseInt(argv[i + 1]);
                 }
                 catch (NumberFormatException nfe) {
-                    System.err.println("Debug level must be a number");
+                    System.err.println("* Error * Debug level must be a number");
                     usage();
                     System.exit(1);
                 }
@@ -137,6 +144,7 @@ public class DEEsv {
 
             if (argv[i].equals("-sep")) {
                 if (i == (argv.length - 1)) {
+                    System.err.println("* Error * The -sep flag requires an argument.");
                     usage();
                     System.exit(1);
                 }
@@ -150,6 +158,7 @@ public class DEEsv {
 
             if (argv[i].equals("-l")) {
                 if (i == (argv.length - 1)) {
+                    System.err.println("* Error * The -l flag requires an argument.");
                     usage();
                     System.exit(1);
                 }
@@ -172,10 +181,10 @@ public class DEEsv {
             }
 
             if (argv[i].equals("-p")) {
-                System.out.println("");
-                System.out.println("* Warning * The -p option is highly insecure and *not* recommended.");
-                System.out.println("* Warning * See -u option for more details.");
-                System.out.println("\n");
+                System.err.println("");
+                System.err.println("* Warning * The -p option is highly insecure and *not* recommended.");
+                System.err.println("* Warning * See -u option for more details.");
+                System.err.println("\n");
                 continue;
             }
 
