@@ -12,6 +12,17 @@ use Carp;
 
 @ISA    = qw(Exporter);
 @EXPORT = qw(
+<<<<<<< Globals.pm
+  HOST_DOWN
+  HOST_UP_IP
+  HOST_UP_SNMP
+  SNMP_ERR_NOSUCHNAME
+  SNMP_ERR_V2_IN_V1
+  SNMP_ERR_BAD_VERSION
+  addrToOctStr
+  addrToHexStr
+  checkIPAddr
+=======
     HOST_DOWN
     HOST_UP_IP
     HOST_UP_SNMP
@@ -20,6 +31,7 @@ use Carp;
     SNMP_ERR_BAD_VERSION
     addrToOctStr
     checkIPAddr
+>>>>>>> 1.8
 );
 
 use constant HOST_DOWN    => 0;
@@ -47,6 +59,23 @@ sub addrToOctStr {
         return ("$a $b $c $cidr");
 
         #return ( sprintf "%.2x %.2x %.2x %.2x", $a, $b, $c, $cidr );
+}
+
+sub addrToHexStr {
+    if ( scalar(@_) != 1 ) {
+        croak "SAA::Globals::addrToHexStr: method requires one argument";
+    }
+
+	my $addr = shift ;
+	my (@IP,  $IP_octet, @hex_IP, $hex_octet, $hex_IP);
+    @IP = split ( /\./, $addr);
+	foreach $IP_octet (@IP)	{
+		$hex_octet = sprintf("%2.2x",$IP_octet);
+		push @hex_IP, $hex_octet;
+	}
+	$hex_IP=join("", @hex_IP);
+
+    return ( $hex_IP ) ;
 }
 
 sub checkIPAddr {
