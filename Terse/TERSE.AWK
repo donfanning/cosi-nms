@@ -1,28 +1,42 @@
 # COSI: Vadim Zakharine, Access Team
-# ver 1.0
+# ver. 1.1
 
 BEGIN {
+# idx_use_id defines whether users with different IDs should be counted
+# separately. Users with missing IDs also form a separate group.
+ idx_use_id = "N"
+# idx_use_sn defines whether users with different calling numberss should
+# be counted separately. Users with missing calling numbers also form a
+# separate group.
+ idx_use_sn = "Y"
+# idx_use_sn defines whether users with different called numberss should
+# be counted separately. Users with missing called numbers also form a
+# separate group.
+ idx_use_dn = "Y"
+# Time period (in seconds) for which DR statistics is collected together
+ period = 15
+
  FS="[ ,]+"
  SUBSEP = ""
  total = 0
 }
 
-/TERSE/ {
+/%CALLRECORD/ {
  Userid = ""
  Calling = ""
  Called = ""
  Discon = ""
  total++
  for(i=1; (Discon == "") && (i <= NF); i++) {
-  if((Userid == "") && ($i ~ /^userid=/)) {
+  if((idx_use_id == "Y") && (Userid == "") && ($i ~ /^userid=/)) {
    split($i, buff, "=+")
    Userid = sprintf("\"%s\"", buff[2])
   }
-  else if((Calling == "") && ($i ~ /^calling=/)) {
+  else if((idx_use_sn == "Y") && (Calling == "") && ($i ~ /^calling=/)) {
    split($i, buff, "=+")
    Calling = buff[2]
   }
-  else if((Called == "") && ($i ~ /^called=/)) {
+  else if((idx_use_dn == "Y") && (Called == "") && ($i ~ /^called=/)) {
    split($i, buff, "=+")
    Called = sprintf(">%s", buff[2])
   }
@@ -32,9 +46,9 @@ BEGIN {
   }
  }
  printf("[00]%s=%s%s%s", Discon, Calling, Called, Userid)
- userstat[Calling, Called, Userid]++
+ usertotl[Calling, Called, Userid]++
  userdisc[Calling, Called, Userid, Discon]++
- modmstat[Discon]++
+ d_r_stat[Discon]++
  for(i=1; ($i !~ /^disc/) && (i <= NF); i++) {
   if($i ~ /^%CALLRECORD/) {
    printf(" %s", $i)
@@ -80,6 +94,14 @@ BEGIN {
   }
   else if($i ~ /^time=/) {
    printf(" %s", $i)
+   split($i, buff, "=+")
+   time = period * (1 + (int(buff[2] / period)))
+   timestat[time]++
+   time_d_r[time, Discon]++
+   if(usermxtm[Calling, Called, Userid] < time) {
+    usermxtm[Calling, Called, Userid] = time
+   }
+   useravtm[Calling, Called, Userid] += time
   }
   else if($i ~ /^finl\-state=/) {
    printf(" %s", $i)
@@ -94,19 +116,35 @@ BEGIN {
 
 END {
  Userid = 0
- for(Calling in userstat) {
+ for(Calling in usertotl) {
   Userid++
-  for(Called in modmstat) {
+  for(Called in d_r_stat) {
    if(userdisc[Calling, Called] != "") {
-    printf("[10]%s=%s : %u (user %.2f\%, total %.2f\%)\n",
+    printf("[10]%s=% 4s: %u (user %.2f\%, DR total %.2f\%)\n",
      Calling, Called, userdisc[Calling, Called],
-     userdisc[Calling, Called]*100/userstat[Calling],
-     userdisc[Calling, Called]*100/modmstat[Called])
+     userdisc[Calling, Called]*100/usertotl[Calling],
+     userdisc[Calling, Called]*100/d_r_stat[Called])
    }
   }
+  printf("[10]%s=Total=%u, average time=%.2fs, max time=%us\n",
+   Calling, usertotl[Calling], useravtm[Calling] / usertotl[Calling],
+   usermxtm[Calling])
  }
- for(i in modmstat) {
-  printf("[20]% 4s : %u (%.2f\%)\n", i, modmstat[i], modmstat[i]*100/total)
+ for(Called in timestat) {
+  for(Calling in d_r_stat) {
+   if(time_d_r[Called, Calling] != "") {
+    printf("[20]%5us=% 4s: %u (%us period %.2f\%, DR total %.2f\%)\n",
+     Called, Calling, time_d_r[Called, Calling], period,
+     time_d_r[Called, Calling]*100/timestat[Called],
+     time_d_r[Called, Calling]*100/d_r_stat[Calling])
+   }
+  }
+  printf("[20]% 5us=Total= %u (%us period =100%=, total %.2f\%)\n",
+    Called, timestat[Called], period, timestat[Called] * 100 / total)
  }
- printf("[30]Total: %u terse records, %u users\n", total, Userid)
+ for(Calling in d_r_stat) {
+  printf("[30]% 4s: %u (%.2f\%)\n", Calling, d_r_stat[Calling],
+   d_r_stat[Calling]*100/total)
+ }
+ printf("[40]Total: %u call records, %u users\n", total, Userid)
 }
