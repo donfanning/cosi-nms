@@ -7,7 +7,7 @@ $Id$
 INTRODUCTION:
 -------------
 
-This tool is designed for CiscoWorks 2000 users running RME 3.4 or higher
+This tool is designed for CiscoWorks users running RME 3.4 or higher
 and have the Data Extracting Engine (DEEv2) product installed.  This tool
 takes the XML data output by the cwexport interface to DEE, and converts
 it to xSV (e.g. CSV) in a similar format to the RME Detailed Device Report.
@@ -15,7 +15,7 @@ it to xSV (e.g. CSV) in a similar format to the RME Detailed Device Report.
 REQUIREMENTS:
 -------------
 
-* CiscoWorks 2000 Resource Manager Essentials 3.4 or higher on Windows 2000,
+* CiscoWorks Resource Manager Essentials 3.4 or higher on Windows 2000,
   Solaris 7, or Solaris 8.
 * Data Extracting Engine (DEEv2) (DEE can be obtained from 
   http://www.cisco.com/cgi-bin/tablebuild.pl/cw2000-rme).
@@ -76,7 +76,7 @@ To do the same thing, but using the recommended, secure mode:
 DEEsv.pl -device 14.32.6.12 -f /tmp/14.32.6.12.csv
 
 NOTE: For this to work, the CWEXPORTFILE environment variable must be
-set to the path of the file that specifies the CiscoWorks 2000 username and
+set to the path of the file that specifies the CiscoWorks username and
 password.
 
 To extract inventory data for all the devices in the database, run the
@@ -96,9 +96,9 @@ ADDITIONAL NOTES:
 -----------------
 
 While most of this Open Source released under the BSD license, it still
-relies on components from CiscoWorks 2000 which is copyright of Cisco
+relies on components from CiscoWorks which is copyright of Cisco
 Systems, Inc.
 
-CiscoWorks 2000, Resource Manager Essentials, and Data Extracting Engine are
+CiscoWorks, Resource Manager Essentials, and Data Extracting Engine are
 registered trademarks of Cisco Systems, Inc.
 All rights reserved.
