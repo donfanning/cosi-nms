@@ -118,7 +118,7 @@ public class ConfregDecode extends Applet implements ActionListener {
         options[1] = new PropCheckbox("Disable boot messages", OEM_BIT);
         options[2] = new PropCheckbox("Ignore break *", IGNORE_BREAK);
         options[3] = new PropCheckbox("Boot into ROM if initial boot fails *", NET_BOOT);
-        options[4] = new PropCheckbox("Diagnostic mode", DIAG_MODE);
+        options[4] = new PropCheckbox("Diagnostic mode/Ignore NVRAM contents", DIAG_MODE);
 
         baudRatesChoice = new PropChoice();
         baudRatesChoice.addItem("", -1);
