@@ -10,7 +10,7 @@ use Carp;
 sub new {
 
     my ( $that, @args ) = @_;
-    my $class  = ref($that) || $that;
+    my $class = ref($that) || $that;
     my %params = @args;
     my $self   = {};
     $self = {
@@ -19,21 +19,23 @@ sub new {
         Hostname => $params{Hostname},
         User     => $params{User},
         Password => $params{Password},
-	error	 =>	undef,
-       	dbh 	 => undef
+        error    => undef,
+        dbh      => undef
     };
 
     # Create connect to database.
-    	my $DSN = "DBI:" . $self->{Driver} . ":";
-		$DSN = $DSN . $self->{Database} . ":";
-		$DSN = $DSN . $self->{Hostname};
-#		my $dbh = DBI->connect (
-#    			$DSN,
-#    			$self->{User},
-#    			$self->{Password}
-#    			);
+    my $DSN = "DBI:" . $self->{Driver} . ":";
+    $DSN = $DSN . $self->{Database} . ":";
+    $DSN = $DSN . $self->{Hostname};
+
+    #		my $dbh = DBI->connect (
+    #    			$DSN,
+    #    			$self->{User},
+    #    			$self->{Password}
+    #    			);
 
     bless( $self, $class );
+    $self;
 
 }
 
@@ -68,49 +70,50 @@ sub password {
 }
 
 sub error {
-	my $self = shift;
-	if (@_) {$self->{error} = shift;}
-	return $self->{error};
+    my $self = shift;
+    if (@_) { $self->{error} = shift; }
+    return $self->{error};
 }
 
 # XXX This object will create a INSERT Statment and apply it 
 # to the database.  At this point it simply prints the query.
 
 sub setSAAObject {
-    my $self  = shift;
-    my $obj   = shift;
-	my $ref = ref $obj;
+    my $self = shift;
+    my $obj  = shift;
+    my $ref  = ref $obj;
     my $table;
-	
-	if ($ref eq "SAA::Source") {
 
-		$table = "Sources";
-	}
+    if ( $ref eq "SAA::Source" ) {
 
-	elsif ($ref eq "SAA::Target") {
+        $table = "Sources";
+    }
 
-		$table = "Targets";
-	}
+    elsif ( $ref eq "SAA::Target" ) {
 
-	elsif ($ref eq "SAA::Operation") {
+        $table = "Targets";
+    }
 
-		$table = "Operations";
-	}
+    elsif ( $ref eq "SAA::Operation" ) {
 
-	elsif ($ref eq "SAA::Collector") {
+        $table = "Operations";
+    }
 
-		$table = "Collectors";
-	}
+    elsif ( $ref eq "SAA::Collector" ) {
 
-	else {
-    
-		croak "SAA::DB->setSAAObject: $ref is not a valid object for this method.";
-	}
+        $table = "Collectors";
+    }
 
-	if (!$obj) {
+    else {
 
-		croak "SAA::DB->setSAAObject: Can't find a valid object for $table";
-	}
+        croak
+          "SAA::DB->setSAAObject: $ref is not a valid object for this method.";
+    }
+
+    if ( !$obj ) {
+
+        croak "SAA::DB->setSAAObject: Can't find a valid object for $table";
+    }
 
     if ( $table eq "Sources" ) {
         my $query =
@@ -165,19 +168,17 @@ sub setSAAObject {
 
         my $query =
 "INSERT INTO $table (Name,ID,sourceName,targetName,operationName,startTime,Life,Description,NVRam,RowAge,Owner,Status) values ('";
-	$query = $query . $obj->name . "','";
-	$query = $query . $obj->id . "','";
-	$query = $query . $obj->source . "','";
-	$query = $query . $obj->target . "','";
-	$query = $query . $obj->operation . "','";
-	$query = $query . $obj->startTime . "','";
-	$query = $query . $obj->life . "')";
+        $query = $query . $obj->name . "','";
+        $query = $query . $obj->id . "','";
+        $query = $query . $obj->source . "','";
+        $query = $query . $obj->target . "','";
+        $query = $query . $obj->operation . "','";
+        $query = $query . $obj->startTime . "','";
+        $query = $query . $obj->life . "')";
 
-	print "$table Query: $query\n";
-
+        print "$table Query: $query\n";
 
     }
-
 
 }
 
@@ -202,47 +203,46 @@ sub getSAAObject {
 }
 
 sub searchDB {
-	my $self = shift;
-	my $tables = shift;
-	my $searchType = shift;
-	my %params = @_;
-	my $key;
-	my $query;
-	my $queryHeader = "SELECT Name FROM ";
-	my $queryBody   = "WHERE ";
+    my $self       = shift;
+    my $tables     = shift;
+    my $searchType = shift;
+    my %params     = @_;
+    my $key;
+    my $query;
+    my $queryHeader = "SELECT Name FROM ";
+    my $queryBody   = "WHERE ";
 
-	foreach $key (@tables) {
+    foreach $key (@tables) {
 
-		$query = $queryHeader . $key . " ";
-		$query = $query . $queryBody;
-		
-		my $key;
-		my $count = 0;
-		
-		foreach $key (keys %params) {
-			if ($count == 0) {
-				$query = $query . $key . " LIKE " . $params{$key} . " ";
-				$count++;
-			}
-			else {
-				$query = $query . $searchType . $key . " LIKE " . $params{$key} . " ";
-			}
-		}
-	}
+        $query = $queryHeader . $key . " ";
+        $query = $query . $queryBody;
+
+        my $key;
+        my $count = 0;
+
+        foreach $key ( keys %params ) {
+            if ( $count == 0 ) {
+                $query = $query . $key . " LIKE " . $params{$key} . " ";
+                $count++;
+            }
+            else {
+                $query =
+                  $query . $searchType . $key . " LIKE " . $params{$key} . " ";
+            }
+        }
+    }
 }
-
 
 sub runQuery {
-	my $self = shift;
-	my $query = shift;
-	my $dbh = $self->{dbh};
-	my $sth;
+    my $self  = shift;
+    my $query = shift;
+    my $dbh   = $self->{dbh};
+    my $sth;
 
-	# XXX How do I actually do this statment.
-	$sth = $dbh->prepare ($query);
-	$sth->execute or die "SAA::DB: Can't Execute SQL Query: $DBI::errstr\n";
+    # XXX How do I actually do this statment.
+    $sth = $dbh->prepare($query);
+    $sth->execute or die "SAA::DB: Can't Execute SQL Query: $DBI::errstr\n";
 
-	return $sth;
+    return $sth;
 }
-	
-	
+
