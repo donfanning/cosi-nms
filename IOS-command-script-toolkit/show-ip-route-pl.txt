@@ -1,0 +1,104 @@
+#!/usr/local/bin/perl
+#-----------------------------------------------------------------#
+#
+#   shipr.pl 
+# 
+# Description: This is a simple script that analyses the output
+# of a show ip route command and then dumps the results to STDOUT.a
+# It is useful when testing routing to protocols, to watch the number
+# of routes come and go.  If you have any comments and/or suggestions,
+# pleas email them to me.  - dblack@cisco.com
+# 
+#-----------------------------------------------------------------#
+#  Ver	Comments				Date	Email
+# 00 Original					1/20/98 dblack@cisco.com
+#
+#
+# This script released to open source under the Mozilla Public License
+#-----------------------------------------------------------------#
+#
+# open file with a handle
+#
+open(FILE,"/tmp/ip-routes") || die "Can't open /tmp/ip-routes\n";
+#
+#
+# Read the entire file and process 
+#
+while (<FILE>){
+$turd=substr($_,0,4);
+#
+if	($turd eq "C   ")
+	{ ++$direct; } 
+elsif 
+	($turd eq "S   ")
+	{ ++$static; }
+elsif 
+	($turd eq "D EX")
+	{ ++$ext-eigrp; }
+elsif 
+	($turd eq "D   ")
+	{	 ++$int-eigrp; }
+elsif 
+	($turd eq "I   ")
+	{	 ++$igrp; }
+elsif 
+	($turd eq "R   ")
+	{	 ++$rip; }
+elsif 
+	($turd eq "E   ")
+	{	 ++$egp;}
+elsif 
+	($turd eq "B   ")
+	{	 ++$bgp; }
+elsif 
+	($turd eq "O IA")
+	{	 ++$ia-ospf; }
+elsif 
+	($turd eq "O N1")
+	{	 ++$n1-ospf; }
+elsif 
+	($turd eq "O N2")
+	{	 ++$n2-ospf; }
+elsif 
+	($turd eq "O E1")
+	{	 ++$e1-ospf; }
+elsif 
+	($turd eq "O E2")
+	{	 ++$e2-ospf; }
+elsif 
+	($turd eq "I L1")
+	{	 ++$l1-isis; }
+elsif 
+	($turd eq "I L2")
+	{	 ++$l2-isis;} 
+}
+#
+#   	print the  results 
+#
+print "\n------------------------------------------\n";
+print " Routing Table Statistics\n";
+print "------------------------------------------\n\n";
+print "Directly Connected Routes        :",$direct,"\n";
+print "Static Routes        	 	 :",$static,"\n";
+print "IGRP Routes                      :",$igrp,"\n";
+print "RIP Routes                       :",$rip,"\n";
+print "BGP Routes                       :",$bgp,"\n";
+print "EGP Routes                       :",$egp,"\n";
+
+print "OSPF Routes                      :",$ospf,"\n";
+print "OSPF Inter Area Routes	    	:",$ia-ospf,"\n";
+print "OSPF NSSA external type 1 Routes	:",$n1-ospf,"\n";
+print "OSPF NSSA external type 2 Routes	:",$n2-ospf,"\n";
+print "OSPF external type 1 Routes	:",$e1-ospf,"\n";
+print "OSPF external type 2 Routes	:",$e2-ospf,"\n";
+
+print "EIGRP Internal Routes:",$int-eigrp,"\n";
+print "EIGRP External Routes:",$ext-eigrp,"\n";
+
+print "IS-IS 	       	    :",$isis,"\n";
+print "IS-IS level-1 Routes :",$l1-isis,"\n";
+print "IS-IS level-2 Routes :",$l2-isis,"\n";
+#  
+# Thats all folks!
+#
+exit

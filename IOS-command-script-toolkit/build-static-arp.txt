@@ -1,0 +1,85 @@
+#!/usr/local/bin/perl 
+#
+#       build-static-arp [no]
+#  
+#    useage   build-static-arp > /tftpboot/arp-table.cfg
+#
+# then use the config net on a router to upload the static ip arps.
+#  ver 		comments			author		date
+#  00 		original		dblack@cisco.com	5/98
+#
+# This script released to open source under the Mozilla Public License
+#---------------------
+#
+# If your playing with arp caches, chances are good, you know
+#  what you are doing. For this reason, change the following variables
+# to create different static ip arps.
+#
+# BTW - the no flag, creates the exact same static ip arps, except with a no
+# in front. Necessary to remove those static routes later on.    
+#---------------------
+#
+#
+$IP1=172;
+$IP2=100;
+$IP3=1;
+$IP4=0;
+$DOT=".";
+$STRING1="arp ";
+$STRING2="ARPA";
+#
+# you might want to use this extended version
+#
+#$STRING2="ARPA ethernet0";
+$SPACES="  ";
+$UNICAST="0010";
+#---------------------
+# someday I'll change this to random numbers.
+# meanwhile, use this silly number to limit 
+#the number of static ip arps created.
+# Roughly a  value of 4 creates > 762 static ip arps.
+# Your mileage may vary.
+#---------------------
+$UPPERLIMIT=4;
+$JFLAG=$ARGV[0];
+#
+#---------------------
+# Do we want to add the routes or remove them ? 
+#
+if ($JFLAG eq "no")
+        {
+$STRING1 = "no arp ";
+        }
+else {
+        $STRING1="arp ";
+        }
+#---------------------
+# 3rd  Octet Loop 
+#---------------------
+#
+for ($IP3 ; $IP3 < $UPPERLIMIT; $IP3++)
+{
+#---------------------
+# Fourth Octet Loop 
+#---------------------
+#
+for ($IP4 =1 ; $IP4 < 255; $IP4++)
+{
+	$HOSTADDR = $IP1.$DOT.$IP2.$DOT.$IP3.$DOT.$IP4;
+
+$TEMP=$IP3 + 10000;
+$HEXADDR1 = sprintf "%lx", $TEMP;
+
+$TEMP=$IP4 + 10000;
+$HEXADDR2 = sprintf "%lx", $TEMP;
+
+$MACADDR=$UNICAST.$DOT.$HEXADDR1.$DOT.$HEXADDR2;
+
+$OUTPUT=$STRING1.$HOSTADDR.$SPACES.$MACADDR.$SPACES.$STRING2;
+
+print "$OUTPUT\n"
+       	          }
+}
+#
+# All done... It's Miller time ! 
+# print "finished\n";

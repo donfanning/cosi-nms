@@ -1,0 +1,94 @@
+#!/usr/local/bin/perl 
+#Another simple but powerful script using Linux & Perl.
+# This script creates a large volume of static ipx route entries
+# once you have built the file, upload it to a router 
+# with tftp. Sit back and watch the fun.
+#
+# Modify to your own taste.
+#
+# here is what a static ipx entry looks like
+#
+#	ipx sap 40 dlb002 4444.0001.0002.0004 5000 5
+#
+# "Usage: build-ipx-routes localipxnetwork number-of-routes
+#
+#---------------------------------------------------------------#
+# ver    comments 		author	 date
+# 00   original			dblack@cisco.com	5/11/98
+# 01   added code to eliminate duplicate routes. no need, because
+#      a router will ignore them anyhow.
+#				dblack@cisco.com	5/28/98 
+#
+# This script released to open source under the Mozilla Public License
+#---------------------------------------------------------------#
+
+die "Usage: build-ipx-routes localipxnetwork number-of-routes\n" if($#ARGV==0);
+
+#
+# Set the variables to create the string first
+#
+$NETWORK2=$ARGV[0];
+$NUMOROUTES=$ARGV[1];
+#die "Sorry, the maximum is 10,000 \n" if($NUMOROUTES > 10000);
+
+$JFLAG=$ARGV[1];
+$SPACES="  ";
+$DOT=".";
+$COUNTER1=1;
+$HOPS=6;
+$UNICAST="0010";
+$STRING1="ipx route";
+$yes="yes";
+$NO="no";
+#---------------------------------------------------------------#
+# loop  to build the static routes 
+#---------------------------------------------------------------#
+#-------------------------
+# the random number generators
+# run it a few times to prime the pump
+#-------------------------
+srand(time);
+$IP1 = int(rand 220);
+$IP2 = int(rand 255);
+$IP3 = int(rand 255);
+$IP4 = int(rand 255);
+# 
+# this is to load the array. 
+# Perl seems to choke when we try to randomly build
+# arrays with 10,000 elements. There is probably a better way
+# to build thius, but I havent found it yet.  
+#
+#---------------------------------------------------------------#
+# loop time 
+#---------------------------------------------------------------#
+for ($COUNTER1 = 0; $COUNTER1 < $NUMOROUTES; )
+{
+# this is on purpose. dont want multicast addresses
+$TEMP1 = int(rand 99);
+$TEMP2 = int(rand 3200);
+$TEMP3 = int(rand 3200);
+$NETWORK1 = int(rand 9999);
+
+$HEXADDR1 = sprintf "%lx", $TEMP1;
+$HEXADDR2 = sprintf "%lx", $TEMP2;
+$HEXADDR3 = sprintf "%lx", $TEMP3;
+
+$TICKS="100";
+$OUTPUT = $STRING1.$SPACES.$NETWORK1.$SPACES.$NETWORK2.$DOT.$HEXADDR1.$DOT.$HEXADDR2.$DOT.$HEXADDR3.$SPACES.$TICKS.$SPACES.$HOPS;
+
+#print "looking for $NETWORK1\n";
+if ( $BIGARRAY[$NETWORK1] ne $yes)
+{ 	$COUNTER1++;
+	print "$OUTPUT\n";
+ }
+$BIGARRAY[$NETWORK1] = $yes;
+}
+#
+#
+# CLose up shop, lets go home... \8-)
+#
+# print "finished\n";
+#print "$NETWORK1 already used it\n"; }
+#else
+#{
+exit 0;
