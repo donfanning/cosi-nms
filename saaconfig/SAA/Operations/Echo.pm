@@ -2,7 +2,7 @@ package SAA::Operations::Echo;
 
 use strict;
 require 5.002;
-use lib "/home/marcus/src/saa";
+use lib qw(../..);
 use SNMP;
 use SAA::Operations::Globals;
 

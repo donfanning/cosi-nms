@@ -2,7 +2,7 @@ package SAA::Targets::Target;
 
 use strict;
 require 5.002;
-use lib qw(/home/marcus/src/saa);
+use lib qw(../..);
 use SAA::Globals;
 use SAA::Ping;
 
