@@ -34,7 +34,6 @@ sub new {
         verify           => SAA::SAA_MIB::DEFAULT_VERIFY,
         tos              => SAA::SAA_MIB::DEFAULT_TOS,
         targetPort       => SAA::SAA_MIB::DEFAULT_TPORT,
-        sourceAddress    => undef,
         sourcePort       => SAA::SAA_MIB::DEFAULT_SPORT,
         controlEnable    => SAA::SAA_MIB::DEFAULT_CONTROL_ENABLE,
         dnsTargetAddress => undef,
