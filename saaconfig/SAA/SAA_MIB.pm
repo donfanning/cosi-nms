@@ -12,6 +12,23 @@ use vars qw(
   $rttMonCtrlAdminTable
   $rttMonCtrlAdminEntry
   $rttMonCtrlAdminStatus
+  $rttMonApplSupportedRttTypesTable
+  $rttMonApplSupportedProtocolsTable
+  $rttMonApplSupportedProtocolsEntry
+  $rttMonApplSupportedRttTypesEntry
+  $rttMonApplSupportedProtocolsValid
+  $rttMonApplSupportedRttTypesValid
+  $rttMonEchoAdminTOS
+  $rttMonEchoAdminTable
+  $rttMonEchoAdminEntry
+  $rttMonEchoAdminTargetAddress
+  $rttMonEchoAdminTargetPort
+  $rttMonEchoAdminSourceAddress
+  $rttMonEchoAdminSourcePort
+  $rttMonEchoAdminNameServer
+  $rttMonEchoAdminControlEnable
+  $rttMonEchoAdminProtocol
+  $rttMonCtrlAdminRttType
   $historyFilterEnum
   $rowStatusEnum
   $httpOperationEnum
@@ -33,6 +50,23 @@ my @EXPORT =
   $rttMonCtrlAdminTable
   $rttMonCtrlAdminEntry
   $rttMonCtrlAdminStatus
+  $rttMonApplSupportedRttTypesTable
+  $rttMonApplSupportedProtocolsTable
+  $rttMonApplSupportedProtocolsEntry
+  $rttMonApplSupportedRttTypesEntry
+  $rttMonApplSupportedProtocolsValid
+  $rttMonApplSupportedRttTypesValid
+  $rttMonEchoAdminTOS
+  $rttMonEchoAdminTable
+  $rttMonEchoAdminEntry
+  $rttMonEchoAdminTargetAddress
+  $rttMonEchoAdminTargetPort
+  $rttMonEchoAdminSourceAddress
+  $rttMonEchoAdminSourcePort
+  $rttMonEchoAdminNameServer
+  $rttMonEchoAdminControlEnable
+  $rttMonEchoAdminProtocol
+  $rttMonCtrlAdminRttType
   $historyFilterEnum
   FALSE
   TRUE
@@ -69,14 +103,31 @@ my @EXPORT =
   START_TIME_NOW
 );
 
-$ciscoRttMonMIB        = '.1.3.6.1.4.1.9.9.42';
-$ciscoRttMonObjects    = $ciscoRttMonMIB . '.1';
-$rttMonAppl            = $ciscoRttMonObjects . '.1';
-$rttMonApplVersion     = $rttMonAppl . '.1';
-$rttMonCtrl            = $ciscoRttMonObjects . '.2';
-$rttMonCtrlAdminTable  = $rttMonCtrl . '.1';
-$rttMonCtrlAdminEntry  = $rttMonCtrlAdminTable . '.1';
-$rttMonCtrlAdminStatus = $rttMonCtrlAdminEntry . '.9';
+$ciscoRttMonMIB                    = '.1.3.6.1.4.1.9.9.42';
+$ciscoRttMonObjects                = $ciscoRttMonMIB . '.1';
+$rttMonAppl                        = $ciscoRttMonObjects . '.1';
+$rttMonApplVersion                 = $rttMonAppl . '.1';
+$rttMonCtrl                        = $ciscoRttMonObjects . '.2';
+$rttMonCtrlAdminTable              = $rttMonCtrl . '.1';
+$rttMonCtrlAdminEntry              = $rttMonCtrlAdminTable . '.1';
+$rttMonCtrlAdminRttType            = $rttMonCtrlAdminEntry . '.4';
+$rttMonCtrlAdminStatus             = $rttMonCtrlAdminEntry . '.9';
+$rttMonApplSupportedRttTypesTable  = $rttMonAppl . '.7';
+$rttMonApplSupportedProtocolsTable = $rttMonAppl . '.8';
+$rttMonApplSupportedProtocolsEntry = $rttMonApplSupportedProtocolsTable . '.1';
+$rttMonApplSupportedRttTypesEntry  = $rttMonApplSupportedRttTypesTable . '.1';
+$rttMonApplSupportedProtocolsValid = $rttMonApplSupportedProtocolsEntry . '.1';
+$rttMonApplSupportedRttTypesValid  = $rttMonApplSupportedRttTypesEntry . '.2';
+$rttMonEchoAdminTable              = $rttMonCtrl . '.2';
+$rttMonEchoAdminEntry              = $rttMonEchoAdminTable . '.1';
+$rttMonEchoAdminProtocol           = $rttMonEchoAdminEntry . '.1';
+$rttMonEchoAdminTargetAddress      = $rttMonEchoAdminEntry . '.2';
+$rttMonEchoAdminTargetPort         = $rttMonEchoAdminEntry . '.5';
+$rttMonEchoAdminSourceAddress      = $rttMonEchoAdminEntry . '.6';
+$rttMonEchoAdminSourcePort         = $rttMonEchoAdminEntry . '.7';
+$rttMonEchoAdminControlEnable      = $rttMonEchoAdminEntry . '.8';
+$rttMonEchoAdminTOS                = $rttMonEchoAdminEntry . '.9';
+$rttMonEchoAdminNameServer         = $rttMonEchoAdminEntry . '.12';
 
 # These are taken from the SNMPv2-TC definitions.  true is 1 and false is 2.
 use constant TRUE  => 1;

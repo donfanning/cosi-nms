@@ -46,9 +46,9 @@ sub status {
 }
 
 sub _status {
-    my $self = shift;
-	my $class = ref $self;
-	croak "Attempt to call private method" if ($class ne __PACKAGE__);
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
     $self->{status} = shift;
 }
 
