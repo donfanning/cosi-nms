@@ -54,6 +54,7 @@ public class MISAL implements Runnable {
 	private Hashtable stateTable = null;
 	private Socket _socket = null;
 	private String _buffer = null;
+	private String _lastBuffer = null;
 	private boolean _debug = false;
 	private Thread _stateChecker = null;
 	private BufferedInputStream _bis = null;
@@ -186,7 +187,11 @@ public class MISAL implements Runnable {
 		
 			String buffer = this._readAll();
 			if (buffer != null) {
-				this.setBuffer(buffer);
+				/* We preserve a separate buffer to hold the
+				   last read data.  This will be useful for
+				   error checking. */
+				this.setLastBuffer(buffer);
+				this.setBuffer(this.getLastBuffer());
 				Enumeration keys = stateTable.keys();
 				Perl5Matcher p5m = new Perl5Matcher();
 				Pattern pattern = null;
@@ -245,6 +250,15 @@ public class MISAL implements Runnable {
 			this.debug("Appending \"" + buffer + "\" to buffer");
 			this._buffer = this._buffer.concat(buffer);
 		}
+	}
+
+	private synchronized void setLastBuffer(String buffer) {
+		this.debug("Setting last read buffer to \"" + buffer + "\"");
+		this._lastBuffer = buffer;
+	}
+
+	public synchronized String getLastBuffer() {
+		return this._lastBuffer;
 	}
 
 	public synchronized String getBuffer() {
