@@ -18,6 +18,7 @@ use Carp;
     SNMP_ERR_NOSUCHNAME
     SNMP_ERR_V2_IN_V1
     SNMP_ERR_BAD_VERSION
+    ADMIN_TAG
     addrToOctStr
     addrToHexStr
     checkIPAddr
@@ -31,6 +32,9 @@ use constant HOST_UP_SNMP => 2;
 use constant SNMP_ERR_NOSUCHNAME  => 2;
 use constant SNMP_ERR_V2_IN_V1    => -7;
 use constant SNMP_ERR_BAD_VERSION => -14;
+
+# Define our admin tag.
+use constant ADMIN_TAG => "saaconfig";
 
 # Public static methods
 sub addrToOctStr {
