@@ -58,14 +58,13 @@ sub new {
     }
 
     my $self = {
-        rulesFile    => $args[0],
-        fh           => undef,
-        error        => undef,
-        rules        => {},
-        rulesIndex   => [],
-        vars         => {},
-        actions      => {},
-        actionsIndex => [],
+        rulesFile  => $args[0],
+        fh         => undef,
+        error      => undef,
+        rules      => {},
+        rulesIndex => [],
+        vars       => {},
+        actions    => {},
     };
 
     bless( $self, $class );
@@ -107,15 +106,6 @@ sub actions {
         }
     }
     return $self->{actions};
-}
-
-sub actions_index {
-    my $self = shift;
-    if (@_) {
-        my $action = shift;
-        push @{ $self->{actionsIndex} }, $action;
-    }
-    return $self->{actionsIndex};
 }
 
 sub rules {
@@ -261,7 +251,7 @@ sub _parseRule {
 
     $rec = {
         name => '',
-		type => '',
+        type => '',
     };
 
     $line =~ s/\s+/ /g;
@@ -402,7 +392,6 @@ sub _parseAction {
     if ( !$self->actions( $name => $rec ) ) {
         return;
     }
-    $self->actions_index($name);
     $line = $self->_readLine();
 
     while ( $line && $line !~ /^\}\;?$/ ) {
