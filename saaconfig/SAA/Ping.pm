@@ -25,6 +25,7 @@ else {
     @PING = ( '/sbin/ping', '/usr/sbin/ping' );
 }
 # XXX These options should probably be OS (or platform) dependent.
+# HP-UX uses -n for count.
 $PING_OPTIONS = '-c 1';                          # Stop pinging after one packet
 $REDIRECT     = '2>&1 >/dev/null';
 $REDIRECT     = '> nul' if ( $^O eq "MSWin32" );
