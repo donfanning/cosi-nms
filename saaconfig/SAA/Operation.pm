@@ -282,4 +282,10 @@ sub targetPort {
     return $self->{targetPort};
 }
 
+sub control_enabled {
+	my $self = shift;
+	if (@_) { $self->{controlEnabled} = shift;}
+	return $self->{controlEnabled};
+}
+
 1;
