@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #-
-# Copyright (c) 2001 Joe Clarke <marcus@marcuscom.com>
+# Copyright (c) 2001-2005 Joe Marcus Clarke <marcus@marcuscom.com>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,9 +37,12 @@ BEGIN {
         # This is is the server port to connect to for sending CGI parameters.
         $SERVER_PORT = 3333;
 
-        # This is the address or IP address of the server.  By default, localhost
-        # is used.
+        # This is the address or IP address of the server.  By default,
+	# localhost is used.
         $SERVER_ADDR = 'localhost';
+
+        # This is the path to the walkres.pl command.
+        $WALKRES_CMD = '/usr/local/bin/walkres.pl';
 }
 
 use strict;
@@ -47,7 +50,7 @@ use IO::Socket;
 use CGI;
 use POSIX qw(tmpnam);
 use vars
-    qw($rcsid $SERVER_ADDR $SERVER_PORT $ME $q $cookie $client $data $result $size);
+    qw($rcsid $SERVER_ADDR $SERVER_PORT $ME $q $cookie $client $data $result $size $WALKRES_CMD);
 use constant MAX_FILE_SIZE => 1_048_576;
 use constant BUFFER_SIZE   => 16_384;
 
@@ -212,9 +215,8 @@ if (defined($q->param('pattern'))) {
 }
 
 if (defined($q->param('bulk_file'))) {
-        my $buffer  = "";
-        my $fh      = $q->upload('bulk_file');
-        my $command = '/usr/local/bin/walkres.pl';
+        my $buffer = "";
+        my $fh     = $q->upload('bulk_file');
         $results = "";
 
         if (defined($fh)) {
@@ -225,8 +227,6 @@ if (defined($q->param('bulk_file'))) {
                 }
                 undef $tmp;
         }
-
-        close($fh);
 
         $buffer =~ s/\015$//;
         $buffer =~ s/\032$//;
@@ -245,7 +245,7 @@ if (defined($q->param('bulk_file'))) {
 
         if (!defined($pid = open(CMD, "-|"))) {
                 unlink($tmpfile);
-                return_error("Fork Error", "Failed to fork $command: $!");
+                return_error("Fork Error", "Failed to fork $WALKRES_CMD: $!");
         }
 
         if ($pid) {
@@ -253,19 +253,20 @@ if (defined($q->param('bulk_file'))) {
                         s/\&/&amp;/g;
                         s/\</&lt;/g;
                         s/\>/&gt;/g;
+                        s/\n/<br>/g;
                         $results .= $_;
                 }
                 close(CMD);
         } else {
-                if (!exec($command, $tmpfile)) {
+                if (!exec($WALKRES_CMD, $tmpfile)) {
                         unlink($tmpfile);
                         return_error("Exec Error",
-                                "Failed to exec $command: $!");
+                                "Failed to exec $WALKRES_CMD: $!");
                 }
         }
 
         unlink($tmpfile);
-        return_data($results);
+        return_data("<pre>$results</pre>");
         exit(0);
 }
 
@@ -485,6 +486,17 @@ function verifyTrans (f) {
 	return true;
 }
 
+function verifyBulk (f) {
+	var file = f.bulk_file.value;
+
+	if (isBlank(file)) {
+		alert("You must specify a source file to translate.");
+		return false;
+	}
+
+	return true;
+}
+
 function verifySearch (f) {
 	var pattern = f.pattern.value;
 
@@ -545,6 +557,29 @@ EOH
 </TABLE>
 </form>
 EOH
+        } elsif (defined($q->param('bulk_file'))) {
+                print <<"EOH";
+<H1>SNMP Bulk Translate</h1>
+
+<TABLE BORDER="0">
+<FORM METHOD=POST ACTION="/cgi-bin/snmptransc.pl" NAME="snmpbulktrans" onSubmit="
+	return verifyBulk(this);
+" enctype="multipart/form-data">
+	<TR>
+		<TD ALIGN="RIGHT"><B>Bulk Translate a File:</b> </td>
+		<TD ALIGN="LEFT"><INPUT TYPE="FILE" NAME="bulk_file"></td>
+	</tr>
+</table>
+<P></p>
+<TABLE BORDER="0">
+	<TR ALIGN="CENTER">
+		<TD ALIGN="RIGHT"><INPUT TYPE="SUBMIT" NAME="action"
+		VALUE="Translate File"></td>
+		<TD ALIGN="LEFT"><INPUT TYPE="RESET" VALUE="Cancel"></td>
+	</tr>
+</table>
+</form>
+EOH
         } else {
                 print <<"EOH";
 <H1>SNMP Search</h1>
@@ -559,7 +594,7 @@ EOH
 		MAXLENGTH="120"></td>
 		<TD ALIGN="LEFT"><INPUT TYPE="CHECKBOX" NAME="descr" VALUE="1">
 		<SMALL><I>Search description</I></SMALL></TD>
-		
+
 	</tr>
 </table>
 <P></p>
