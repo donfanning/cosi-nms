@@ -157,12 +157,15 @@ time to return.  The more complex the pattern, the shorter the wait will be.
 and the corresponding OID for that object.</p>
 
 <PRE>
-ciscoStackMIB = .1.3.6.1.4.1.9.5.1
+ciscoStackMIB = .1.3.6.1.4.1.9.5.1 ()
 </pre>
 
 <P><Em>Understanding:</em> <CODE>ciscoStackMIB</code> is the short object name 
 that needs to be translated.  The object identifier for this object is 
-<CODE>.1.3.6.1.4.1.9.5.1</code>.</p>
+<CODE>.1.3.6.1.4.1.9.5.1</code>.  The () after the OID specifies the type
+of object.  In this particular example, <CODE>ciscoStackMIB</code> is 
+a branch, and thus has no type.  Valid leaf types include OBJECT ID,
+Counter, Integer, OCTET STRING, Counter64, IpAddress, as well as others.</p>
 
 <!--
 <H3><A NAME="Sample Output 2">Sample Output 2</a></h3>
