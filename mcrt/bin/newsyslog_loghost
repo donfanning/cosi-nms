@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# /usr/lib/newsyslog - rotate log files (loghost)
+#
+
+
+LOGDIR=/var/log
+if test -d $LOGDIR
+	then
+	cd $LOGDIR
+# modify line below additional loghost files...
+  	for LOG in router.log ; do
+	     test -f $LOG.2 && mv $LOG.2 $LOG.3
+	     test -f $LOG.1 && mv $LOG.1 $LOG.2
+	     test -f $LOG.0 && mv $LOG.0 $LOG.1
+	     test -f $LOG && mv $LOG $LOG.0
+	     cp /dev/null $LOG
+	     chmod 644 $LOG
+      	     chgrp sysadmin $LOG
+  	    done
+  	    
+# Uncomment if you want to rotate apache logs
+# rotate apache logs
+#  	for LOG in www_server.log www_error.log ; do
+#	     test -f $LOG.2 && mv $LOG.2 $LOG.3
+#	     test -f $LOG.1 && mv $LOG.1 $LOG.2
+#	     test -f $LOG.0 && mv $LOG.0 $LOG.1
+#	     test -f $LOG && mv $LOG $LOG.0
+#	     cp /dev/null $LOG
+#	     chmod 644 $LOG
+#      	     chown nobody:sysadmin $LOG
+#  	 done
+
+fi
+
+# restart apache
+#/opt/apache/sbin/apachectl restart
+
+# restart syslog
+/etc/init.d/syslog stop
+sleep 1
+/etc/init.d/syslog start
+
+# ensure a restart of swatch
+/etc/init.d/ios-swatch stop
+sleep 1
+/etc/init.d/ios-swatch start
+
+#
+#
+#
+#
+#
+#

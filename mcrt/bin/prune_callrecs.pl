@@ -1,0 +1,90 @@
+#!/usr/local/bin/perl -w
+
+use DBI;
+
+# Hostname of MySQL server
+my $db_hostname = "localhost";
+
+# Database to create the table in
+my  $database = "deez";
+
+# Name of the table to insert the callrecords into
+my $tablename = "callrecs";
+
+# Optional username to connect as.
+my $username = "";
+
+# Log file in mcr/data 
+open( LOG, ">> mcr.log" ) or die "Cannot open mcr.log: $!\n";
+
+# Make time stamp
+my $stamp = localtime;
+
+
+# Mediocre usage statement ....
+unless ( ( $ARGV[0] =~ /delete|select/ ) or ( $ARGV[1] =~ /^[+-]?\d+$/) ) { die
+"$0 Usage: <delete|select> <days>\n" }
+
+# Get $int ARGV value
+my $int = $ARGV[1] if $ARGV[1];
+$int = $int-1; # Must subtract 1 to delete 33
+
+# Get yo func__eee value whyte boi  ...... 
+my $func = $ARGV[0] if $ARGV[0];
+
+# Connect to MySQL server
+if( $username eq "" ) {
+        $dbh = DBI->connect("DBI:mysql:$database:$db_hostname" ) or die "Cannot connect to $database: $!\n";
+} else {
+        $dbh = DBI->connect("DBI:mysql:$database:$db_hostname", "$username" ) or die "Cannot connect to $database: $!\n";
+}
+
+# Delete callrecords older than $int days ( the plan is to expire records after 33 days )
+
+if ( $ARGV[0]  eq 'delete' ) { 
+	del();
+	my $day = sel();
+	my $stamp = localtime();
+	my $whoiam = `whoami`;
+	chomp($whoiam);
+	$int++; # put back subtracted 1
+	print LOG "$stamp, days_in_callrecs:$day, prune_interval:$int (days_in_callrecs should equal prune_interval)\n";
+	print "$stamp, days_in_callrecs:$day, prune_interval:$int (days_in_callrecs should equal prune_interval)\n";
+} 
+
+if ( $ARGV[0] eq 'select' ) { 
+	$int++; # put back subtracted 1
+	print "$stamp, days_in_callrecs:$day, prune_interval:$int (days_in_callrecs should equal prune_interval)\n";
+}
+
+
+# Thats all folks!
+$dbh->disconnect();
+
+#####   SUBROUTINES   #####
+
+sub del {
+	
+my $true;	
+my $sql = "DELETE FROM callrecs WHERE date < (DATE_SUB(CURDATE(), INTERVAL $int DAY))";
+
+my $sth =       $dbh->prepare( $sql );
+                $true = $sth->execute();
+                $sth->finish();
+              	  
+	
+}
+
+sub sel {
+	
+my $sql = "SELECT COUNT(DISTINCT(date)) FROM callrecs";
+my $return;
+my $sth =       $dbh->prepare( $sql );
+                $sth->execute();
+		$return = $sth->fetchrow_array();	
+ 		$sth->finish();	
+		return $return;	
+}
+
+
+### END   #####

@@ -1,0 +1,128 @@
+#!/usr/local/bin/perl -w
+#-------------------------------------------------------
+# Script Name: mcr_view-01x.pl
+# Version: 
+# Last modified by: Weston Hopkins, April 2001
+# Requirements: 
+# Description: 	Inputs "nas names" & "logdate" submitted by logviewer html form.
+#		Outputs MCR logs for specified NAS & date.
+# Created by: Jim Leonard / Weston Hopkins
+# Date: March 2001
+# Contact: coe-iae@cisco.com 
+#-------------------------------------------------------
+# - Variables and Setup --------------------------------
+use CGI;
+use DBD::mysql;
+use DBI;
+
+# - Variables and Setup --------------------------------
+my $database = "deez";
+my $db_hostname = "localhost";
+my $tablename = "callrecs";
+my $username = "";
+my $password = "";
+# - END Variable setup ---------------------------------
+
+BEGIN
+{
+use CGI::Carp qw/carpout fatalsToBrowser/;
+#use FileHandle;
+#my $CGI_LOG = new FileHandle ( ">> /var/adm/cgi_error.log");
+#carpout($CGI_LOG);
+}
+
+
+# Edit $LWTCONF if neeeded to point to config folder.
+$LWTCONF = "/opt/CSCOlwt/conf";
+
+# Read default and over-ride variables...
+# customizations should go into lwt.cfg.
+
+do "$LWTCONF/lwt-defaults.cfg";
+do "$LWTCONF/lwt.cfg";
+
+my $q;
+$q=new CGI;
+
+# ------HTML Components-----------------
+
+$pagespot = "/graphics/supportal_spot.jpg";
+$pagebanner = "/graphics/mcrv_bn.gif";
+$title = "MCR View #01";
+$version = "1.69x";
+
+print $q->header();	# start the html page for report
+print template("$LWTHTML/lwt-start.lbi", {
+    'title' => $title,
+    'banner' => $pagebanner,
+    'spot' => $pagespot,
+    'version' => $version
+});
+
+# ---- Read CGI variables------
+
+my $devname = $q->param('dev');	# get the dev name
+my $month = $q->param('month');    	# get the month
+my $day = $q->param('day');	# get the day o' month
+my $year = $q->param('year');
+my $date = "$year-$month-$day";
+
+$db = DBI->connect("DBI:mysql:$database:$db_hostname" );
+@columns = qw/server dso_slot dso_contr dso_chan slot port call_id user_id ip calling called std prot comp init_rx init_tx rbs 
+dpad retr sq snr rx_chars tx_chars rx_ec tx_ec bad timeon final_state disc_radius disc_modem disc_local
+disc_remote timestamp date time/;
+
+$sql = "\nSELECT * FROM $tablename where server=\"$devname\" AND date='$date';";
+print "<!--SQL: $sql-->\n";
+$sth = $db->prepare($sql);
+$sth->execute();
+# Prints the header with the column names
+print(" <TABLE BGCOLOR=#FFFFFF border=1>\n");
+print("  <TR ALIGN=center>\n");
+foreach $column (@columns) {
+	print("   <TD BGCOLOR=#005500><B><FONT COLOR=#00FF00 SIZE=+1>$column</font></b></td>\n" );
+}
+print("  </tr>\n");
+
+$rowcount = 0;
+$BG_COLOR = "#FFFFFF";
+# Prints the actual data
+while( @row  = $sth->fetchrow_array ) {
+	print(" <TR BGCOLOR=$BG_COLOR ALIGN=center>\n");
+        $BG_COLOR = (($rowcount%2) == 0) ? "#CCFFCC" : "#FFFFFF";
+        $rowcount++;
+	$col = "";
+	foreach $col (@row) {
+		if( $col eq "" ) {
+			$col = "NULL";
+		}
+		print( "   <TD NOWRAP>$col</td>\n" );
+	}
+	printf("  </tr></font>\n");
+}
+print "</table>\n";
+print "<BR><H2> $rowcount entries found.</h2>\n";
+print template("$LWTHTML/lwt-end.lbi");
+$sth->finish();
+$db->disconnect();
+
+
+################### SUBROUTINES #################################
+# --- Subroutine: Print Template ----
+
+sub template {
+    my ($filename, $fillings) = @_;
+    my $text;
+    local $/;                   # slurp mode (undef)
+    local *F;                   # create local filehandle
+    open(F, "< $filename")      || return;
+    $text = <F>;                # read whole file
+    close(F);                   # ignore retval
+    # replace quoted words with value in %$fillings hash
+    $text =~ s{ %% ( .*? ) %% }
+              { exists( $fillings->{$1} )
+                      ? $fillings->{$1}
+                      : ""
+              }gsex;
+    return $text;
+}
