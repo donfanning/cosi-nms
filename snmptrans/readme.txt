@@ -40,6 +40,16 @@ working.  Then, obtain the net-snmp libraries from
 http://sourceforge.net/projects/net-snmp.  You will need to install the
 libraries as well as the SNMP.pm Perl module.
 
+If you wish to use the module replacement feature (a parsing option that tells
+net-snmp to replace older loaded MIB modules with newer one), you will
+need to be running either the CVS version of net-snmp with patch #428884
+applied to SNMP.pm, or apply the SNMP.patch (included with this distribution)
+to net-snmp 4.2.1's SNMP.pm.
+
+To apply the patch, run the command ``patch -p0 <SNMP.patch'' from the
+perl/SNMP directory in the net-snmp source directory, then compile the
+Perl module.
+
 Copy the snmptransc.pl script to your web server's cgi-bin directory, and
 edit the variables in the BEGIN { } clause to your environment.
 
