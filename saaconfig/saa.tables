@@ -2,12 +2,12 @@ create table Sources
 (
 	Name 			varchar(30), 
 	Address 		varchar(15), 
+	readCommunity 		varchar(50), 
+	writeCommunity 		varchar(50),
 	SNMPVer 		varchar(30), 
 	SAAVer 			varchar(30), 
 	IOSVer 			varchar(30), 
-	Status 			varchar(30), 
-	readCommunity 	varchar(50), 
-	writeCommunity 	varchar(50)
+	Status 			varchar(30) 
 );
 
 create table Targets 
@@ -20,21 +20,26 @@ create table Targets
 create table Operations 
 (
 	Name 			varchar(30), 
-	Protocal 		varchar(30), 
 	Type 			varchar(30), 
+	Protocal 		varchar(30), 
 	Threshold 		varchar(30), 
 	Frequency 		varchar(30), 
 	Timeout 		varchar(30), 
+	Verify			varchar(30),
 	TOS			varchar(30),
-	tInterval		varchar(30), 
 	targetPort 		varchar(5), 
-	pktDataRequest 		varchar(30), 
-	controlEnabled 		varchar(30)
+	sourcePort		varchar(5),
+	controlEnabled 		varchar(30),
+	adminOperation		varchar(30),
+	adminStrings		varchar(30),
+	adminURL		varchar(50)
 );
 
 create table Collectors 
 (
-	sourceName 		varchar(30), 
+	Name			varchar(30),
+	ID			varchar(30),
+ 	sourceName 		varchar(30), 
 	targetName 		varchar(30), 
 	operationName 		varchar(30), 
 	Description 		longtext, 
@@ -42,6 +47,5 @@ create table Collectors
 	NVRam 			varchar(30), 
 	RowAge 			varchar(30), 
 	Owner 			varchar(30), 
-	Status 			varchar(30), 
 	Life 			varchar(30)
 );
