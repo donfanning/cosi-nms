@@ -5,10 +5,10 @@ import java.net.*;
 import java.util.*;
 import com.oroinc.text.regex.*;
 
-/**-
- * Copyright &copy; 2001 Joe Clarke &lt;marcus@marcuscom.com&gt;
- * All rights reserved.
- *
+/**
+ * Copyright &copy; 2001 Joe Clarke &lt;marcus@marcuscom.com&gt;<br>
+ * All rights reserved.<br>
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -18,6 +18,7 @@ import com.oroinc.text.regex.*;
  * <li>Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.</li>
+ * </ul>
  * <p>
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -38,17 +39,48 @@ import com.oroinc.text.regex.*;
  * much easier.</p>
  *
  * @author	Joe Clarke &lt;marcus@marcuscom.com&gt;
- * @version	%I%, %G%
+ * @version	1.0
  * @since	JDK1.1
  */
 public class MISAL implements Runnable {
+	/**
+	 * The state of the socket when no other state matches.
+	 */
 	public final static int MISAL_STATE_UNKNOWN = -1;
+
+	/**
+	 * The state of the socket after it is closed.
+	 */
 	public final static int MISAL_STATE_CLOSED = 0;
 
+	/**
+	 * The default state checking thread interval 
+	 * (1 millisecond).
+	 */
 	protected final static int MISAL_DEFAULT_SLEEP_INTERVAL = 1;
+
+	/**
+	 * The default time to wait between state checking attempts
+	 * (100 milliseconds).
+	 */
 	protected final static int MISAL_THREAD_SLEEP_INTERVAL = 100;
+	/**
+	 * Number of milliseconds to wait with fast timers 
+	 * (10 milliseconds).
+	 */
 	protected final static int MISAL_SHORT_THREAD_SLEEP_INTERVAL = 10;
+
+	/**
+	 * The default number of retries before failing when a state match
+	 * is not found (1000).  This number is multiplied by the 
+	 * MISAL_THREAD_SLEEP_INTERVAL.
+	 */
 	protected final static int DEFAULT_RETRIES = 1000;
+
+	/**
+	 * The default size for the main accumulator buffer 
+	 * (1 MB).  All data read from the socket is stored in this buffer.
+	 */
 	protected final static int DEFAULT_BUFFER_SIZE = 1*1024*1024;
 
 	private Hashtable stateTable = null;
@@ -64,15 +96,15 @@ public class MISAL implements Runnable {
 	private int _sleepInterval = this.MISAL_DEFAULT_SLEEP_INTERVAL;
 
 	/**
-	 * Create a new MISAL socket.
+	 * Creates a new MISAL socket.
 	 *
 	 * @param socket	the <em>open</em> java.net.Socket to be 
 	 *			abstracted
 	 * @throws SocketException
 	            if Socket is not initialized and connected
 	 * @throws IOException
-	 * @see			Socket
-	 * @since		JDK1.1
+	 * @see			java.net.Socket
+	 * @since		MISAL1.0
 	 */
 	public MISAL(Socket socket) throws SocketException,IOException {
 		if (socket == null) {
@@ -85,33 +117,31 @@ public class MISAL implements Runnable {
 	}
 
 	/**
-	 * Get the MISAL socket's output stream as a
+	 * Returns the MISAL socket's output stream as a
 	 * java.io.BufferedOutputStream.
 	 *
-	 * @return	java.io.BufferedOutputStream
 	 * @see		Socket#getOutputStream
 	 * @see		BufferedOutputStream
-	 * @since	JDK1.1
+	 * @since	MISAL1.0
 	 */
 	protected BufferedInputStream getInputStream() {
 		return this._bis;
 	}
 
 	/**
-	 * Get the MISAL socket's input stream as a
+	 * Returns the MISAL socket's input stream as a
 	 * java.io.BufferedInputStream.
 	 *
-	 * @return	java.io.BufferedInputStream
 	 * @see		Socket#getInputStream
 	 * @see		BufferedInputStream
-	 * @since	JDK1.1
+	 * @since	MISAL1.0
 	 */
 	protected BufferedOutputStream getOutputStream() {
 		return this._bos;
 	}
 
 	/**
-	 * Add a new MISAL state to the state table.  MISAL states are used
+	 * Adds a new MISAL state to the state table.  MISAL states are used
 	 * by the state reading/setting thread to indicate where the socket
 	 * is.  For example, a state can be identified by the regular
 	 * expression <code>/login: ?$/</code> and a constant 
@@ -129,8 +159,8 @@ public class MISAL implements Runnable {
 	 * @exception MalformedPatternException
 	 *             if the prompt is not a valid Perl regular expression.
 	 * @see			#removeState
-	 * @see			Pattern
-	 * @since		JDK1.1
+	 * @see			com.oroinc.text.regex.Pattern
+	 * @since		MISAL1.0
 	 */
 	public synchronized void addState(int state, String prompt) throws MalformedPatternException {
 		Perl5Compiler compiler = new Perl5Compiler();
@@ -140,21 +170,21 @@ public class MISAL implements Runnable {
 	}
 
 	/** 
-	 * Remove a MISAL state from the state machine.
+	 * Removes a MISAL state from the state machine.
 	 *
 	 * @param state		integer representing the state to remove
 	 * @see			#addState
-	 * @since		JDK1.1
+	 * @since		MISAL1.0
 	 */
 	public synchronized void removeState(int state) {
 		this.stateTable.remove(new Integer(state));
 	}
 
 	/**
-	 * Start the state checking thread.
+	 * Starts the state checking thread.
 	 *
 	 * @see		#stopCheckingState
-	 * @since	JDK1.1
+	 * @since	MISAL1.0
 	 */
 	protected void startCheckingState() {
 		if (_stateChecker == null) {
@@ -163,6 +193,12 @@ public class MISAL implements Runnable {
 		}
 	}
 
+	/**
+	 * Stops the state checking thread.
+	 *
+	 * @see		#startCheckingState
+	 * @since	MISAL1.0
+	 */
 	protected void stopCheckingState() {
 		if (_stateChecker != null) {
 			_stateChecker.stop();
@@ -170,6 +206,16 @@ public class MISAL implements Runnable {
 		}
 	}
 
+	/**
+	 * Runs the state checking thread.  This method should not
+	 * be called directly.  Instead, use the 
+	 * <code>stopCheckingState()</code> and 
+	 * <code>startCheckingState()</code> methods.
+	 *
+	 * @see		#startCheckingState
+	 * @see		#stopCheckingState
+	 * @since	MISAL1.0
+	 */
 	public void run() {
 		while(true) {
 			if (stateTable.isEmpty()) {
@@ -211,32 +257,93 @@ public class MISAL implements Runnable {
 		}
 	}
 
+	/**
+	 * Sets the MISAL state checking thread's sleep interval.  The thread
+	 * will wait <code>interval</code> milliseconds before checking
+	 * the state of the socket.
+	 *
+	 * @param interval	integer sleep interval
+	 * @see			#getSleepInterval
+	 * @since		MISAL1.0
+	 */
 	protected void setSleepInterval(int interval) {
 		this.debug("Setting sleep interval to " + interval);
 		this._sleepInterval = interval;
 	}
 
+	/**
+	 * Returns the MISAL state checking thread's sleep interval.  This 
+	 * method returns the sleep interval as an integer representing the 
+	 * number of milliseconds the state checking thread will wait before 
+	 * checking the socket state again.
+	 *
+	 * @see		#setSleepInterval
+	 * @since	MISAL1.0
+	 */
 	protected int getSleepInterval() {
 		return this._sleepInterval;
 	}
 
+	/**
+	 * Sets the current MISAL state.
+	 *
+	 * @param state		the state ID of a state already in the state
+	 *			machine
+	 * @see			#getState
+	 * @see			#addState
+	 * @see			#removeState
+	 * @since		MISAL1.0
+	 */
 	protected synchronized void setState(int state) {
 		this.debug("Setting state to " + state);
 		this._currentState = state;
 	}
 
+	/**
+	 * Returns the current MISAL state.
+	 *
+	 * @see			#getState
+	 * @see			#addState
+	 * @see			#removeState
+	 * @since		MISAL1.0
+	 */
 	public synchronized int getState() {
 		return this._currentState;
 	}
 
+	/**
+	 * Returns the maximum allowed size of the main accumulator buffer.
+	 *
+	 * @see		#setBufferSize
+	 * @see		#getBuffer
+	 * @see		#clearBuffer
+	 * @since	MISAL1.0
+	 */
 	public synchronized int getBufferSize() {
 		return this._bufferSize;
 	}
 
+	/**
+	 * Sets the maximum allowed size of the main accumulator buffer.
+	 *
+	 * @param size	size of the buffer in bytes
+	 * @see		#getBufferSize
+	 * @see		#getBuffer
+	 * @see		#clearBuffer
+	 */
 	public synchronized void setBufferSize(int size) {
 		this._bufferSize = size;
 	}
 
+	/**
+	 * Clears the main accumulator buffer.  Usually, this method is called
+	 * right before running a command for which you wish to save output.
+	 *
+	 * @see		#getBufferSize
+	 * @see		#setBufferSize
+	 * @see		#getBuffer
+	 * @since	MISAL1.0
+	 */
 	public synchronized void clearBuffer() {
 		this.setBuffer(null);
 	}
