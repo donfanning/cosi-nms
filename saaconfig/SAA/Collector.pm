@@ -67,12 +67,13 @@ sub _needTarget {
     }
 
     # This is a private static method to determine if a given operation type
-    # needs a target.  HTTP, DNS, and DHCP operations do not need targets.
+    # needs a target.  HTTP, DNS, FTP and DHCP operations do not need targets.
     my $type = shift;
 
     if ( $type == $SAA::SAA_MIB::operationTypeEnum->{dns}
         || $type == $SAA::SAA_MIB::operationTypeEnum->{http}
-        || $type == $SAA::SAA_MIB::operationTypeEnum->{dhcp} )
+        || $type == $SAA::SAA_MIB::operationTypeEnum->{dhcp} 
+		|| $type == $SAA::SAA_MIB::operationTypeEnum->{ftp} )
     {
         return 0;
     }
