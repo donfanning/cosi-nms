@@ -25,19 +25,19 @@ create table Operations
 	Threshold 		varchar(30), 
 	Frequency 		varchar(30), 
 	Timeout 		varchar(30), 
-	TOS				varchar(30),
-	Interval 		varchar(30), 
+	TOS			varchar(30),
+	tInterval		varchar(30), 
 	targetPort 		varchar(5), 
-	pktDataRequest 	varchar(30), 
-	controlEnabled 	varchar(30)
+	pktDataRequest 		varchar(30), 
+	controlEnabled 		varchar(30)
 );
 
 create table Collectors 
 (
 	sourceName 		varchar(30), 
 	targetName 		varchar(30), 
-	operationName 	varchar(30), 
-	Description 	longtext, 
+	operationName 		varchar(30), 
+	Description 		longtext, 
 	startTime 		varchar(30), 
 	NVRam 			varchar(30), 
 	RowAge 			varchar(30), 
