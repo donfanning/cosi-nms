@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+       
+  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <title>Decoder of PPP IE fields</title>
+</head>
+ <body>
+ 
+<div align="Center"> 
+<h2>Summary</h2>
+ </div>
+ The programm decodes LCPREQ L2TP AVPs related to PPP negotiation between 
+LAC and client (green, identified as "LCPREQ" in IOS debugs). The string
+of hexadecimal  values contains PPP IEs. The IEs are decoded as per RFC 1661
+and 1662. The  explanations (red) are added in extra lines and framed with
+square brackets '[',  ']' following the relevant debugs (blue). All other
+input is also printed to the output transparently.<br>
+ <b>Required debugs:</b><br>
+ debug vpdn l2x-packets   
+<div align="Center">  
+<h2>Original output of "debug vpdn l2x-packets"</h2>
+  </div>
+  ..<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; AVP 27, len 16, flag 0x0<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Last Sent <b><font color="#33cc00"><font>LCPREQ</font></font></b><b><font color="#33cc00">
+   </font></b><b><font color="#33cc00">0304C023050668BBD663</font></b><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; AVP 28, len 27, flag 0x0<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Last Rx <font color="#33cc00"><b>LCPREQ</b></font><br>
+  <font color="#33cc00"><b>010405DC050648268ED7130B016E61706F6C656F6E</b></font><br>
+  ..<br>
+   
+<div align="Center">  
+<h2>Decoded output</h2>
+  </div>
+  ..<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; AVP 27, len 16, flag 0x0<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Last Sent <font color="#3333ff"><b>LCPREQ</b></font>
+   <font color="#3333ff">0304C023050668BBD663</font><br>
+  [<b><font color="#3333ff">03</font></b> <font color="#ff0000">(Authentication
+ Protocol)</font> <b><font color="#ff0000">4 B</font></b>: <font color="#3333ff"><b>
+  C0 23</b></font>]<br>
+  [<font color="#3333ff"><b>05</b></font> <font color="#ff0000">(Magic Number)</font>
+   <font color="#ff0000"><b>6 B</b></font>: <font color="#3333ff"><b>68 BB
+ D6 63</b></font>]<br>
+  <br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; AVP 28, len 27, flag 0x0<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Last Rx <font color="#3333ff"><b>LCPREQ</b></font><br>
+  <font color="#3333ff">010405DC050648268ED7130B016E61706F6C656F6E</font><br>
+  [<font color="#3333ff"><b>01</b></font> <font color="#ff0000">(Maximum
+Receive  Unit)</font> <font color="#ff0000"><b>4 B</b></font>: <font color="#3333ff"><b>
+  05 DC</b></font>]<br>
+  [<font color="#3333ff"><b>05</b></font> <font color="#ff0000">(Magic Number)</font>
+   <font color="#ff0000"><b>6 B</b></font>: <font color="#3333ff"><b>48 26
+ 8E D7</b></font>]<br>
+  [<font color="#3333ff"><b>13</b></font> <font color="#ff0000"><b>11 B</b></font>
+  : <font color="#3333ff"><b>01 6E 61 70 6F 6C 65 6F 6E</b></font>]<br>
+  ..<br>
+   
+</body>
+</html>
