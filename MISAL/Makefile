@@ -1,44 +1,45 @@
 #
-# Makefile for the MISAL project. 
+# Makefile for the MISAL project.
 # $Id$
 
-srcdir=	.
-docdir=	$(srcdir)/doc/api
-package=	com.marcuscom.MISAL
-package_os=	com/marcuscom/MISAL
+SRCDIR=	.
+DOCDIR=	${SRCDIR}/doc/api
+CLASSPATH=	.:${JARDIR}/jakarta-oro.jar
 
-RM=	/bin/rm
-MKDIR= /bin/mkdir
-
-JAVAC=	/usr/local/jdk1.3.1/bin/javac
-JAVAC_FLAGS=	-O
-CLASSPATH=.:/usr/local/share/java/classes/PerlTools.jar
-
+JARDIR=		/usr/local/share/java/classes
 JAVADOC=	/usr/local/jdk1.3.1/bin/javadoc
 JAVADOC_FLAGS=	-author -version -d $(docdir)
-
-JAR=	/usr/local/jdk1.3.1/bin/jar
+JAVAC=		/usr/local/jdk1.3.1/bin/javac
+JAVAC_FLAGS=	-O
+JAR=		/usr/local/jdk1.3.1/bin/jar
 JAR_FLAGS=	-cf
+
+PACKAGE=	com.marcuscom.MISAL
+PACKAGE_OS=	com/marcuscom/MISAL
+
+RM=	/bin/rm
+MKDIR=	/bin/mkdir -p
 
 all: jar docs
 
 jar: classes
-	$(JAR) $(JAR_FLAGS) $(srcdir)/MISAL.jar $(srcdir)/$(package_os)/*.class
+	${JAR} ${JAR_FLAGS} ${SRCDIR}/MISAL.jar ${SRCDIR}/${PACKAGE_OS}/*.class
 
 classes:
-	$(JAVAC) $(JAVAC_FLAGS) -classpath $(CLASSPATH) $(srcdir)/$(package_os)/*.java
+	${JAVAC} ${JAVAC_FLAGS} -classpath \
+		${CLASSPATH} ${SRCDIR}/${PACKAGE_OS}/*.java
 
 test:
-	$(JAVAC) $(JAVAC_FLAGS) -classpath $(CLASSPATH) $(srcdir)/MISALTest.java \
-		$(srcdir)/MISALTestIOS.java
+	${JAVAC} ${JAVAC_FLAGS} -classpath ${CLASSPATH} \
+		${SRCDIR}/MISALTest.java ${SRCDIR}/MISALTestIOS.java
 
 docs:
-	$(MKDIR) -p $(docdir)
-	$(JAVADOC) $(JAVADOC_FLAGS) -classpath $(CLASSPATH) $(package)
+	${MKDIR} ${DOCDIR}
+	${JAVADOC} ${JAVADOC_FLAGS} -classpath ${CLASSPATH} ${PACKAGE}
 
 clean:
-	$(RM) -f $(srcdir)/MISAL.jar
-	$(RM) -f $(srcdir)/$(package_os)/*.class
-	$(RM) -f $(docdir)/*.* $(docdir)/package-list
-	$(RM) -rf $(docdir)/com
-	$(RM) -f $(srcdir)/MISALTest.class $(srcdir)/MISALTestIOS.class
+	${RM} -f ${SRCDIR}/MISAL.jar
+	${RM} -f ${SRCDIR}/${PACKAGE_OS}/*.class
+	${RM} -f ${DOCDIR}/*.* ${DOCDIR}/package-list
+	${RM} -rf ${DOCDIR}/com
+	${RM} -f ${SRCDIR}/MISALTest.class ${SRCDIR}/MISALTestIOS.class
