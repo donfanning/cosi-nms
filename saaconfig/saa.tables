@@ -2,11 +2,11 @@ create table Sources
 (
 	Name 			varchar(30), 
 	Address 		varchar(15), 
-	readCommunity 		varchar(50), 
-	writeCommunity 		varchar(50),
-	SNMPVer 		varchar(30), 
-	SAAVer 			varchar(30), 
-	IOSVer 			varchar(30), 
+	Read_Community 		varchar(50), 
+	Write_Community 		varchar(50),
+	SNMP_Version 		varchar(30), 
+	SAA_Version 			varchar(30), 
+	IOS_Version 			varchar(30), 
 	Status 			varchar(30) 
 );
 

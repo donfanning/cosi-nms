@@ -128,7 +128,7 @@ sub write_community {
 sub saa_version {
 
     # This is the get version of the method only.  The set version of this
-    # method is private.
+    # method is protected.
     my $self = shift;
     return $self->{SAAVersion};
 }
@@ -136,14 +136,14 @@ sub saa_version {
 sub _saa_version {
     my $self  = shift;
     my $class = ref $self;
-    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+    croak "Attempt to call protected method" if ( $class !~ /^SAA::/  );
     $self->{SAAVersion} = shift;
 }
 
 sub _add_type_supported {
     my $self  = shift;
     my $class = ref $self;
-    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+    croak "Attempt to call protected method" if ( $class !~ /^SAA::/ );
     my $type = shift;
     $self->{supportedTypes}->{$type} = 1;
 }
@@ -165,7 +165,7 @@ sub type_supported {
 sub _add_protocol_supported {
     my $self  = shift;
     my $class = ref $self;
-    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+    croak "Attempt to call protected method" if ( $class !~ /^SAA::/ );
     my $protocol = shift;
     $self->{supportedProtocols}->{$protocol} = 1;
 }
@@ -195,7 +195,7 @@ sub ios_version {
 sub _ios_version {
     my $self  = shift;
     my $class = ref $self;
-    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+    croak "Attempt to call protected method" if ( $class !~ /SAA::/ );
     $self->{IOSVersion} = shift;
 }
 
@@ -209,7 +209,7 @@ sub status {
 sub _status {
     my $self  = shift;
     my $class = ref $self;
-    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+    croak "Attempt to call protected method" if ( $class !~ /SAA::/ );
     $self->{status} = shift;
 }
 

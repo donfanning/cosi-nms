@@ -45,7 +45,7 @@ sub addr {
 
 sub status {
 
-    # This method is divided into a public accessor method, and a private
+    # This method is divided into a public accessor method, and a protected
     # set method. 
     my $self = shift;
     return $self->{status};
@@ -54,7 +54,7 @@ sub status {
 sub _status {
     my $self  = shift;
     my $class = ref $self;
-    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+    croak "Attempt to call protected method" if ( $class !~ /^SAA::/ );
     $self->{status} = shift;
 }
 
