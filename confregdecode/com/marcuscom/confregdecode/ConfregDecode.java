@@ -456,9 +456,6 @@ public class ConfregDecode extends Applet implements ActionListener {
 
         notesArea.append("Note: IOS reads the config-register in\n   littleendian byte order, LSB first (i.e.\n   0x21022 becomes 0x1022 or a 1200 baud\n   console).\n\n");
 
-        if (router.equals("1700 Series")) {
-            notesArea.append("On most router families, setting the register to 0x3922 will wrap it\nto 2400 baud.  This does not happen on the 1700 series.  Instead,\nIOS will not allow you to set the register\"higher\" than 0x2102.\n\n");
-        }
         if (router.equals("GSR Family") || router.equals("7000 Family") || router.equals("7500 Series") || router.equals("7200 Series") || router.equals("4000 Series") || router.equals("2600 Series") || router.equals("3600 Series") || router.equals("MC3810") || router.equals("AS5xxx") || router.equals("1000 Series") || router.equals("1600 Series") || router.equals("1700 Series")) {
             notesArea.append("Command to change config-reg in ROMMON:\n  confreg <register value>\n");
         }
