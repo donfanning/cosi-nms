@@ -207,7 +207,7 @@ sub make_new_child {
 
 sub snmptrans {
     my ($client) = $_[0];
-    my ( $bg, $replace, $type, $size, $request );
+    my ( $bg, $replace, $type, $size, $request, $numeric );
     my $data;
 
     # XXX Make all the client/server code a little clearer.  By this, I should
@@ -258,6 +258,14 @@ sub snmptrans {
 
     if ( $replace eq "1" ) {
         $SNMP::replace_newer = 1;
+    }
+
+    if ( $request =~ /^(\d+\.)+\d+$/ ) {
+        $request = "." . $request;
+        $numeric = 1;
+    }
+    elsif ( $request =~ /^\.(\d+\.)+\d+$/ ) {
+        $numeric = 1;
     }
 
     if ( $type eq "pattern" ) {
@@ -323,27 +331,73 @@ sub snmptrans {
     }
     elsif ( $type eq "simple" ) {
         my $trans = SNMP::translateObj($request);
-        my ($oid);
+        my ( $oid, $mib );
         $oid = $request;
 
         if ( !defined($trans) ) {
             send_data( $client, "404" );
             return;
         }
-        $data = "<PRE>" . $oid . " = " . $trans . "</pre>\n";
+        if ($numeric) {
+            $mib = $SNMP::MIB{$request};
+        }
+        else {
+            $mib = $SNMP::MIB{$trans};
+        }
+
+        my $type = $$mib{'type'};
+        if ( $type eq "OBJECTID" ) {
+            $type = "OBJECT ID";
+        }
+        if ( $type eq "INTEGER" || $type eq "INTEGER32" ) {
+            $type = "Integer";
+        }
+        elsif ( $type eq "OCTETSTR" ) {
+            $type = "OCTET STRING";
+        }
+        elsif ( $type eq "NETADDR" ) {
+            $type = "NetAddress";
+        }
+        elsif ( $type eq "IPADDR" ) {
+            $type = "IpAddress";
+        }
+        elsif ( $type eq "COUNTER" ) {
+            $type = "Counter";
+        }
+        elsif ( $type eq "GAUGE" ) {
+            $type = "Gauge";
+        }
+        elsif ( $type eq "TICKS" ) {
+            $type = "TimeTicks";
+        }
+        elsif ( $type eq "OPAQUE" ) {
+            $type = "Opaque";
+        }
+        elsif ( $type eq "NULL" ) {
+            $type = "Null";
+        }
+        elsif ( $type eq "BITSTRING" ) {
+            $type = "BitString";
+        }
+        elsif ( $type eq "COUNTER64" ) {
+            $type = "Counter64";
+        }
+        elsif ( $type eq "NSAPADDRESS" ) {
+            $type = "NsapAddress";
+        }
+        elsif ( $type eq "UINTEGER" || $type eq "UINTEGER32"
+          || $type eq "UNSIGNED32" )
+        {
+            $type = "UInteger";
+        }
+        elsif ( $type eq "NOTIF" || $type eq "TRAP" ) {
+            $type = "Trap";
+        }
+
+        $data = "<PRE>" . $oid . " = " . $trans . " (" . $type . ")</pre>\n";
         send_data( $client, $data );
     }
     elsif ( $type eq "detail" ) {
-        my $numeric = 0;
-
-        if ( $request =~ /^(\d+\.)+\d+$/ ) {
-            $request = "." . $request;
-            $numeric = 1;
-        }
-        elsif ( $request =~ /^\.(\d+\.)+\d+$/ ) {
-            $numeric = 1;
-        }
-
         my $trans = SNMP::translateObj($request);
         if ( !defined($trans) ) {
             send_data( $client, "404" );
@@ -609,15 +663,6 @@ sub snmptrans {
         send_data( $client, $data );
     }
     elsif ( $type eq "tree" ) {
-        my $numeric = 0;
-
-        if ( $request =~ /^(\d+\.)+\d+$/ ) {
-            $request = "." . $request;
-            $numeric = 1;
-        }
-        elsif ( $request =~ /^\.(\d+\.)+\d+$/ ) {
-            $numeric = 1;
-        }
         my $trans;
         $data = "<PRE>\n";
 
