@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+
+# $Id$
 # a script to test Collector.pm by installing a simple Echo Operation
 # note that this automatically tests SAA:Source, SAA:Target, and SAA:Operation
 use SAA::Source;
@@ -11,9 +13,10 @@ print "----------------------------\n";
 
 #----SAAa::Source------#
 #---value init---#
-$name   = 'test_config';
-$src_IP = shift || '10.5.1.14';
-$dst_IP = shift || '172.18.123.229';
+$name   = shift || 'collector_test';
+#$src_IP = shift || '14.32.9.2';
+$src_IP = shift || '14.32.12.254';
+$dst_IP = shift || '14.32.6.12';
 
 #---value initend--#
 
@@ -103,7 +106,7 @@ print "Operation \("
 print "----------------------------\n";
 
 #----SAA::Target-----#
-$dst = SAA::Target->new( "dst_2600_rtr", $dst_IP );
+$dst = SAA::Target->new( "target", $dst_IP );
 
 # there might need to have an explicit check on the status of destIP
 # before declaring it as HOST_UP_IP. still i'll use the status() here:
@@ -114,18 +117,19 @@ print "----------------------------\n";
 
 #----SAA::Collector---#
 #--Value init.--#
-$nvram_truthvalue = '1';    # sets TruthValue in rttMonCtrlAdminNvgen to 1
+$nvram_truthvalue = '2';    # sets TruthValue in rttMonCtrlAdminNvgen to FALSE
 
-$history_filter = '2';
+$history_filter = '1';
 
 #rttMonHistoryAdminFilter OBJECT-TYPE
-#    none(1),
-#    all(2), <------
+#    none(1),<------
+#    all(2), 
 #    overThreshold(3),
 #    failures(4)
 
-$life = '360';              # life of the Row would be 3 hrs
+$life = '3600';              # 1 hour;
 $start_time = '1'; # using special value of rttMonScheduleAdminRttStartTime here
+					# to start immediately when rttMonCtrlAdminStatus becomes ACTIVE
 
 #note; i think code in the collector would be needed to be added for 
 #supporting $start_times as actual timeticks + some lead time before 
@@ -143,6 +147,7 @@ $collectur->write_nvram($nvram_truthvalue);
 $collectur->history_filter($history_filter);
 $collectur->life($life);
 $collectur->start_time($start_time);
+$collectur->id(1); #force id{ } to calcuate a random ID.
 print "ID: " . $collectur->id() . "\n";
 
 #and ladies and gentlemen...
