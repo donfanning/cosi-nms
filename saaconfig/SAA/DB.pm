@@ -3,6 +3,7 @@ package SAA::DB;
 use strict;
 require 5.002;
 use lib qw(..);
+use conf::prefs qw($DB_HOST $DB_USER $DB_PASS $DB_NAME);
 use DBI;
 use Carp;
 
@@ -33,18 +34,14 @@ sub new {
     my ( $that, @args ) = @_;
     my $class = ref($that) || $that;
 
-    if ( scalar(@args) != 4 ) {
-        croak "SAA::DB: Insufficient arguments passed to constructor";
-    }
-
     my $self = {
         dbh   => undef,
         error => undef,
     };
 
     $self->{dbh} =
-      DBI->connect( 'dbi:' . $args[0] . ':' . $args[1], $args[2], $args[3] )
-      or croak "SAA::DB: Unable to connect to database " . $args[1];
+      DBI->connect( 'dbi:' . $DB_HOST . ':' . $DB_NAME, $DB_USER, $DB_PASS )
+      or croak "SAA::DB: Unable to connect to database " . $DB_NAME;
 
     bless( $self, $class );
     $self;
