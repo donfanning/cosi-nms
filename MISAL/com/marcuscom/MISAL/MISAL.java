@@ -6,8 +6,7 @@ import java.util.*;
 import com.oroinc.text.regex.*;
 
 public class MISAL implements Runnable {
-	public final static int MISAL_STATE_UNKNOWN = -2;
-	public final static int MISAL_STATE_INITIAL = -1;
+	public final static int MISAL_STATE_UNKNOWN = -1;
 	public final static int MISAL_STATE_CLOSED = 0;
 
 	protected final static int MISAL_DEFAULT_SLEEP_INTERVAL = 1;
@@ -130,7 +129,7 @@ public class MISAL implements Runnable {
 		return this._sleepInterval;
 	}
 
-	public synchronized void setState(int state) {
+	private synchronized void setState(int state) {
 		this.debug("Setting state to " + state);
 		this._currentState = state;
 	}
@@ -151,7 +150,7 @@ public class MISAL implements Runnable {
 		this.setBuffer(null);
 	}
 
-	public synchronized void setBuffer(String buffer) {
+	private synchronized void setBuffer(String buffer) {
 		if (buffer == null || this._buffer == null || this._buffer.length() >= this.getBufferSize()) {
 			this.debug("Setting buffer to \"" + buffer + "\"");
 			this._buffer = buffer;
