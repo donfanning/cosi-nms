@@ -2,8 +2,8 @@
 # Makefile for the MISAL project.
 # $Id$
 
-SRCDIR=	.
-DOCDIR=	${SRCDIR}/doc/api
+SRCDIR=		.
+DOCDIR=		${SRCDIR}/doc/api
 JARDIR=		/usr/local/share/java/classes
 CLASSPATH=	.:${JARDIR}/jakarta-oro.jar
 
