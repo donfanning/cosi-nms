@@ -107,8 +107,8 @@ public class MISALCiscoIOS extends MISAL {
 			addState(this.CONFIG_MODE_IF, "\\(config-if\\)#$");
 			/* Some other config prompt */
 			addState(this.CONFIG_MODE_OTHER, "\\(config-[^i][^f]\\)#$");
-			addState(this.USER_PROMPT, "^Username:\\s.*$");
-			addState(this.PASSWORD_PROMPT, "^Password:\\s.*$");
+			addState(this.USER_PROMPT, "Username:\\s.*$");
+			addState(this.PASSWORD_PROMPT, "Password:\\s.*$");
 		}
 		/* This code should not generate an exception.  These
 		   patterns are tested. */

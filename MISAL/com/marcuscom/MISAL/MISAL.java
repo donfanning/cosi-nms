@@ -645,11 +645,17 @@ public class MISAL implements Runnable {
             catch (MalformedPatternException mpe) {
                 return false;
             }
-            if (buffer != null) {
+            if (buffer == null) {
                 if (matcher.contains(this.getBuffer(), pattern)) {
                     this.debug("Found a buffer match!");
                     return true;
                 }
+            }
+            else {
+               if (matcher.contains(buffer, pattern)) {
+                   this.debug("Found a buffer match!");
+                   return true;
+               }
             }
             try {
                 Thread.sleep(this.MISAL_THREAD_SLEEP_INTERVAL);
@@ -683,14 +689,15 @@ public class MISAL implements Runnable {
             b = new byte[_bis.available()];
             int t;
             int y = 0;
+            int i = 0;
             byte[] obuf = new byte[4];
             while (_bis.available() > 0) {
                 t = _bis.read();
-                if (t != 255) {
+                if (t == '\n' || t == '\r' || (t >= 32 && t < 127)) {
                     /* If not a negotiation character,
                        it needs to be read as data. */
-                    b[0] = (byte)t;
-                    break;
+                    b[i++] = (byte)t;
+                    continue;
                 }
                 obuf[0] = (byte)255;
                 t = _bis.read();
@@ -709,15 +716,6 @@ public class MISAL implements Runnable {
                 }
             }
 
-            if (_bis.available() == 0) {
-                return null;
-            }
-            /* This starts at 1 now because we load the first
-               character in during the negotiation code. */
-            int result = _bis.read(b, 1, _bis.available());
-            if (result == 0) {
-                return null;
-            }
         }
         catch (IOException ioe) {
             return null;
