@@ -49,7 +49,7 @@ public class ConfregDecode extends Applet implements ActionListener {
     public static final Font DEFAULT_FONT = new Font("SansSerif",Font.PLAIN,12);
     public static final Font BIG_FONT = new Font("SansSerif",Font.BOLD,12);
 
-    public static final String VERSION = "1.1.0";
+    public static final String VERSION = "1.2.0";
 
     static Frame f;
 
@@ -168,21 +168,22 @@ public class ConfregDecode extends Applet implements ActionListener {
         routerType.addItem("2000/3000 Series", true);
         routerType.addItem("2500 Series", true);
         routerType.addItem("2600 Series", false);
-        routerType.addItem("AccessPro Series", true);
         routerType.addItem("3600 Series", false);
-        routerType.addItem("3700 Series", true);
-        routerType.addItem("MC3810", false);
+        routerType.addItem("3700 Series", false);
         routerType.addItem("4000 Series", true);
+	routerType.addItem("6000 IOS Series", true);
         routerType.addItem("7000 Family", true);
-        routerType.addItem("GSR Family", true);
-        routerType.addItem("RSP", true);
-        routerType.addItem("RSM", true);
-        routerType.addItem("MSFC", true);
         routerType.addItem("7200 Series", true);
         routerType.addItem("7600 Series", true);
-        routerType.addItem("AGS+/AGS/MGS/CGS", true);
         routerType.addItem("AS5xxx", true);
+        routerType.addItem("AGS+/AGS/MGS/CGS", true);
         routerType.addItem("ASM-CS", true);
+        routerType.addItem("AccessPro Series", true);
+        routerType.addItem("GSR Family", true);
+        routerType.addItem("MC3810", false);
+        routerType.addItem("MSFC", true);
+        routerType.addItem("RSM", true);
+        routerType.addItem("RSP", true);
 
         this.setLayout(new BorderLayout(10, 10));
 
@@ -544,7 +545,7 @@ public class ConfregDecode extends Applet implements ActionListener {
         //System.out.println(newRegister);
         if (routerType.isOld(routerType.getSelectedItem()) && (newRegister & 0x0020) == 0x0020) {
             notesArea.setForeground(Color.red);
-            notesArea.setText("This router only supports console speeds up to 9600 baud.");
+            notesArea.setText("This device only supports console speeds up to 9600 baud.");
             notesArea.setForeground(Color.black);
         }
         else {
