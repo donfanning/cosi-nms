@@ -170,7 +170,7 @@ sub learn {
 
     if ( $self->snmp_version() eq "2c" ) {
         $vars =
-          new SNMP::VarList( ['system'], [$SAA::SAA_MIB::rttMonApplVersion] );
+          new SNMP::VarList( [$SAA::SAA_MIB::rttMonApplVersion], ['system'] );
         @vals = $sess->getbulk( 1, 1, $vars );
 
         if ( $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_BAD_VERSION ) {
@@ -189,8 +189,8 @@ sub learn {
         elsif ( $sess->{ErrorNum} == 0
             || $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_NOSUCHNAME )
         {
-            ($iosvers) = ( $vals[0] =~ /Version ([\d\.\w\(\)]+)/ );
-            ($saavers) = ( $vals[1] =~ /(^[\d\.]+)/ );
+            ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
+            ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
             $self->_status($SAA::Globals::HOST_UP_SNMP);
             $self->_ios_version($iosvers);
             return 0 unless length $saavers;
@@ -202,8 +202,8 @@ sub learn {
 
     if ( $self->snmp_version() eq "1" ) {
         $vars =
-          new SNMP::VarList( [ 'sysDescr', 0 ],
-            [ $SAA::SAA_MIB::rttMonApplVersion, 0 ] );
+          new SNMP::VarList( [ $SAA::SAA_MIB::rttMonApplVersion, 0 ],
+            [ 'sysDescr', 0 ] );
         @vals = $sess->get($vars);
         if ( $sess->{ErrorNum}
             && $sess->{ErrorNum} != $SAA::SAA_MIB::SNMP_ERR_NOSUCHNAME )
@@ -211,8 +211,8 @@ sub learn {
             return 0;
         }
         else {
-            ($iosvers) = ( $vals[0] =~ /Version ([\d\.\w\(\)]+)/ );
-            ($saavers) = ( $vals[1] =~ /(^[\d\.]+)/ );
+            ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
+            ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
             $self->_status($SAA::Globals::HOST_UP_SNMP);
             $self->_ios_version($iosvers);
             return 0 unless length $saavers;
