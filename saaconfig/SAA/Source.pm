@@ -23,7 +23,7 @@ sub new {
 
     my $self = {
         name               => $args[0],
-        address            => $args[1],
+        address            => undef,
         readCommunity      => undef,
         writeCommunity     => undef,
         SNMPVersion        => $args[2],
@@ -34,6 +34,8 @@ sub new {
         status             => SAA::Globals::HOST_DOWN,
         error              => undef,
     };
+
+    $self->{address} = gethostbyname( $args[1] );
 
     bless( $self, $class );
     $self;

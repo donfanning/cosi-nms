@@ -46,8 +46,9 @@ sub addrToOctStr {
     # octet string.  
     # XXX This should be smarter so that SNA address can also be supported.
     my $addr = shift;
-    my ( $a, $b, $c, $cidr ) = split ( /\./, $addr );
-    return ( sprintf "%.2x %.2x %.2x %.2x", $a, $b, $c, $cidr );
+    my ( $a, $b, $c, $cidr ) = split ( /\./, $addr, 4 );
+	return ( "$a $b $c $cidr" );
+    #return ( sprintf "%.2x %.2x %.2x %.2x", $a, $b, $c, $cidr );
 }
 
 sub checkIPAddr {

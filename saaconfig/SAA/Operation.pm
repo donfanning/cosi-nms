@@ -37,9 +37,9 @@ sub new {
         sourcePort       => SAA::SAA_MIB::DEFAULT_SPORT,
         controlEnable    => SAA::SAA_MIB::DEFAULT_CONTROL_ENABLE,
         dnsTargetAddress => undef,
-        httpOperation    => undef,
-        httpStrings      => undef,
-        httpURL          => undef,
+        adminOperation   => undef,
+        adminStrings     => undef,
+        adminURL         => undef,
         error            => undef,
     };
 
@@ -263,67 +263,80 @@ sub control_enabled {
     return $self->{controlEnable};
 }
 
-sub http_operation {
+sub admin_operation {
     my $self = shift;
     my ( $val, $op );
 
-    # This field is only applicable to http operations.
-    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http} ) {
+    # This field is only applicable to http and ftp operations.
+    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http}
+        && $self->type() != $SAA::SAA_MIB::operationTypeEnum->{ftp} )
+    {
 
         # This field has no default value.
         return;
     }
     if (@_) {
         $val = shift;
-        foreach ( keys %{$SAA::SAA_MIB::httpOperationEnum} ) {
+        foreach ( keys %{$SAA::SAA_MIB::adminOperationEnum} ) {
 
-            if ( $val == $SAA::SAA_MIB::httpOperationEnum->{$_} ) {
+            if ( $val == $SAA::SAA_MIB::adminOperationEnum->{$_} ) {
                 $op = $val;
                 last;
             }
         }
 
         if ( !$op ) {
-            return $self->{httpOperation};
+            return $self->{adminOperation};
         }
-        $self->{httpOperation} = $op;
+        $self->{adminOperation} = $op;
     }
-    return $self->{httpOperation};
+    return $self->{adminOperation};
 }
 
-sub http_strings {
+sub admin_strings {
     my $self = shift;
 
-    # This field is only applicable to http operations.
-    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http} ) {
+    # This field is only applicable to http and dhcp operations.
+    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http}
+        && $self->type() != $SAA::SAA_MIB::operationTypeEnum->{dhcp} )
+    {
         return;
     }
 
     if (@_) {
         my $string = shift;
-        my ( $i, $length );
+        my ( $i, $length, $limit );
         $i      = 0;
         $length = 0;
 
+        # The dhcp operation only uses AdminString1.
+        $limit =
+          ( $self->type() == $SAA::SAA_MIB::operationTypeEnum->{http} ) ?
+          SAA::SAA_MIB::MAX_ADMIN_STRINGS: 1;
+
         # This string has a cap.  If this string is longer than the max, we need
         # to chop it, and fit it into an array.
-        while ( $i < SAA::SAA_MIB::MAX_HTTP_STRINGS ) {
+
+        while ( $i < $limit ) {
             while ( $length < length $string ) {
-                push @{ $self->{httpStrings} },
-                  substr( $string, $length, SAA::SAA_MIB::MAX_HTTP_STRING_LEN );
-                $length += SAA::SAA_MIB::MAX_HTTP_STRING_LEN;
+                push @{ $self->{adminStrings} },
+                  substr( $string, $length,
+                    SAA::SAA_MIB::MAX_ADMIN_STRING_LEN );
+                $length += SAA::SAA_MIB::MAX_ADMIN_STRING_LEN;
             }
             $i++;
         }
     }
-    return $self->{httpStrings};
+    return $self->{adminStrings};
 }
 
-sub http_url {
+sub admin_url {
     my $self = shift;
 
-    # This field is only applicable to http operations.
-    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http} ) {
+    # This field is only applicable to http and ftp operations.
+    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http}
+        && $self->type() != $SAA::SAA_MIB::operationTypeEnum->{ftp} )
+    {
         return;
     }
 
@@ -331,11 +344,11 @@ sub http_url {
         my $url = shift;
 
         if ( length $url > SAA::SAA_MIB::MAX_URL_LEN ) {
-            return $self->{httpURL};
+            return $self->{adminURL};
         }
-        $self->{httpURL} = $url;
+        $self->{adminURL} = $url;
     }
-    return $self->{httpURL};
+    return $self->{adminURL};
 }
 
 sub name_server {

@@ -16,10 +16,12 @@ sub new {
 
     my $self = {
         name    => $args[0],
-        address => $args[1],
+        address => undef,
         status  => SAA::Globals::HOST_UP_IP,
         error   => undef,
     };
+
+    $self->{address} = gethostbyname( $args[1] );
 
     bless( $self, $class );
     $self;

@@ -31,6 +31,7 @@ sub new {
         life          => SAA::SAA_MIB::DEFAULT_LIFE,
         writeNVRAM    => SAA::SAA_MIB::FALSE,
         historyFilter => $SAA::SAA_MIB::historyFilterEnum->{none},
+        startTime     => SAA::SAA_MIB::DEFAULT_START_TIME,
         error         => undef,
     };
 
@@ -164,7 +165,13 @@ sub start_time {
 
     # Since this objet represents TimeTicks, it can have pretty much any range.
     # We cast the value to an int which should make things safe.
-    if (@_) { $self->{startTime} = int(shift); }
+    if (@_) {
+        my $time = shift;
+        if ( $time < 0 ) {    # We can't time travel.
+            return SAA::SAA_MIB::DEFAULT_START_TIME;
+        }
+        $self->{startTime} = int($time);
+    }
     return $self->{startTime};
 }
 
@@ -188,6 +195,13 @@ sub install {
     if ( $source->status() != SAA::Globals::HOST_UP_SNMP ) {
         $self->error( "Status for host " . $source->name()
             . " indicates it is not SNMP reachable" );
+        return;
+    }
+
+    # A start time of 0 (the current default) is invalid.  A positive start time
+    # must be specified in order for the collector to run.
+    if ( $self->start_time() == SAA::SAA_MIB::DEFAULT_START_TIME ) {
+        $self->error("Start time has not been set");
         return;
     }
 
@@ -247,10 +261,6 @@ sub install {
             $operation->protocol(),                 'INTEGER'
         ],
         [
-            $SAA::SAA_MIB::rttMonEchoAdminSourceAddress, $id,
-            addrToOctStr( $source->addr() ),             'OCTETSTR'
-        ],
-        [
             $SAA::SAA_MIB::rttMonEchoAdminSourcePort, $id,
             $operation->source_port(),                'INTEGER'
         ],
@@ -272,10 +282,8 @@ sub install {
 
     if ($target) {
         push @{$varlist},
-          [
-            $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
-            addrToOctStr( $target->addr() ),             'OCTSTR'
-        ];
+          [ $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
+            addrToOctStr( $target->addr() ), 'OCTSTR' ];
     }
 
     if ( $operation->name_server() ) {
@@ -286,41 +294,105 @@ sub install {
         ];
     }
 
-    if ( $operation->http_operation() ) {
+    if ( $operation->admin_operation() ) {
         push @{$varlist},
-          [
-            $SAA::SAA_MIB::rttMonEchoAdminOperation, $id,
-            $operation->http_operation(),            'INTEGER'
-        ];
+          [ $SAA::SAA_MIB::rttMonEchoAdminOperation, $id,
+            $operation->admin_operation(), 'INTEGER' ];
     }
 
-    if ( $operation->http_strings() ) {
+    if ( $operation->admin_strings() ) {
         my $i;
-        for ( $i = 0 ; $i < scalar( @{ $operation->http_strings() } ) ; $i++ ) {
-            if ( $operation->http_strings()->[$i] ) {
+        for ( $i = 0 ; $i < scalar( @{ $operation->admin_strings() } ) ; $i++ )
+        {
+            if ( $operation->admin_strings()->[$i] ) {
                 my $var = "SAA::SAA_MIB::rttMonEchoAdminString" . ( $i + 1 );
                 no strict 'refs';    # We need to do this to allow $$var
                 push @{$varlist},
-                  [ $$var, $id, $operation->http_strings()->[$i], 'OCTSTR' ];
+                  [ $$var, $id, $operation->admin_strings()->[$i], 'OCTSTR' ];
             }
         }
     }
 
-    if ( $operation->http_url() ) {
+    if ( $operation->admin_url() ) {
         push @{$varlist},
-          [
-            $SAA::SAA_MIB::rttMonEchoAdminURL, $id,
-            $operation->http_url(),            'OCTSTR'
-        ];
+          [ $SAA::SAA_MIB::rttMonEchoAdminURL, $id, $operation->admin_url(),
+            'OCTSTR' ];
     }
 
     # Set the objects on the source router.
     $sess->set($varlist);
 
     if ( $sess->{ErrorNum} ) {
-        $self->error( "Failed to set collector, " . $self->{name} );
+        $self->error("Failed to set collector");
         return;
     }
+
+    $varlist = new SNMP::VarList(
+        [
+            $SAA::SAA_MIB::rttMonScheduleAdminRttLife, $id,
+            $self->life(),                             'INTEGER'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonScheduleAdminRttStartTime, $id,
+            $self->start_time(),                            'TICKS'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonHistoryAdminFilter, $id,
+            $self->history_filter(),                 'INTEGER'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonCtrlAdminNvgen, $id,
+            $self->write_nvram(),                'INTEGER'
+        ],
+        [
+            $SAA::SAA_MIB::rttMonCtrlAdminStatus,   $id,
+            $SAA::SAA_MIB::rowStatusEnum->{active}, 'INTEGER'
+        ]
+    );
+
+    # Turn it on!
+    $sess->set($varlist);
+
+    if ( $sess->{ErrorNum} ) {
+        $self->error("Failed to start collector");
+        return;
+    }
+
+    1;
+}
+
+sub uninstall {
+    my $self = shift;
+
+    # Remove the collector by setting rttMonCtrlAdminStatus to destroy(6).
+    if ( !$self->id() ) {
+        $self->error("Collector id is not set");
+        return;
+    }
+
+    my $source = $self->source();
+
+    my $sess = new SNMP::Session(
+        DestHost  => $source->addr(),
+        Community => $source->write_community(),
+        Version   => $source->snmp_version(),
+    );
+
+    $sess->set(
+        new SNMP::Varbind(
+            [
+                $SAA::SAA_MIB::rttMonCtrlAdminStatus,    $self->id(),
+                $SAA::SAA_MIB::rowStatusEnum->{destroy}, 'INTEGER'
+            ]
+        )
+    );
+
+    if ( $sess->{ErrorNum} ) {
+        $self->error("Failed to uninstall collector");
+        return;
+    }
+
+    1;
 }
 
 1;
