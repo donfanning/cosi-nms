@@ -2,8 +2,9 @@
 # knail1 2.13.2002: script to test SAA::DB
 use SAA::Source;
 use SAA::DB;
-$src_IP = shift || '10.5.1.15';
-my $src = new SAA::Source( "no_such_name", '10.5.1.15', "2c" );
+my $name = shift || "source_router";
+my  $ip = shift || "14.32.9.2";
+my $src = new SAA::Source( $name, $ip, "2c" );
 $src->read_community( 0,  public );
 $src->write_community( 0, "private" );
 print "learn result = " . ( ( $src->learn() == 1 ) ? "SUCCESS" : "FAILED" ),
