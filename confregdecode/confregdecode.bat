@@ -6,4 +6,4 @@ REM
 
 set CLASSPATH=cd.jar;%CLASSPATH%
 
-jre.exe -cp %CLASSPATH% com.cisco.confregdecode.ConfregDecode
+jre.exe -cp %CLASSPATH% com.marcuscom.confregdecode.ConfregDecode

@@ -11,4 +11,4 @@ JRE=/usr/local/jdk1.1.8/bin/jre
 
 CLASSPATH=cd.jar:${CLASSPATH}
 
-exec ${JRE} -cp ${CLASSPATH} com.cisco.confregdecode.ConfregDecode
+exec ${JRE} -cp ${CLASSPATH} com.marcuscom.confregdecode.ConfregDecode
