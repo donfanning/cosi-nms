@@ -43,6 +43,14 @@ sub new {
           "SAA::Collector: The specified operation requires a target argument";
     }
 
+	if (!$self->{source}->protocol_supported($self->{operation}->{protocol})) {
+		croak "SAA::Collector: The specified protocol is not supported by this source router";
+	}
+
+	if (!$self->{source}->type_supported($self->{operation}->{type})) {
+		croak "SAA::Collector: The specified type is not supported by this source router";
+	}
+
     bless( $self, $class );
     $self;
 }
