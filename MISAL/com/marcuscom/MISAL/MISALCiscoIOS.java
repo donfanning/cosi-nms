@@ -407,6 +407,7 @@ public class MISALCiscoIOS extends MISAL {
         /** Start the MISAL state watcher thread.  This method should never be called directly.  It is run automatically once a new <CODE>MISALCiscoIOS</CODE> class is instantiated.
          */        
         public void run() {
+			super.run();
         }
         
 }

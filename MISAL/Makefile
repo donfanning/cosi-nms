@@ -29,7 +29,8 @@ classes:
 	$(JAVAC) $(JAVAC_FLAGS) -classpath $(CLASSPATH) $(srcdir)/$(package_os)/*.java
 
 test:
-	$(JAVAC) $(JAVAC_FLAGS) -classpath $(CLASSPATH) $(srcdir)/MISALTest.java
+	$(JAVAC) $(JAVAC_FLAGS) -classpath $(CLASSPATH) $(srcdir)/MISALTest.java \
+		$(srcdir)/MISALTestIOS.java
 
 docs:
 	$(MKDIR) -p $(docdir)
@@ -40,4 +41,4 @@ clean:
 	$(RM) -f $(srcdir)/$(package_os)/*.class
 	$(RM) -f $(docdir)/*.* $(docdir)/package-list
 	$(RM) -rf $(docdir)/com
-	$(RM) -f $(srcdir)/MISALTest.class
+	$(RM) -f $(srcdir)/MISALTest.class $(srcdir)/MISALTestIOS.class

@@ -37,7 +37,7 @@ environment, type:
 > make test
 
 This will build MISAL.jar, all the JavaDoc API documentation, and the
-MISALTest.class.
+MISALTest.class and MISALTestIOS.class.
 
 To build MISAL on Windows (95/98/Me, NT, 2000, and maybe even XP), use 
 build.bat:
@@ -45,13 +45,18 @@ build.bat:
 > build
 
 This will build MISAL.jar, all the JavaDoc API documentation, and the
-MISALTest.class.
+MISALTest.class and MISALTestIOS.class.
+
+To clean up things on windows, use the command:
+
+> build clean
 
 
 USING:
 ------
 
-See the included JavaDoc documentation and MISALTest.java for usage guidlines.
+See the included JavaDoc documentation, MISALTest.java, and MISALTestIOS.java
+for usage guidlines.
 
 
 MISAL is distributed under the BSD license.
