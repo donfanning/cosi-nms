@@ -28,7 +28,7 @@ package com.marcuscom.MISAL;
  */
 import java.io.*;
 import java.net.*;
-import com.oroinc.text.regex.*;
+import org.apache.oro.text.regex.*;
 
 /** <p>MISALCiscoIOS is an extension of MISAL designed to interact with Cisco
  * IOS devices.  It allows one to telnet into an IOS device, become enabled, and

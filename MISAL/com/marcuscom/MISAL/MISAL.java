@@ -29,7 +29,7 @@ package com.marcuscom.MISAL;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import com.oroinc.text.regex.*;
+import org.apache.oro.text.regex.*;
 
 /**
 * <p>MISAL is the MarcusCom Intelligent Socket Abstraction Library.
