@@ -1,0 +1,7 @@
+create table Sources (Name varchar(30), Address varchar(15), SNMPVer varchar(30), SAAVer varchar(30), IOSVer varchar(30), Status varchar(30), readCommunity varchar(50), writeCommunity varchar(50));
+
+create table Targets (Name varchar(30), Address varchar(15), Status varchar(30));
+
+create table Operations (Name varchar(30), Protocal varchar(30), Type varchar(30), Threshold varchar(30), Frequency varchar(30), Timeout varchar(30), Interval varchar(30), targetPort varchar(5), pktDataRequest varchar(30), controlEnabled varchar(30));
+
+create table Collectors (sourceName varchar(30), targetName varchar(30), operationName varchar(30), Description longtext, startTime varchar(30), NVRam varchar(30), RowAge varchar(30), Owner varchar(30), Status varchar(30), Life varchar(30));
