@@ -288,4 +288,21 @@ sub http_operation {
     return $self->{httpOperation};
 }
 
+sub name_server {
+    my $self = shift;
+    my $addr;
+
+    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{dns} ) {
+        return;
+    }
+    if (@_) {
+        $addr = shift;
+        if ( !checkIPAddr($addr) ) {
+            return $self->{dnsTargetAddress};
+        }
+        $self->{dnsTargetAddress} = $addr;
+    }
+    return $self->{dnsTargetAddress};
+}
+
 1;

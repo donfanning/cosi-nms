@@ -30,7 +30,7 @@ sub new {
         startTime     => SAA::SAA_MIB::DEFAULT_START_TIME,
         life          => SAA::SAA_MIB::DEFAULT_LIFE,
         writeNVRAM    => SAA::SAA_MIB::FALSE,
-        historyFilter => $SAA::SAA_MIB::historFilterEnum->{none},
+        historyFilter => $SAA::SAA_MIB::historyFilterEnum->{none},
         error         => undef,
     };
 
@@ -160,20 +160,6 @@ sub error {
     return $self->{error};
 }
 
-sub _addrToOctStr {
-
-    if ( scalar(@_) != 1 ) {
-        croak "SAA::Collector::_addrToOctStr: method requires one argument";
-    }
-
-    # Private static method to convert an IP address string into a 4-byte
-    # octet string.  
-    # XXX This should be smarter so that SNA address can also be supported.
-    my $addr = shift;
-    my ( $a, $b, $c, $cidr ) = split ( /\./, $addr );
-    return ( sprintf "%.2x %.2x %.2x %.2x", $a, $b, $c, $cidr );
-}
-
 sub install {
 
     # This method installs the collector on the source router.  It 
@@ -248,15 +234,11 @@ sub install {
         ],
         [
             $SAA::SAA_MIB::rttMonEchoAdminSourceAddress, $id,
-            _addrToOctStr( $source->addr() ),            'OCTETSTR'
+            addrToOctStr( $source->addr() ),            'OCTETSTR'
         ],
         [
             $SAA::SAA_MIB::rttMonEchoAdminSourcePort, $id,
             $operation->source_port(),                'INTEGER'
-        ],
-        [
-            $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
-            _addrToOctStr( $target->addr() ),            'OCTETSTR'
         ],
         [
             $SAA::SAA_MIB::rttMonEchoAdminTargetPort, $id,
@@ -272,9 +254,15 @@ sub install {
         ],
         [
             $SAA::SAA_MIB::rttMonEchoAdminNameServer,   $id,
-            _addrToOctStr( $operation->name_server() ), 'OCTETSTR'
+            addrToOctStr( $operation->name_server() ), 'OCTETSTR'
         ],
     );
+
+# Add objects that may be undef for certain operations.
+	if ($target) {
+		push @{$varlist}, [ $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
+		addrToOctStr( $target->addr() ), 'OCTSTR' ];
+	}
 
     # Set the objects on the source router.
     $sess->set($varlist);
