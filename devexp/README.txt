@@ -25,9 +25,9 @@ INSTALLATION:
 Installation under Windows NT or 2000:
 --------------------------------------
 
-* Unzip devexp-win-v11.zip
+* Unzip devexp-win-v12.zip
 
-* Change directory to devexp-win-v11
+* Change directory to devexp-win-v12
 
 * Run install.cmd
 
@@ -35,9 +35,9 @@ Installation under Windows NT or 2000:
 Installation under UNIX:
 ------------------------
 
-* Run 'uncompress -c devexp-unix-v11.tar.Z | tar -xvf -'
+* Run 'uncompress -c devexp-unix-v12.tar.Z | tar -xvf -'
 
-* Change directory to devexp-unix-v11
+* Change directory to devexp-unix-v12
 
 * Run ./install.sh
 
