@@ -12,7 +12,6 @@ use Carp;
 
 @ISA    = qw(Exporter);
 @EXPORT = qw(
-<<<<<<< Globals.pm
   HOST_DOWN
   HOST_UP_IP
   HOST_UP_SNMP
@@ -22,16 +21,6 @@ use Carp;
   addrToOctStr
   addrToHexStr
   checkIPAddr
-=======
-    HOST_DOWN
-    HOST_UP_IP
-    HOST_UP_SNMP
-    SNMP_ERR_NOSUCHNAME
-    SNMP_ERR_V2_IN_V1
-    SNMP_ERR_BAD_VERSION
-    addrToOctStr
-    checkIPAddr
->>>>>>> 1.8
 );
 
 use constant HOST_DOWN    => 0;
