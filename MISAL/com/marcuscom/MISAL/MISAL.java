@@ -346,7 +346,6 @@ public class MISAL implements Runnable {
 	 * right before running a command for which you wish to save output.
 	 *
 	 * @see		#getBufferSize
-	 * @see		#setBufferSize
 	 * @see		#getBuffer
 	 * @since	MISAL1.0
 	 */
@@ -370,19 +369,52 @@ public class MISAL implements Runnable {
 		this._lastBuffer = buffer;
 	}
 
+	/**
+	 * Returns the output of the temporary buffer.  This buffer usually
+	 * stores the output from the last run command.  It is useful for
+	 * doing error checking.
+	 *
+	 * @see		#getBuffer
+	 * @since	MISAL1.0
+	 */
 	public synchronized String getLastBuffer() {
 		return this._lastBuffer;
 	}
 
+	/**
+	 * Returns the contents of the main accumulator buffer.  This buffer
+	 * contains all the data fro the sockets output stream since the last
+	 * call to <code>clearBuffer</code>.  The output will include the
+	 * contents of the current temporary buffer as well.
+	 *
+	 * @see		#clearBuffer
+	 * @see		#getLastBuffer
+	 * @since	MISAL1.0
+	 */
 	public synchronized String getBuffer() {
 		return this._buffer.concat(this.getLastBuffer());
 	}
 
-	public synchronized boolean getDebug() {
+	/**
+	 * Tells whether or not debugging is enabled.
+	 *
+	 * @see		#toggleDebug
+	 * @see		#debug
+	 * @since	MISAL1.0
+	 */
+	public boolean getDebug() {
 		return this._debug;
 	}
 
-	public synchronized boolean toggleDebug() {
+	/**
+	 * Toggle the debugging state.
+	 *
+	 * @return	The debugging state after being toggled
+	 * @see		#getDebug
+	 * @see		#debug
+	 * @since	MISAL1.0
+	 */
+	public boolean toggleDebug() {
 		this._debug = this._debug ? false : true;
 		this.debug("Debugging set to " + this._debug);
 		return this._debug;
@@ -503,6 +535,15 @@ public class MISAL implements Runnable {
 		return false;
 	}
 
+	/**
+	 * Prints a debugging message.  The message will only be printed
+	 * if debugging is enabled.
+	 *
+	 * @param msg	The message to be printed
+	 * @see		#getDebug
+	 * @see		#toggleDebug
+	 * @since	MISAL1.0
+	 */
 	public void debug(String msg) {
 		if (this.getDebug()) {
 			System.err.println("DEBUG: " + msg);
@@ -561,6 +602,12 @@ public class MISAL implements Runnable {
 		return new String(b);
 	}
 
+	/**
+	 * Closes the MISAL socket.  Once you are done with the socket, you
+	 * can have MISAL close it.  This will stop the state checking thread.
+	 *
+	 * @since	MISAL1.0
+	 */
 	public void closeSocket() {
 		this.debug("Closing socket ...");
 		if (this._socket != null) {
