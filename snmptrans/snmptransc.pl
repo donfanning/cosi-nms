@@ -164,13 +164,14 @@ if ( defined( $q->param('pattern') ) ) {
     $results = get_data($client);
     if ( $results eq "501" ) {
         return_error( "Bad Regular Expression",
-            "The regular expression <I>$q->param('pattern')</i> is not valid."
-        );
+            "The regular expression <I>" . $q->param('pattern')
+            . "</i> is not valid." );
     }
     elsif ( $results eq "404" ) {
         return_error( "SNMP Search Error",
-"No objects were found matching the pattern <I>$q->param('pattern')</i>.  Please alter your search pattern, and try again."
-        );
+            "No objects were found matching the pattern <I>"
+            . $q->param('pattern')
+            . "</i>.  Please alter your search pattern, and try again." );
     }
     elsif ( $results eq "502" ) {
         return_error( "SNMP Search Error",
