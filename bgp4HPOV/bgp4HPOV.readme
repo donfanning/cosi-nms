@@ -1,6 +1,6 @@
 $Id$
 
---------> bgp_trap.sh
+-------> bgp_trap.sh
 
 This script replaces no so good descriptive BGP trap messages 
 from HPOV or Cisco BGP MIBs Script sends new event
@@ -22,7 +22,7 @@ ie:
 222.222.222.222:TELIA_primary_link
 
 
---------> modification needed in HPOV configuration files:
+-------> modification needed in HPOV configuration files:
 
 we need to remove old BGP4 traps from file:
 /etc/opt/OV/share/conf/C/trapd.conf
