@@ -33,6 +33,7 @@ $Create_Src = "CREATE TABLE IF NOT EXISTS SAA_SOURCES (
         SrcWriteComm varchar(32),
         SrcSnmpVersion varchar(2),
         SrcSupportedProtocols text,
+		SrcSupportedTypes text,
         SrcIosVersion varchar(64),
         SrcRttAppVersion varchar(64)
         )";
@@ -121,6 +122,7 @@ $Create_Ip_Echo_subop = "CREATE TABLE IF NOT EXISTS SAA_IP_ECHO_SUBOP (
 #so_IpEchoLsrEnable smallint, #rttMonEchoAdminLSREnable
 
 $Create_User = "CREATE TABLE IF NOT EXISTS SAA_USERS (
+		UserId			int PRIMARY KEY,
         Username        varchar(30),
         Firstname       varchar(30),
         Lastname        varchar(30),
