@@ -18,7 +18,7 @@ REQUIREMENTS:
 * CiscoWorks Resource Manager Essentials 3.4 or higher on Windows 2000,
   Solaris 7, or Solaris 8.
 * Data Extracting Engine (DEEv2) (DEE can be obtained from 
-  http://www.cisco.com/cgi-bin/tablebuild.pl/cw2000-rme).
+  http://www.cisco.com/cgi-bin/tablebuild.pl/cw2000-rme for RME 3.4).
 * ALL of the prerequisites for RME and DEE are met.
 
 INSTALLATION:
