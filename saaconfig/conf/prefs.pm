@@ -7,7 +7,9 @@ use Exporter;
 @ISA = qw(Exporter);
 ## DO NOT REMOVE NEXT LINE ##
 @EXPORT_OK = qw(
+  $DB_DRIVER
   $DB_HOST
+  $DB_PORT
   $DB_NAME
   $DB_USER
   $DB_PASS
@@ -18,7 +20,9 @@ use Exporter;
 
 ## DO NOT REMOVE NEXT LINE ##
 use vars qw(
+  $DB_DRIVER
   $DB_HOST
+  $DB_PORT
   $DB_NAME
   $DB_USER
   $DB_PASS
@@ -29,7 +33,9 @@ use vars qw(
 
 ## DO NOT REMOVE NEXT LINE ##
 ## BEGIN PREFERENCES
-$DB_HOST = 'localhost';
+$DB_DRIVER = 'mysql';
+$DB_HOST = 'nm-tac.cisco.com';
+$DB_PORT = '3306';
 $DB_NAME = 'saaconf';
 $DB_USER = 'saa';
 $DB_PASS = 's44';
