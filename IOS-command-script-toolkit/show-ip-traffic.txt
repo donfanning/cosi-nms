@@ -1,0 +1,81 @@
+#!/usr/local/bin/expect -f
+#
+# useage: show-ip-traffic   hostname  password  enablepassword  wait  repeat
+#
+# This script is modeled after the unix utility "top".  It takes the output
+# from a show ip traffic command,  What makes it exciting is that it clears
+# the window before it paints the screen.  Thus making it alot easier 
+# to read. If someone could tell me how to send out a "home" character
+# it would be even nicer.
+# 
+# Note, the output is quite long. If your using this from a Xterm window,
+# change the font size of the window to small, using CTRL-Rightmousclick.
+# Then resize the window larger.
+#
+# It has been tested with Linux Slackware 2.30 & expect
+#
+#--------------------------------------------------------------------	
+#  ver		comments		AUTHOR	DATE 
+# 00		original		dblack@cisco.com	5/98
+#  01   modified to clear the screen first.	dblack@cisco.com	6/98
+#
+# This script released to open source under the Mozilla Public License
+#--------------------------------------------------------------------	
+#
+#
+# check to see if we got all the arguments
+#
+if { [llength $argv] != 5} {
+puts " "
+puts "show-ip-traffic   hostname  password  enablepassword  wait  repeat"
+puts " " 
+puts " "
+                         exit
+                        }
+set router [lindex $argv 0]
+set password [lindex $argv 1]
+set enablepass [lindex $argv 2]
+set waitperiod [lindex $argv 3]
+set repeatcount [lindex $argv 4]
+#
+log_user 0
+spawn telnet $router 
+#----------------------
+# enter the login password 
+#----------------------
+expect {*Password:*}    {}\
+                timeout         {timedout waiting for login prompt}
+send ${password}\r
+expect {*Password:*}    {send_user Bad password\n; exit} \
+                {*>}            {} \
+                timeout         {timedout waiting for login prompt}
+#----------------------
+# enter the enable password 
+#----------------------
+send enable\r
+expect assword:
+send ${enablepass}\r
+
+expect {*Password:*}    {send_user Bad  enable password\n; exit} \
+                {*#}            {} \
+                timeout         {timedout waiting for login prompt}
+#----------------------
+# Okay now reset the screen size to get rid of the page prompt
+#----------------------
+send "term len 0\r"
+expect 		{*#}            {} \
+                timeout         {timedout waiting for login prompt}
+#
+#----------------------
+for {} {$repeatcount > 0} {incr repeatcount -1} {
+log_user 1
+send_user [exec /usr/bin/clear]
+puts [exec /bin/date] 
+puts $router
+send "show ip traffic\r"
+expect $router#
+sleep $waitperiod
+}
+#----------------------
+send exit\r
+exit 0
