@@ -192,7 +192,7 @@ sub getSAAObject {
     }
 
     my $table = shift;
-    my %name  = @_;
+    my $name  = @_;
     my $key;
     my $query = "SELECT * FROM $table WHERE ";
     foreach $key ( keys %name ) {
@@ -206,13 +206,13 @@ sub searchDB {
     my $self       = shift;
     my $tables     = shift;
     my $searchType = shift;
-    my %params     = @_;
+    my $params     = @_;
     my $key;
     my $query;
     my $queryHeader = "SELECT Name FROM ";
     my $queryBody   = "WHERE ";
 
-    foreach $key (@tables) {
+    foreach $key (@{$tables}) {
 
         $query = $queryHeader . $key . " ";
         $query = $query . $queryBody;
@@ -220,14 +220,14 @@ sub searchDB {
         my $key;
         my $count = 0;
 
-        foreach $key ( keys %params ) {
+        foreach $key ( keys %{$params} ) {
             if ( $count == 0 ) {
-                $query = $query . $key . " LIKE " . $params{$key} . " ";
+                $query = $query . $key . " LIKE " . $params->{$key} . " ";
                 $count++;
             }
             else {
                 $query =
-                  $query . $searchType . $key . " LIKE " . $params{$key} . " ";
+                  $query . $searchType . $key . " LIKE " . $params->{$key} . " ";
             }
         }
     }
