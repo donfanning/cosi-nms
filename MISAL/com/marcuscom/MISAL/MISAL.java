@@ -190,8 +190,8 @@ public class MISAL implements Runnable {
 				/* We preserve a separate buffer to hold the
 				   last read data.  This will be useful for
 				   error checking. */
-				this.setLastBuffer(buffer);
 				this.setBuffer(this.getLastBuffer());
+				this.setLastBuffer(buffer);
 				Enumeration keys = stateTable.keys();
 				Perl5Matcher p5m = new Perl5Matcher();
 				Pattern pattern = null;
@@ -220,7 +220,7 @@ public class MISAL implements Runnable {
 		return this._sleepInterval;
 	}
 
-	private synchronized void setState(int state) {
+	protected synchronized void setState(int state) {
 		this.debug("Setting state to " + state);
 		this._currentState = state;
 	}
@@ -314,6 +314,9 @@ public class MISAL implements Runnable {
 		this.debug("Sending data: " + data);
 		this._bos.write(b, 0, b.length);
 		this._bos.flush();
+		/* Set the state to be unknown while we wait to find out
+		   what the resultant state will be. */
+		this.setState(this.MISAL_STATE_UNKNOWN);
 		if (expect != null) {
 			this.debug("Expecting text: \"" + expect + "\"");
 			result = this.expect(expect, wait);

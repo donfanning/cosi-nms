@@ -2,7 +2,7 @@ package com.marcuscom.MISAL;
 
 import java.io.*;
 import java.net.*;
-import com.oroinc.text.regex.MalformedPatternException;
+import com.oroinc.text.regex.*;
 
 public class MISALCiscoIOS extends MISAL {
 	public static final int DISABLE_MODE = 1;
@@ -186,6 +186,21 @@ public class MISALCiscoIOS extends MISAL {
 		}
 	}
 
+	public boolean errorOccurred() {
+		Perl5Matcher matcher = new Perl5Matcher();
+		Perl5Compiler compiler = new Perl5Compiler();
+		Pattern pattern = null;
+		try {
+			pattern = compiler.compile("^% ");
+		}
+		catch (MalformedPatternException mfpe) {}
+		if (matcher.contains(getLastBuffer(), pattern)) {
+			return true;
+		}
+		return false;
+	}
+		
+
 	public void send(int state, String data, int expectState) throws IllegalMISALStateException, IOException {
 		this.send(state, data, null, expectState, 0);
 	}
@@ -240,6 +255,10 @@ public class MISALCiscoIOS extends MISAL {
 		debug("Sending data " + data);
 		getOutputStream().write(b, 0, b.length);
 		getOutputStream().flush();
+		/* When sending a command, set the state to unknown.  It might
+		   be better to think of this as pending until we can check
+		   the new state. */
+		setState(MISAL_STATE_UNKNOWN);
 		if (expect != null) {
 			debug("Expecting \"" + expect + "\"");
 			result = expect(expect, wait);
