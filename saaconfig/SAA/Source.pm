@@ -266,7 +266,7 @@ sub learn {
     $self->_ios_version($iosvers);
 
     if ( !length($saavers) ) {
-        $self->error("Unable to get SAA version");
+        $self->error("Router does not support SAA");
         return;
     }
 
