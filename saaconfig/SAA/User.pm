@@ -11,7 +11,7 @@ use lib qw(..);
 use conf::prefs qw(KEY);
 
 @ISA    = qw(Exporter);
-@EXPORT = qw(
+@EXPORT_OK = qw(
   PERMS_GUEST
   PERMS_USER
   PERMS_ADMIN
