@@ -72,8 +72,8 @@ sub _needTarget {
 
     if ( $type == $SAA::SAA_MIB::operationTypeEnum->{dns}
         || $type == $SAA::SAA_MIB::operationTypeEnum->{http}
-        || $type == $SAA::SAA_MIB::operationTypeEnum->{dhcp} 
-		|| $type == $SAA::SAA_MIB::operationTypeEnum->{ftp} )
+        || $type == $SAA::SAA_MIB::operationTypeEnum->{dhcp}
+        || $type == $SAA::SAA_MIB::operationTypeEnum->{ftp} )
     {
         return 0;
     }
@@ -277,14 +277,20 @@ sub install {
             $SAA::SAA_MIB::rttMonEchoAdminTOS, $id,
             $operation->tos(),                 'INTEGER'
         ],
+        [
+            $SAA::SAA_MIB::rttMonEchoAdminCache, $id,
+            $operation->admin_cache(),           'INTEGER'
+        ],
     );
 
     # Add objects that may be undef for certain operations.
 
     if ($target) {
         push @{$varlist},
-          [ $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
-            addrToOctStr( $target->addr() ), 'OCTSTR' ];
+          [
+            $SAA::SAA_MIB::rttMonEchoAdminTargetAddress, $id,
+            addrToOctStr( $target->addr() ),             'OCTSTR'
+        ];
     }
 
     if ( $operation->name_server() ) {
@@ -297,8 +303,10 @@ sub install {
 
     if ( $operation->admin_operation() ) {
         push @{$varlist},
-          [ $SAA::SAA_MIB::rttMonEchoAdminOperation, $id,
-            $operation->admin_operation(), 'INTEGER' ];
+          [
+            $SAA::SAA_MIB::rttMonEchoAdminOperation, $id,
+            $operation->admin_operation(),           'INTEGER'
+        ];
     }
 
     if ( $operation->admin_strings() ) {
@@ -316,8 +324,10 @@ sub install {
 
     if ( $operation->admin_url() ) {
         push @{$varlist},
-          [ $SAA::SAA_MIB::rttMonEchoAdminURL, $id, $operation->admin_url(),
-            'OCTSTR' ];
+          [
+            $SAA::SAA_MIB::rttMonEchoAdminURL, $id,
+            $operation->admin_url(),           'OCTSTR'
+        ];
     }
 
     # Set the objects on the source router.

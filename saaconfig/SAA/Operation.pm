@@ -40,6 +40,7 @@ sub new {
         adminOperation   => undef,
         adminStrings     => undef,
         adminURL         => undef,
+        adminCache       => SAA::SAA_MIB::DEFAULT_ADMIN_CACHE,
         error            => undef,
     };
 
@@ -319,8 +320,7 @@ sub admin_strings {
 
         while ( $i < $limit ) {
             while ( $length < length $string ) {
-                push @{ $self->{adminStrings} },
-                  substr( $string, $length,
+                push @{ $self->{adminStrings} }, substr( $string, $length,
                     SAA::SAA_MIB::MAX_ADMIN_STRING_LEN );
                 $length += SAA::SAA_MIB::MAX_ADMIN_STRING_LEN;
             }
@@ -349,6 +349,25 @@ sub admin_url {
         $self->{adminURL} = $url;
     }
     return $self->{adminURL};
+}
+
+sub admin_cache {
+    my $self = shift;
+
+    # This field is only applicable to http operations.
+    if ( $self->type() != $SAA::SAA_MIB::operationTypeEnum->{http} ) {
+        return SAA::SAA_MIB::DEFAULT_ADMIN_CACHE;
+    }
+
+    if (@_) {
+        my $cache = shift;
+
+        if ( $cache != SAA::SAA_MIB::TRUE && $cache != SAA::SAA_MIB::FALSE ) {
+            return $self->{adminCache};
+        }
+        $self->{adminCache} = $cache;
+    }
+    return $self->{adminCache};
 }
 
 sub name_server {

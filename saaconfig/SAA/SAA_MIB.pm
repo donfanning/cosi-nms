@@ -44,6 +44,7 @@ use vars qw(
   $rttMonScheduleAdminTable
   $rttMonScheduleAdminEntry
   $rttMonScheduleAdminRttLife
+  $rttMonEchoAdminCache
   $historyFilterEnum
   $rowStatusEnum
   $adminOperationEnum
@@ -97,6 +98,7 @@ my @EXPORT =
   $rttMonScheduleAdminEntry
   $rttMonScheduleAdminRttLife
   $rttMonScheduleAdminRttStartTime
+  $rttMonEchoAdminCache
   $historyFilterEnum
   FALSE
   TRUE
@@ -112,6 +114,7 @@ my @EXPORT =
   DEFAULT_CONTROL_ENABLE
   DEFAULT_SPORT
   DEFAULT_TPORT
+  DEFAULT_ADMIN_CACHE
   MIN_THRESHOLD
   MIN_TIMEOUT
   MIN_SPORT
@@ -164,6 +167,7 @@ $rttMonEchoAdminTOS                = $rttMonEchoAdminEntry . '.9';
 $rttMonEchoAdminNameServer         = $rttMonEchoAdminEntry . '.12';
 $rttMonEchoAdminOperation          = $rttMonEchoAdminEntry . '.13';
 $rttMonEchoAdminURL                = $rttMonEchoAdminEntry . '.15';
+$rttMonEchoAdminCache              = $rttMonEchoAdminEntry . '.17';
 $rttMonEchoAdminString1            = $rttMonEchoAdminEntry . '.20';
 $rttMonEchoAdminString2            = $rttMonEchoAdminEntry . '.21';
 $rttMonEchoAdminString3            = $rttMonEchoAdminEntry . '.22';
@@ -273,6 +277,7 @@ use constant DEFAULT_SPORT          => 0;
 use constant DEFAULT_TPORT          => 0;
 use constant DEFAULT_START_TIME     => 0;
 use constant DEFAULT_LIFE           => 3600;
+use constant DEFAULT_ADMIN_CACHE    => TRUE;
 
 # Define global limits
 use constant MIN_THRESHOLD        => 0;
