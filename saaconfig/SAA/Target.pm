@@ -24,7 +24,8 @@ sub new {
         error   => undef,
     };
 
-    $self->{address} = gethostbyname( $args[1] );
+    my $addr = gethostbyname( $args[1] );
+    $self->{address} = join ( '.', unpack( 'C4', $addr ) );
 
     bless( $self, $class );
     $self;
