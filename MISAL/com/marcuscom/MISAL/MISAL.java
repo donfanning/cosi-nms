@@ -146,7 +146,6 @@ public class MISAL implements Runnable {
      * STATE_LOGIN_PROMPT.
      *
      * @see #removeState(int)
-     * @see Pattern
      * @since MISAL1.0
      * @param state an integer (usually defined as a constant)
      * 			that uniquely identifies this state.  Classes
