@@ -240,7 +240,6 @@ sub snmptrans {
     if ( $bg eq "1" ) {
         $SNMP::best_guess = 1;
     }
-    send_data( $client, "200" );
     $replace = get_data($client);
     send_data( $client, "200" );
     $request = get_data($client);
