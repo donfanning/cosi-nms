@@ -43,7 +43,7 @@ if ($^O eq "MSWin32") {
         ($NMSROOT) = ($ENV{'NMSROOT'}   =~ /(^[\/\w+\/?]+$)/);
 }
 
-$CLASSPATH = $NMSROOT . "/lib/classpath/com/marcuscom/deesv.jar";
+$CLASSPATH = $NMSROOT . "/lib/classpath/deesv.jar";
 
 my $args  = "";
 my $isSep = 0;
@@ -68,6 +68,6 @@ $args =~ s/\s+$//;
 $COMMAND = join ($PS, $NMSROOT, "bin", "cwjava");
 $COMMAND .= " -cw " . $NMSROOT . " -cp:a " . $CLASSPATH;
 $COMMAND .= " -DTMPDIR=" . $TMPDIR . " -DNMSROOT=" . $NMSROOT;
-$COMMAND .= " DEEsv " . $args;
+$COMMAND .= " com.marcuscom.deesv.DEEsv " . $args;
 
 system($COMMAND);
