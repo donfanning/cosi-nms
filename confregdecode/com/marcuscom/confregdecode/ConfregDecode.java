@@ -49,6 +49,8 @@ public class ConfregDecode extends Applet implements ActionListener {
     public static final Font DEFAULT_FONT = new Font("SansSerif",Font.PLAIN,12);
     public static final Font BIG_FONT = new Font("SansSerif",Font.BOLD,12);
 
+    public static final String VERSION = "1.0.1";
+
     static Frame f;
 
     static final String HEX_PREFIX = "0x";
@@ -104,7 +106,7 @@ public class ConfregDecode extends Applet implements ActionListener {
 
         this.setFont(DEFAULT_FONT);
 
-        System.out.println("cisco Systems IOS Configuration Register Decoder\n$Id$ \nby Joe Clarke");
+        System.out.println("cisco Systems IOS Configuration Register Decoder " + VERSION + "\nby Joe Clarke");
 
         bootIntoGroup = new CheckboxGroup();
         bootModes = new PropCheckbox[4];
@@ -118,7 +120,7 @@ public class ConfregDecode extends Applet implements ActionListener {
         options[1] = new PropCheckbox("Disable boot messages", OEM_BIT);
         options[2] = new PropCheckbox("Ignore break *", IGNORE_BREAK);
         options[3] = new PropCheckbox("Boot into ROM if initial boot fails *", NET_BOOT);
-        options[4] = new PropCheckbox("Diagnostic mode/Ignore NVRAM contents", DIAG_MODE);
+        options[4] = new PropCheckbox("Diagnostic mode and ignore NVRAM", DIAG_MODE);
 
         baudRatesChoice = new PropChoice();
         baudRatesChoice.addItem("", -1);
@@ -534,7 +536,7 @@ public class ConfregDecode extends Applet implements ActionListener {
     }
 
     public String getAppletInfo() {
-        return "cisco Systems IOS Configuration Register Decoder\n$Id$ \nby Joe Clarke (jclarke)";
+        return "cisco Systems IOS Configuration Register Decoder " + VERSION + " by Joe Clarke";
     }
 
     public static void main(String[] argv) {
@@ -571,7 +573,7 @@ public class ConfregDecode extends Applet implements ActionListener {
             System.exit(0);
         }
         else if (command.equals("about")) {
-            InfoDialog d = new InfoDialog(f, "About", "cisco Systems IOS Configuration Register Decoder\n$Id$\n");
+            InfoDialog d = new InfoDialog(f, "About", "cisco Systems IOS Configuration Register Decoder " + VERSION + "\nby Joe Clarke");
             d.show();
         }
     }
