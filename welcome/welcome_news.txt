@@ -1,0 +1,2 @@
+Welcome to the COSI-nms site. 
+This is a test page to test the CVS and provide a place to post some quick info.
