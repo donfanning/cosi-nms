@@ -50,24 +50,5 @@ sub _status {
     $Status = shift;
 }
 
-sub test {
-
-    # This method tests for connectivity to the target.  This is _not_ run
-    # automatically.  By default, all hosts are said to be reachable via
-    # IP since they may not _really_ be reachable from the management
-    # station.
-    my $self = attr shift;
-    return 0 unless defined $self->addr();
-
-    if ( !saa_ping( $self->addr() ) ) {
-        $self->_status($SAA::Globals::HOST_DOWN);
-    }
-    else {
-        $self->_status($SAA::Globals::HOST_UP_IP);
-    }
-
-    1;
-}
-
 1;
 __END__

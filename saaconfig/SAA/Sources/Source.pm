@@ -6,7 +6,6 @@ use lib qw(../..);
 use SNMP;
 use SAA::Globals;
 use SAA::SAA_MIB;
-use SAA::Ping qw(saa_ping);
 use Crypt::CBC;
 
 # Right now, we'll configure for v1/v2c.
@@ -174,20 +173,11 @@ sub learn {
             [ 'system', 0 ] );
         @vals = $sess->get($vars);
         if ( $sess->{ErrorNum} ) {
-            my $ping = saa_ping( $self->addr() );
-
-            if ( !$ping ) {
-                $self->_status($SAA::Globals::HOST_DOWN);
-            }
-            else {
-                $self->_status($SAA::Globals::HOST_UP_IP);
-            }
-            return 1;
+            return 0;
         }
         else {
             ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
             ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
-			print "About to return...\n";
             return 0 unless length $saavers;
             $self->_status($SAA::Globals::HOST_UP_SNMP);
         }
