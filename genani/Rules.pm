@@ -261,6 +261,7 @@ sub _parseRule {
 
     $rec = {
         name => '',
+		type => '',
     };
 
     $line =~ s/\s+/ /g;
