@@ -4,7 +4,7 @@
 use strict;
 use DBI;
 use Getopt::Std;
-use conf::prefs qw($DB_DRIVER $DB_USER $DB_PASS $DB_NAME);
+use conf::prefs qw($DB_DRIVER $DB_HOST $DB_PORT $DB_USER $DB_PASS $DB_NAME);
 use conf::tables
   qw($Create_Src $Create_Target $Create_Operation $Create_Collector $Create_User $Create_Ip_Echo_subop);
 use vars qw (
@@ -47,8 +47,11 @@ sub CreateDb {
 }
 
 sub ConnectDb {
+	my $data_source = "dbi:".$DB_DRIVER.":database=".$DB_NAME.";host=".$DB_HOST.";port=".$DB_PORT;
+	print("data_source is $data_source");
     my $dbh =
-      DBI->connect( 'dbi:' . $DB_DRIVER . ':' . $DB_NAME, $DB_USER, $DB_PASS )
+      #DBI->connect( 'dbi:' . $DB_DRIVER . ':' . $DB_NAME . "\@" . $DB_HOST . ":" . $DB_PORT, $DB_USER, $DB_PASS )
+      DBI->connect( $data_source, $DB_USER, $DB_PASS )
       or die "SAA::DB: Unable to connect to database " . $DB_NAME;
     return $dbh;
 }
