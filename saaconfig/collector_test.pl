@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 # a script to test Collector.pm by installing a simple Echo Operation
 # note that this automatically tests SAA:Source, SAA:Target, and SAA:Operation
-#use SAA::Source;
-#use SAA::Collector;
-#use SAA::Target;
-#use SAA::Operation;
-#use SAA::SAA_MIB;
+use SAA::Source;
+use SAA::Collector;
+use SAA::Target;
+use SAA::Operation;
+use SAA::SAA_MIB;
 $|++;
 print "----------------------------\n";
 
