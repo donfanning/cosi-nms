@@ -131,17 +131,30 @@ public class MISAL implements Runnable {
 	 * @see			Pattern
 	 * @since		JDK1.1
 	 */
-	public synchronized void addState(int stateId, String prompt) throws MalformedPatternException {
+	public synchronized void addState(int state, String prompt) throws MalformedPatternException {
 		Perl5Compiler compiler = new Perl5Compiler();
 		Pattern pattern = compiler.compile(prompt);
-		stateTable.put(pattern, new Integer(stateId));
+		stateTable.put(new Integer(state), pattern);
 		startCheckingState();
 	}
 
-	public synchronized void removeState(String prompt) {
-		this.stateTable.remove(prompt);
+	/** 
+	 * Remove a MISAL state from the state machine.
+	 *
+	 * @param state		integer representing the state to remove
+	 * @see			#addState
+	 * @since		JDK1.1
+	 */
+	public synchronized void removeState(int state) {
+		this.stateTable.remove(new Integer(state));
 	}
 
+	/**
+	 * Start the state checking thread.
+	 *
+	 * @see		#stopCheckingState
+	 * @since	JDK1.1
+	 */
 	protected void startCheckingState() {
 		if (_stateChecker == null) {
 			_stateChecker = new Thread(this);
@@ -178,9 +191,9 @@ public class MISAL implements Runnable {
 				Perl5Matcher p5m = new Perl5Matcher();
 				Pattern pattern = null;
 				while(keys.hasMoreElements()) {
-					pattern = (Pattern)keys.nextElement();
+					int state = ((Integer)keys.nextElement()).intValue();
+					pattern = (Pattern)stateTable.get(new Integer(state));
 					if (p5m.contains(buffer, pattern)) {
-						int state = ((Integer)stateTable.get(pattern)).intValue();
 						this.setState(state);
 					}
 				}
