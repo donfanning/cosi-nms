@@ -1,6 +1,7 @@
 import java.net.*;
 import java.io.*;
 import com.marcuscom.MISAL.*;
+import com.oroinc.text.regex.*;
 
 public class MISALTest {
 	public static void main(String[] argv) {
@@ -10,11 +11,11 @@ public class MISALTest {
 			socket = new Socket("my.host.com", 23);
 		}
 		catch (UnknownHostException uhe) {
-			System.err.println("Bad host.");
+			System.err.println("Bad host: " + uhe.getMessage());
 			System.exit(1);
 		}
 		catch (IOException ioe) {
-			System.err.println("IO Exception.");
+			System.err.println(ioe.getMessage());
 			System.exit(1);
 		}
 
@@ -26,16 +27,20 @@ public class MISALTest {
 			System.exit(1);
 		}
 		catch (IOException ioe1) {
-			System.err.println("IO Exception.");
+			System.err.println(ioe1.getMessage());
 			System.exit(1);
 		}
 		try {
-			misal.addState(1, );
-			misal.addState(2, "Password: ?$");
+			misal.addState(1, "login: ?$");
+			misal.addState(2, "[Pp]assword: ?$");
+		}
+		catch (MalformedPatternException mfpe) {
+			System.err.println(mfpe.getMessage());
+		}
 		try {
-			sm.send(1, "myusername\r", 2);
-			sm.clearBuffer();
-			sm.send(2, "mypassword\r", "]\\s*$");
+			misal.send(1, "myusername\r", 2);
+			misal.clearBuffer();
+			misal.send(2, "mypassword\r", "]\\s*$");
 		}
 		catch (IllegalMISALStateException imse) {
 			System.err.println(imse.getMessage());
@@ -49,10 +54,7 @@ public class MISALTest {
 		catch (InterruptedException ie) {
 		}
 		System.out.println("\n\n\n");
-		System.out.println("buffer = " + sm.getBuffer());
-		sm.closeSocket();
+		System.out.println("buffer = " + misal.getBuffer());
+		misal.closeSocket();
 	}
 }
-
-
-		
