@@ -92,8 +92,12 @@ while (<XML>) {
 	         ? "<getDeviceCredentials/>"
 		 : "<listDevices deviceType=\"\%\%DEVS\%\%\"/>"
 	}ex;
-s/\%\%DTDPATH\%\%/$PREFS{'RME_SERVER'}:$PREFS{'RME_PORT'}\/devexp\/devexp.dtd/;
     s/\%\%DEVS\%\%/$PREFS{'DEVICES'}/;
+    s{ \%\%DTDPATH\%\% }
+		{ ($PREFS{'DTD_PATH'} eq "")
+			? "$PREFS{'RME_SERVER'}:$PREFS{'RME_PORT'}\/devexp\/devexp.dtd"
+		  : $PREFS{'DTD_PATH'}
+	}ex;
 
     $xmlpacket .= $_;
 }
