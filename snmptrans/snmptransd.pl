@@ -53,6 +53,11 @@ BEGIN {
 # Specify the local port for the server to bind to.  This is 3333 by default.
     $LOCAL_PORT = 3333;
 
+    # Specify the number of seconds to wait before throwing a timeout exception.
+    # This helps avoid denial of service attacks if the MIB tree is large.  The
+    # default is 10 minutes.
+    $TIMEOUT_SECS = 600;
+
     # Enable CHAP-like security for connecting to the server process.  This is 
     # disable by default.  Set this to the name of the password file to 
     # enable security.
@@ -69,9 +74,10 @@ BEGIN {
 
 use strict;
 use vars
-qw($rcsid $SECURITY $PIDFILE $LOCAL_PORT $REPLACE $server $MAXLEN $PREFORK $MAX_CLIENTS_PER_CHILD %children $children $ME $MIBS $MIBDIRS $HTTPMIBS %contents @leave_indent $leave_was_simple $tree_buffer $last_ip);
+  qw($rcsid $SECURITY $PIDFILE $TIMEOUT_SECS $LOCAL_PORT $REPLACE $server $MAXLEN $PREFORK $MAX_CLIENTS_PER_CHILD %children $children $ME $MIBS $MIBDIRS $HTTPMIBS %contents @leave_indent $leave_was_simple $tree_buffer $last_ip);
 use IO::Socket;
 use Symbol;
+
 use SNMP;
 $SNMP::save_descriptions = 1;
 $SNMP::replace_newer     = 1 if ($REPLACE);
@@ -90,11 +96,12 @@ sub LOCK_UN {8}
 $rcsid = '$Id$';
 
 $server = IO::Socket::INET->new(
-  LocalPort => $LOCAL_PORT,
-  Type      => SOCK_STREAM,
-  Proto     => 'tcp',
-  Reuse     => 1,
-  Listen    => 10 ) or die "Error creating socket: $@\n";
+    LocalPort => $LOCAL_PORT,
+    Type      => SOCK_STREAM,
+    Proto     => 'tcp',
+    Reuse     => 1,
+    Listen    => 10
+) or die "Error creating socket: $@\n";
 
 if ( -f $PIDFILE ) {
     unless ( open( PID, $PIDFILE ) ) {
@@ -151,6 +158,10 @@ for ( 1 .. $PREFORK ) {
 $SIG{CHLD} = \&REAPER;
 $SIG{INT}  = \&HUNTSMAN;
 $SIG{TERM} = \&HUNTSMAN;
+
+# This signal handler controls what to do if the snmptrans operation runs
+# for too long.  We will catch this timeout, and return an error.
+$SIG{ALRM} = sub { die "timeout" };
 
 while (1) {
     sleep;
@@ -262,9 +273,23 @@ sub snmptrans {
         else {
             $search_descr = 0;
         }
-        my $mib = $SNMP::MIB{'.1'};    # Start from the root.
+        my $mib        = $SNMP::MIB{'.1'};    # Start from the root.
         my @occurances = ();
-        find_occurances( $request, $search_descr, $mib, \@occurances );
+        eval {
+            alarm($TIMEOUT_SECS);
+            find_occurances( $request, $search_descr, $mib, \@occurances );
+            alarm(0);
+        };
+
+        if ($@) {
+            if ( $@ =~ /timeout/ ) {
+                send_data( $client, "502" );
+                return;
+            }
+            else {
+                alarm(0);
+            }
+        }
         my ($occurance);
 
         if ( !( scalar @occurances ) ) {
@@ -453,7 +478,7 @@ sub snmptrans {
                 my $enum;
 
                 foreach $enum ( sort { $enums->{$a} <=> $enums->{$b} }
-                  keys %{$enums} )
+                    keys %{$enums} )
                 {
                     my $buf;
                     my $bufw;
@@ -602,10 +627,24 @@ sub snmptrans {
             $trans = SNMP::translateObj($request);
             my $mib = $SNMP::MIB{$trans};
             $data .= ( $mib->{'parent'} )->{'objectID'} . "\n";
-            $data .= walkMIB( $client, $request, $trans );
+            eval {
+                alarm($TIMEOUT_SECS);
+                $data .= walkMIB( $client, $request, $trans );
+                alarm(0);
+            };
+
+            if ($@) {
+                if ( $@ =~ /timeout/ ) {
+                    send_data( $client, "502" );
+                    return;
+                }
+                else {
+                    alarm(0);
+                }
+            }
+            $data .= "</pre>\n";
+            send_data( $client, $data );
         }
-        $data .= "</pre>\n";
-        send_data( $client, $data );
     }
     else {
         send_data( $client, "500" );
@@ -685,12 +724,12 @@ sub print_mib_leaves {
         if ($test_count) {
             $tree_buffer .=
               join ( "", @leave_indent )
-. "--<A HREF=\"$ME?oid=$$mib{'label'}&xOps=tree\"><FONT COLOR=\"green\">$$mib{'label'}</FONT></A>($$mib{'subID'}) <SMALL><A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\"><FONT COLOR=\"#DC00DC\">detail</FONT></A></SMALL>\n";
+              . "--<A HREF=\"$ME?oid=$$mib{'label'}&xOps=tree\"><FONT COLOR=\"green\">$$mib{'label'}</FONT></A>($$mib{'subID'}) <SMALL><A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\"><FONT COLOR=\"#DC00DC\">detail</FONT></A></SMALL>\n";
         }
         else {
             $tree_buffer .=
               join ( "", @leave_indent )
-. "--<A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\"><FONT COLOR=\"#DC00DC\">$$mib{'label'}</FONT></A>($$mib{'subID'})\n";
+              . "--<A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\"><FONT COLOR=\"#DC00DC\">$$mib{'label'}</FONT></A>($$mib{'subID'})\n";
         }
 
     }
@@ -777,12 +816,12 @@ sub print_mib_leaves {
         if ($test_count) {
             $tree_buffer .=
               join ( "", @leave_indent )
-. "-- $acc $typ <A HREF=\"$ME?oid=$$mib{'label'}&xOps=tree\"><FONT COLOR=\"green\">$$mib{'label'}</FONT></A>($$mib{'subID'}) <SMALL><A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\"><FONT COLOR=\"#DC00DC\">detail</FONT></A></SMALL>\n";
+              . "-- $acc $typ <A HREF=\"$ME?oid=$$mib{'label'}&xOps=tree\"><FONT COLOR=\"green\">$$mib{'label'}</FONT></A>($$mib{'subID'}) <SMALL><A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\"><FONT COLOR=\"#DC00DC\">detail</FONT></A></SMALL>\n";
         }
         else {
             $tree_buffer .=
               join ( "", @leave_indent )
-. "-- $acc $typ <A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\"><FONT COLOR=\"#DC00DC\">$$mib{'label'}</FONT></A>($$mib{'subID'})\n";
+              . "-- $acc $typ <A HREF=\"$ME?oid=$$mib{'label'}&xOps=detail\"><FONT COLOR=\"#DC00DC\">$$mib{'label'}</FONT></A>($$mib{'subID'})\n";
         }
 
         $leave_indent[$ip] = $last_ipch;

@@ -46,7 +46,7 @@ use strict;
 use IO::Socket;
 use CGI;
 use vars
-qw($rcsid $SERVER_ADDR $SERVER_PORT $ME $q $cookie $client $data $result $size);
+  qw($rcsid $SERVER_ADDR $SERVER_PORT $ME $q $cookie $client $data $result $size);
 
 $rcsid = '$Id$';
 
@@ -58,11 +58,11 @@ $q->cgi_error
 
 if ( defined( $q->param('oid') ) && $q->param('oid') eq "" ) {
     return_error( "SNMP Translate Error",
-      "You did not specify an object name or OID to translate." );
+        "You did not specify an object name or OID to translate." );
 }
 elsif ( defined( $q->param('pattern') ) && $q->param('pattern') eq "" ) {
     return_error( "SNMP Search Error",
-      "You did not specify a pattern for which to search." );
+        "You did not specify a pattern for which to search." );
 }
 
 # Make the user input ``oid'' string safe for Perl consumption.
@@ -73,17 +73,17 @@ $oid =~ s/\s//g;
 
 if ( $q->param('bg') eq "1" ) {
     return_error( "Bad Regular Expression",
-      "The regular expression <I>$oid</i> is not valid." )
+        "The regular expression <I>$oid</i> is not valid." )
       if ( !( eval { 'snmp' =~ /$oid/i, 1 } ) );
 }
 
 $client = IO::Socket::INET->new(
-  PeerPort => $SERVER_PORT,
-  PeerAddr => $SERVER_ADDR,
-  Type     => SOCK_STREAM,
-  Proto    => 'tcp',
-  Timeout  => 10 )
-  or return_error( "Server Error", "Error communicating with server." );
+    PeerPort => $SERVER_PORT,
+    PeerAddr => $SERVER_ADDR,
+    Type     => SOCK_STREAM,
+    Proto    => 'tcp',
+    Timeout  => 10
+) or return_error( "Server Error", "Error communicating with server." );
 
 my $results = "";
 
@@ -106,7 +106,7 @@ if ( defined( $q->param('security') )
     $results = get_data($client);
     if ( $results ne "403" ) {
         return_error( "Server Error",
-         "Error initiating authentication with server (results = \"$results\")."
+"Error initiating authentication with server (results = \"$results\")."
         );
     }
     send_data( $client, $digest );
@@ -114,7 +114,7 @@ if ( defined( $q->param('security') )
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error authenticating with server (results = \"$results\")." );
+            "Error authenticating with server (results = \"$results\")." );
     }
 
     # Use cookies to persist the security info.
@@ -135,21 +135,21 @@ if ( defined( $q->param('pattern') ) ) {
     $results = get_data($client);
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error communicating with server (results = \"$results\")." );
+            "Error communicating with server (results = \"$results\")." );
     }
     send_data( $client, "0" );
     $results = get_data($client);
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error communicating with server (results = \"$results\")." );
+            "Error communicating with server (results = \"$results\")." );
     }
     send_data( $client, "0" );
     $results = get_data($client);
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error communicating with server (results = \"$results\")." );
+            "Error communicating with server (results = \"$results\")." );
     }
 
     send_data( $client, $pattern );
@@ -157,18 +157,24 @@ if ( defined( $q->param('pattern') ) ) {
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error communicating with server (results = \"$results\")." );
+            "Error communicating with server (results = \"$results\")." );
     }
     send_data( $client, $q->param('descr') );
 
     $results = get_data($client);
     if ( $results eq "501" ) {
         return_error( "Bad Regular Expression",
-          "The regular expression <I>$q->param('pattern')</i> is not valid." );
+            "The regular expression <I>$q->param('pattern')</i> is not valid."
+        );
     }
     elsif ( $results eq "404" ) {
         return_error( "SNMP Search Error",
 "No objects were found matching the pattern <I>$q->param('pattern')</i>.  Please alter your search pattern, and try again."
+        );
+    }
+    elsif ( $results eq "502" ) {
+        return_error( "SNMP Search Error",
+"The server timed out before returning valid data.  Please try again with a more specific pattern."
         );
     }
 
@@ -181,7 +187,7 @@ if ( $q->param('xOps') eq "" ) {
     $results = get_data($client);
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error communicating with server (results = \"$results\")." );
+            "Error communicating with server (results = \"$results\")." );
     }
     send_data( $client, "0" ) if ( $q->param('bg') ne "1" );
     send_data( $client, "1" ) if ( $q->param('bg') eq "1" );
@@ -189,7 +195,7 @@ if ( $q->param('xOps') eq "" ) {
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error communicating with server (results = \"$results\")." );
+            "Error communicating with server (results = \"$results\")." );
     }
 
     send_data( $client, "0" ) if ( $q->param('replace') ne "1" );
@@ -198,7 +204,7 @@ if ( $q->param('xOps') eq "" ) {
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error communicating with server (results = \"$results\")." );
+            "Error communicating with server (results = \"$results\")." );
     }
 
     send_data( $client, $oid );
@@ -207,6 +213,11 @@ if ( $q->param('xOps') eq "" ) {
     if ( $results eq "404" ) {
         return_error( "SNMP Translate Error",
 "Unable to translate <I>$oid</i>.  The object was either not found or invalid."
+        );
+    }
+    elsif ( $results eq "502" ) {
+        return_error( "SNMP Translate Error",
+"The server timed out before returning valid data.  Please try again with a more specific object."
         );
     }
 
@@ -224,7 +235,7 @@ elsif ( $q->param('xOps') eq "detail" ) {
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error communicating with server (results = \"$results\")." );
+            "Error communicating with server (results = \"$results\")." );
     }
 
     send_data( $client, "0" ) if ( $q->param('replace') ne "1" );
@@ -233,7 +244,7 @@ elsif ( $q->param('xOps') eq "detail" ) {
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error communicating with server (results = \"$results\")." );
+            "Error communicating with server (results = \"$results\")." );
     }
 
     send_data( $client, $oid );
@@ -242,6 +253,11 @@ elsif ( $q->param('xOps') eq "detail" ) {
     if ( $results eq "404" ) {
         return_error( "SNMP Translate Error",
 "Unable to translate <I>$oid</i>.  The object was either not found or invalid."
+        );
+    }
+    elsif ( $results eq "502" ) {
+        return_error( "SNMP Translate Error",
+"The server timed out before returning valid data.  Please try again with a more specific object."
         );
     }
 
@@ -259,7 +275,7 @@ elsif ( $q->param('xOps') eq "tree" ) {
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error communicating with server (results = \"$results\")." );
+            "Error communicating with server (results = \"$results\")." );
     }
 
     send_data( $client, "0" ) if ( $q->param('replace') ne "1" );
@@ -268,7 +284,7 @@ elsif ( $q->param('xOps') eq "tree" ) {
 
     if ( $results ne "200" ) {
         return_error( "Server Error",
-          "Error communicating with server (results = \"$results\")." );
+            "Error communicating with server (results = \"$results\")." );
     }
 
     send_data( $client, $oid );
@@ -277,6 +293,11 @@ elsif ( $q->param('xOps') eq "tree" ) {
     if ( $results eq "404" ) {
         return_error( "SNMP Translate Error",
 "Unable to display tree for <I>$oid</i>.  The object was either not found or invalid."
+        );
+    }
+    elsif ( $results eq "502" ) {
+        return_error( "SNMP Translate Error",
+"The server timed out before returning valid data.  Please try again with a more specific object."
         );
     }
 
