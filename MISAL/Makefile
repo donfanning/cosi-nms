@@ -8,6 +8,7 @@ package=	com.marcuscom.MISAL
 package_os=	com/marcuscom/MISAL
 
 RM=	/bin/rm
+MKDIR= /bin/mkdir
 
 JAVAC=	/usr/local/jdk1.3.1/bin/javac
 JAVAC_FLAGS=	-O
@@ -27,10 +28,15 @@ jar: classes
 classes:
 	$(JAVAC) $(JAVAC_FLAGS) -classpath $(CLASSPATH) $(srcdir)/$(package_os)/*.java
 
+test:
+	$(JAVAC) $(JAVAC_FLAGS) -classpath $(CLASSPATH) $(srcdir)/MISALTest.java
+
 docs:
+	$(MKDIR) -p $(docdir)
 	$(JAVADOC) $(JAVADOC_FLAGS) -classpath $(CLASSPATH) $(package)
 
 clean:
 	$(RM) -f $(srcdir)/MISAL.jar
 	$(RM) -f $(srcdir)/$(package_os)/*.class
-	$(RM) -rf $(docdir)/*.html
+	$(RM) -rf $(docdir)
+	$(RM) -f $(srcdir)/MISALTest.class
