@@ -43,18 +43,42 @@ public class MISALCiscoIOS extends MISAL {
      * '>').
      */    
 	public static final int DISABLE_MODE = 1;
+        /** The state matching the normal Cisco IOS enable prompt (usually a prompt ending in '#').
+         */        
 	public static final int ENABLE_MODE = 2;
+        /** The state matching IOS config mode (usually a prompt ending in "(config)#").
+         */        
 	public static final int CONFIG_MODE = 3;
+        /** The state matching the IOS interface config mode (usually a prompt ending in "(config-if)#").
+         */        
 	public static final int CONFIG_MODE_IF = 4;
+        /** The state matching a config mode other than normal config and interface config.
+         */        
 	public static final int CONFIG_MODE_OTHER = 5;
+        /** The state matching a AAA username prompt (usually "Username:").
+         */        
 	public static final int USER_PROMPT = 6;
+        /** The state matching a password prompt (usually "Password:").
+         */        
 	public static final int PASSWORD_PROMPT = 7;
 
+        /** The state matched when no authentication level is known (e.g. before one even begins to log into an IOS device).
+         */        
 	protected static final int AUTH_UNKNOWN = 0;
+        /** The state matched when needing to authenticate using a VTY password.
+         */        
 	protected static final int AUTH_VTY = 1;
+        /** The state matched when needing to authenticate with a AAA (or local) username.
+         */        
 	protected static final int AUTH_USER = 2;
+        /** The state matched when needing to enter an enable password when no enable username is required.
+         */        
 	protected static final int AUTH_VTY_ENABLE = 3;
+        /** The state matched when needing to enter an enable username.
+         */        
 	protected static final int AUTH_USER_ENABLE = 4;
+        /** The state matched when needing to use an enable TACACS username to login (i.e. you login and immediately become enabled).
+         */        
 	protected static final int AUTH_ENABLE_TACACS = 5;
 
 	private String _vtyPw = null;
@@ -63,6 +87,14 @@ public class MISALCiscoIOS extends MISAL {
 	private String _userPw = null;
 	private String _errorMessage = null;
 
+        /** Creates a new MISALCiscoIOS socket.
+         * @see MISAL#
+         * @see java.net.Socket#
+         * @since MISAL1.0
+         * @param socket the <I>open</I> java.net.Socket to be abstracted
+         * @throws SocketException if Socket is not initialized and connected
+         * @throws IOException if there is a problem reading or writing Socket
+         */        
 	public MISALCiscoIOS(Socket socket) throws SocketException, IOException {
 		super(socket);
 
@@ -86,30 +118,60 @@ public class MISALCiscoIOS extends MISAL {
 		catch (MalformedMISALStateException mmse) {}
 	}
 
+        /** Set the enable password.  By default, this is null.
+         * @param enablePw the enable password to use
+         * @see setVtyPassword(String)
+         * @see setUserPassword(String)
+         */        
 	public void setEnablePassword(String enablePw) {
 		this._enablePw = enablePw;
 	}
 
+        /** Set the AAA or local username (if needed).  By default, this is null.
+         * @param username the username to use for AAA or local authentication
+         * @see setUserPassword(String)
+         */        
 	public void setUsername(String username) {
 		this._user = username;
 	}
 
+        /** Set the VTY password.  By default, this is null.
+         * @param vtyPw the VTY password to use for basic authentication
+         */        
 	public void setVtyPassword(String vtyPw) {
 		this._vtyPw = vtyPw;
 	}
 
+        /** Set the user password for AAA or local authentication.  By default, this is null.
+         * @param userPw the user password to use for AAA or local authentication
+         * @see setUsername(String)
+         */        
 	public void setUserPassword(String userPw) {
 		this._userPw = userPw;
 	}
 
+        /** Set the username prompt for AAA or local authentication.  By default, this is "Username:".
+         * @param prompt the value of the username prompt
+         * @throws MalformedMISALStateException if <CODE>prompt</CODE> is not a valid MISAL state
+         * @see setPasswordPrompt(String)
+         */        
 	public void setUserPrompt(String prompt) throws MalformedMISALStateException {
 		addState(this.USER_PROMPT, prompt);
 	}
 
+        /** Set the password prompt for AAA or local authentication.  By default, this is "Password:".
+         * @param prompt the value of the password prompt
+         * @throws MalformedMISALStateException if <CODE>prompt</CODE> is not a valid MISAL state
+         * @see setUsernamePrompt(String)
+         */        
 	public void setPasswordPrompt(String prompt) throws MalformedMISALStateException {
 		addState(this.PASSWORD_PROMPT, prompt);
 	}
 
+        /** Retrieve the last error message from the MISAL socket.  If no error message was encountered, this is null.
+         * @return last error message as a string
+         * @see errorOccurred()
+         */        
 	public String getLastErrorMessage() {
 		return this._errorMessage;
 	}
@@ -150,6 +212,14 @@ public class MISALCiscoIOS extends MISAL {
 		return auth;
 	}
 
+        /** Perform the login dialog with connected IOS device.  The expected result is either the disabled prompt or the enable prompt.
+         * @throws InsufficientCredentialsException if the authentication information cannot be used to make a successful login
+         * @throws IllegalMISALStateException if a valid logged in state is not reached
+         * @throws IOException if an error occurs reading or writing the MISAL socket
+         * @see doEnable()
+         * @see doDisable()
+         * @see doConfig()
+         */        
 	public void login() throws InsufficientCredentialsException, IllegalMISALStateException, IOException {
 		switch (this.getAuthScheme(this.DISABLE_MODE)) {
 			case AUTH_VTY:
@@ -174,6 +244,12 @@ public class MISALCiscoIOS extends MISAL {
 
 	}
 
+        /** Become enabled on the connected IOS device.
+         * @throws IllegalMISALStateException if enable mode cannot be reached
+         * @throws IOException if an error occurs reading or writing the MISAL socket
+         * @see doDisable()
+         * @see doConfig()
+         */        
 	public void doEnable() throws IllegalMISALStateException, IOException {
 		switch (getState()) {
 			case ENABLE_MODE:
@@ -193,6 +269,11 @@ public class MISALCiscoIOS extends MISAL {
 		}
 	}
 
+        /** Become disabled on the connected IOS device.
+         * @throws IllegalMISALStateException if the disabled prompt cannot be reached
+         * @throws IOException if an error occurs reading or writing the MISAL socket
+         * @see doEnable()
+         */        
 	public void doDisable() throws IllegalMISALStateException, IOException {
 		switch (getState()) {
 			case DISABLE_MODE:
@@ -211,6 +292,12 @@ public class MISALCiscoIOS extends MISAL {
 		}
 	}
 
+        /** Enter config mode on the connected IOS device.
+         * @throws IllegalMISALStateException if config mode cannot be reached
+         * @throws IOException if an error occurs reading or writing the MISAL socket
+         * @see doEnable()
+         * @see doDisable()
+         */        
 	public void doConfig() throws IllegalMISALStateException, IOException {
 		switch (getState()) {
 			case DISABLE_MODE:
@@ -232,6 +319,10 @@ public class MISALCiscoIOS extends MISAL {
 		}
 	}
 
+        /** Check to see if an IOS parser error occurred.
+         * @return true if an IOS parser error occurred, false otherwise
+         * @see getLastErrorMessage()
+         */        
 	public boolean errorOccurred() {
 		Perl5Matcher matcher = new Perl5Matcher();
 		Perl5Compiler compiler = new Perl5Compiler();
@@ -247,6 +338,16 @@ public class MISALCiscoIOS extends MISAL {
 		return false;
 	}
 		
+        /** Send data on the MISAL socket.  This overrides <CODE>send</CODE> from <CODE>MISAL</CODE>.
+         * @param state integer representing the MISAL state to expect before sending data
+         * @param data string representing the data to send
+         * @param expect string representing the prompt to expect after sending the data (set to <CODE>null</CODE> to indicate a MISAL state integer will be provided)
+         * @param expectState integer representing the state to expect after sending the data (set to 0 to indicate a string prompt will be provided)
+         * @param wait number of seconds to wait for expected state
+         * @throws IllegalMISALStateException if the given states could not be reached
+         * @throws IOException if an error occurs reading or writing the MISAL socket
+         * @see com.marcuscom.MISAL.MISAL.send(int,String,String,int,int)
+         */        
 	protected void send(int state, String data, String expect, int expectState, int wait) throws IllegalMISALStateException, IOException {
 		boolean result = false;
 		int currState = MISAL_STATE_UNKNOWN;
@@ -306,6 +407,8 @@ public class MISALCiscoIOS extends MISAL {
 		}
 	}
         
+        /** Start the MISAL state watcher thread.  This method should never be called directly.  It is run automatically once a new <CODE>MISALCiscoIOS</CODE> class is instantiated.
+         */        
         public void run() {
         }
         
