@@ -67,7 +67,8 @@ $args =~ s/\s+$//;
 
 $COMMAND = join ($PS, $NMSROOT, "bin", "cwjava");
 $COMMAND .= " -cw " . $NMSROOT . " -cp:a " . $CLASSPATH;
-$COMMAND .= " -Xmx32m";
+$COMMAND .= " -Xms32m";
+$COMMAND .= " -Xmx200m";
 $COMMAND .= " -DTMPDIR=" . $TMPDIR . " -DNMSROOT=" . $NMSROOT;
 $COMMAND .= " com.marcuscom.deesv.DEEsv " . $args;
 
