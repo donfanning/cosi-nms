@@ -684,33 +684,33 @@ public class MISAL implements Runnable {
 
     private String _readAll() {
         byte b[] = null;
-        String retBuf = null;
-        int numBytes = 0;
         int i = 0;
+	String retBuf = null;
+
         try {
+            int numBytes = 0;
+            int t;
+            int y = 0;
+            byte[] obuf = new byte[4];
+
             numBytes = _bis.available();
             if (numBytes == 0) {
                 return null;
             }
             b = new byte[numBytes];
-            retBuf = new String();
-            int t;
-            int y = 0;
-            byte[] obuf = new byte[4];
-            while (_bis.available() > 0) {
+            while (numBytes > 0) {
                 t = _bis.read();
-                if (t == '\n' || t == '\r' || (t >= 32 && t < 127)) {
+		numBytes--;
+                if (t == '\n' || t == '\r' || t == '\t' ||
+			(t >= 32 && t < 127)) {
                     /* If not a negotiation character,
                        it needs to be read as data. */
-                    if (i == numBytes) {
-                        retBuf = retBuf.concat(new String(b, 0, i));
-                        i = 0;
-                    }
                     b[i++] = (byte)t;
                     continue;
                 }
                 obuf[0] = (byte)255;
                 t = _bis.read();
+		numBytes--;
                 if (t == 251 || t == 252) {
                     y = 254;
                 }
@@ -720,6 +720,7 @@ public class MISAL implements Runnable {
                 if (y > 0) {
                     obuf[1] = (byte)y;
                     obuf[2] = (byte)_bis.read();
+		    numBytes--;
                     _bos.write(obuf, 0, 3);
                     _bos.flush();
                     y = 0;
@@ -731,7 +732,9 @@ public class MISAL implements Runnable {
             return null;
         }
 
-        retBuf = retBuf.concat(new String(b, 0, i));
+	if (i == 0) return null;
+
+        retBuf = new String(b, 0, i);
         this.debug("Read \"" + retBuf + "\" from socket input stream");
         return retBuf;
     }
