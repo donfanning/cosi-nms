@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 # ...................oO MCR Pusher Oo......................................
 # . FILENAME: mcr_pusher.pl
 # . DATE: 20.Mar.2001
@@ -14,6 +14,8 @@
 use DBD::mysql;
 use DBI;
 use Time::localtime;
+use Time::CTime;
+use Date::Parse;
 
 ### CHANGE VARIABLES HERE ##################################################
 
@@ -21,7 +23,7 @@ use Time::localtime;
 my $db_hostname = "localhost";	
 
 # Database to create the table in
-my  $database = "deez"; 
+my  $database = "mcrt"; 
 
 # Name of the table to insert the callrecords into
 my $tablename = "callrecs"; 
@@ -31,7 +33,7 @@ my $username = "";
 
 ### You shouldn't need to change anything belong this line #################
 
-my $db;
+my $dbh;
 my %months = (
         "Jan" => "01",
         "Feb" => "02",
@@ -46,14 +48,12 @@ my %months = (
         "Nov" => "11",
         "Dec" => "12"
 );
-my $tm = localtime;
-my $year = $tm->year+1900; # Calculates the current year.
 
 # Connect to MySQL server
 if( $username eq "" ) {
-        $db = DBI->connect("DBI:mysql:$database:$db_hostname" );
+        $dbh = DBI->connect("DBI:mysql:$database:$db_hostname" );
 } else {
-        $db = DBI->connect("DBI:mysql:$database:$db_hostname", "$username" );
+        $dbh = DBI->connect("DBI:mysql:$database:$db_hostname", "$username" );
 }
 
 # Creates the table
@@ -87,6 +87,8 @@ $db->do("CREATE TABLE IF NOT EXISTS $tablename (
 	disc_modem VARCHAR(128),
 	disc_local VARCHAR(32),
 	disc_remote VARCHAR(32),
+	start_time DATETIME,
+	end_time DATETIME,
 	timestamp TIMESTAMP(14) )	");
 
 
@@ -128,6 +130,9 @@ LOOP: while(<>) {
 	my $disc_radius = "NULL";
 	my $disc_modem = "NULL";
 	my $timestamp = "NULL";
+	my $time;
+	my $start_time = "NULL";
+	my $end_time = "NULL";
 	my $sql = "NULL";
 
 	# Strip out problematic characters
@@ -135,7 +140,7 @@ LOOP: while(<>) {
 	$r =~ s#'##g;
 	$r =~ s#`##g;
 	
-	if( $r =~ /\S+\s\S+\s\S+\s(\S+)\s/ ) {		# Swerver
+	if( $r =~ /\S+\s\S+\s\S+\s(\S+)\s/ ) {		# Server
 		$server = $1;
 	} else {
 		print "\nError parsing server name. Dropping record($r).";
@@ -249,6 +254,8 @@ LOOP: while(<>) {
 		$disc_remote = $1;
 	}
 
+	&start-end;
+	
 	my $i;
 	foreach $i ($dso_slot, $dso_chan, $dso_contr, $slot, $port, $timeon,
 		$init_rx, $init_tx, $snr, $tx_chars, $rx_chars, $tx_ec, $rx_ec,
@@ -286,7 +293,7 @@ LOOP: while(<>) {
 	} 
 
 	# This is ugly... Inserts the vars into the db.
-	$sql = "\nREPLACE into $tablename VALUES ( \'$server', $dso_slot, $dso_contr, $dso_chan, $slot, $port, '$call_id', '$user_id', '$ip', '$calling', '$called', '$std', '$prot', '$comp', $init_rx, $init_tx, $rbs, '$dpad', '$retr', '$sq', $snr, $rx_chars, $tx_chars, $rx_ec, $tx_ec, $bad, $timeon, '$final_state', '$disc_radius', '$disc_modem', '$disc_local', '$disc_remote', $timestamp );";
+	$sql = "\nREPLACE into $tablename VALUES ( \'$server', $dso_slot, $dso_contr, $dso_chan, $slot, $port, '$call_id', '$user_id', '$ip', '$calling', '$called', '$std', '$prot', '$comp', $init_rx, $init_tx, $rbs, '$dpad', '$retr', '$sq', $snr, $rx_chars, $tx_chars, $rx_ec, $tx_ec, $bad, $timeon, '$final_state', '$disc_radius', '$disc_modem', '$disc_local', '$disc_remote', $start_time, $end_time, $timestamp );";
 	$db->do($sql);
 	if( $db->errstr ) {
 		print "\n{$r}";
@@ -294,4 +301,27 @@ LOOP: while(<>) {
 
 #	print $sql;
 }
-$db->disconnect();
+
+$dbh->disconnect();
+
+sub start_end {
+
+	@record = split(/\s+/, $r, 9);
+		
+	@sys_time = split(/ /, localtime(time));
+	
+	($month = $record[5]) =~ s/\*//;
+	
+	($time = $record[7]) =~ s/:$//;
+	
+	$date = "$month $record[6] $sys_time[4] $time";
+	
+	$time = str2time($date); 
+	
+	$frmat = "%Y-%m-%d %H:%M:%S";
+	
+	$start_time = strftime($frmat, localtime($time - $timeon));
+
+	$end_time = strftime($frmat, localtime($time));
+
+}

@@ -18,24 +18,26 @@ use DBI;
 #use strict;
 
 # - Variables and Setup --------------------------------
-my $database = "deez";
+my $database = "mcrt";
 my $db_hostname = "localhost";
 my $tablename = "callrecs";
-my $username = "";
-my $password = "";
+my $username = "nobody";
+my $password = "ibm53tmi";
 # - END Variable setup ---------------------------------
 
 BEGIN
 {
 	use CGI::Carp qw/carpout fatalsToBrowser/;
-#	use FileHandle;
+	use FileHandle;
 #	my $CGI_LOG = new FileHandle ( ">> /export/home/weston/cgi_error.log");
-#	carpout($CGI_LOG);
+	my $CGI_LOG = new FileHandle ( ">> /var/adm/cgi_error.log");
+	carpout($CGI_LOG);
 }
 
 
 # Edit $LWTCONF if neeeded to point to config folder.
-$LWTCONF = "/opt/CSCOlwt/conf";
+#$LWTCONF = "/opt/CSCOlwt/conf";
+$LWTCONF = "/root/mcrt/conf";
 
 # Read default and over-ride variables...
 # customizations should go into lwt.cfg.
@@ -43,9 +45,16 @@ $LWTCONF = "/opt/CSCOlwt/conf";
 do "$LWTCONF/lwt-defaults.cfg";
 do "$LWTCONF/lwt.cfg";
 
-my ($db, $sql, $q, $user_id, $ip, $sth, @row, $col) = '';
+my ($dbh, $sql, $q, $user_id, $ip, $sth, @row, $col) = '';
 my $messages;
-$db = DBI->connect("DBI:mysql:$database:$db_hostname" );
+# ------ Prepare SQL Access and Connect-----------------
+my $user = 'nobody';
+my $pwd = "ibm53tmi";
+#my $dsn = "dbi:mysql:feedback;host=sj-xxx-apps";
+my $dsn = "dbi:mysql:mysql;host=localhost";
+$dbh = DBI->connect($dsn, $user, $pwd )
+or die "Can't connect to mySQL database: $DBI::errstr\n";
+
 $q = new CGI;
 
 # ------HTML Components-----------------
@@ -81,20 +90,22 @@ foreach $column (@columns) {
 	}
 }
 if( $user_id ) {
-	$sql = "\nSELECT $selector from $tablename where user_id = \"$user_id\";";
+	$sql = qq{SELECT $selector from $tablename where user_id = "$user_id"};
 } elsif( $ip ) {
 	if( $ip eq "allyourbase" ) {
 	        print "\n<A HREF=\"http://www.xentao.com/allyourbase/ayb3.swf\">ALL YOUR BASE ARE BELONG TO US</a>";
 	        exit;
 	}
-	$sql = "\nSELECT $selector from $tablename where ip = \"$ip\";";
+	$sql = qq{\nSELECT $selector from $tablename where ip = "$ip"};
 } else {
 	print( "<H4>IP and/or userid invalid.</h4>" );
 	exit;
 }
 
+1;
+
 # Prepare the sql command	
-$sth = $db->prepare($sql);
+$sth = $dbh->prepare($sql);
 $sth->execute();
 print "<!-- SQL: $sql -->\n";
 print(" <TABLE BGCOLOR=#FFFFFF border=1>\n");
@@ -124,7 +135,7 @@ print(" </table>\n");
 print "<BR><H2> $rowcount entries found.</h2>\n";
 print template("$LWTHTML/lwt-end.lbi");
 $sth->finish();
-$db->disconnect();
+$dbh->disconnect();
 
 sub template {
     my ($filename, $fillings) = @_;

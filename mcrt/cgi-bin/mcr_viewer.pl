@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/local/bin/perl
 #-------------------------------------------------------
 # Script Name: mcr_viewer.pl
 # Version: 
@@ -27,7 +27,9 @@ $tm = localtime;
 $DEBUG = '';
 
 # Edit $LWTCONF if neeeded to point to config folder.
-$LWTCONF = "/opt/CSCOlwt/conf";
+#$LWTCONF = "/opt/CSCOlwt/conf";
+$LWTCONF = "/root/mcrt/conf";
+
 
 # Read default and over-ride variables...
 # customizations should go into lwt.cfg.
@@ -58,21 +60,32 @@ print template("$LWTHTML/lwt-start.lbi", {
 
 #Get dev names for select ----------------------------
 my $log_dir = "$MCRDIR";
-$DEVLISTFILE      = "$LWTCONFIG/devlist.dat";
+$DEVLISTFILE      = "$LWTCONF/devlist.dat";
 my $devlist = "$DEVLISTFILE";
-open(DEVFILE, "< $devlist");
-my @devnames = <DEVFILE>;
+open(DEVFILE, "< $devlist") or die ("open $devlist failed");
+#my @devnames = <DEVFILE>;
+
+foreach $devnm (<DEVFILE>) {
+	chop($devnm);
+	push @devnames, $devnm;
+}
 
 #------------------------------------------------------
 # Form 1 to get all mcr logs based on dev and timestamp
 #------------------------------------------------------
-print "<form METHOD=GET ACTION=/cgi-lwt/mcr_view-01x.pl>";
-print "<b><font color='#3333FF'>Complete MCR Log Information:</font></b><table width='780' bgcolor='#d0d0d0' border='0'><tr><td>";
-print "<b><font size=3>NAS: </font></b><select name=dev>";
-for $dev(@devnames) {
-	print "<OPTION>$dev";
+#print "<form METHOD=GET ACTION=/cgi-lwt/mcr_view-01.pl>";
+print "<form METHOD=GET ACTION=./mcr_view-01.pl>";
+#print "<form METHOD=POST ACTION=./mcr_view-01.pl>";
+#print "<form METHOD=POST ACTION=./ck_form.pl>";
+print "<b><font color='#3333FF'>Complete MCR Log Information:</font></b>\n";
+print "<table width='780' bgcolor='#d0d0d0' border='0'><tr><td>";
+print "<b><font size=3>NAS: </font></b><select name=dev size=1>\n";
+
+foreach $device (@devnames) {
+	print "<OPTION> $device\n";
 }
-print "</select> &nbsp; &nbsp;";
+
+print "</select>\n &nbsp; &nbsp;";
 date_selector();
 print "<tr><td><INPUT Type=submit Value='View LOG'></td></tr></table></form>";
 
@@ -82,7 +95,7 @@ print "<tr><td><INPUT Type=submit Value='View LOG'></td></tr></table></form>";
 
 print<<FORM2;
 <form method='GET'
-action=/cgi-lwt/mcr_view-02x.pl>
+action=/cgi-bin/mcr_view-02.pl>
 <b><font color='#3333FF'>Username Statistical Reports:</font></b>
 <table BORDER=0 BGCOLOR='#d0d0d0' width='780'>
 <tr>
@@ -148,7 +161,7 @@ print<<FORM2B;
 FORM2B
 
 ### Daily Statistics (all servers)
-print "<FORM METHOD=GET ACTION=/cgi-lwt/mcr_total_servers.pl>\n";
+print "<FORM METHOD=GET ACTION=./mcr_total_servers.pl>\n";
 print " <B><FONT COLOR=#3333FF>Daily Statistics (all servers):</font></b>\n";
 print " <TABLE WIDTH=780 BGCOLOR=#d0d0d0 BORDER=0>\n";
 print " <TR>\n";
@@ -161,7 +174,7 @@ print " </table>\n";
 print "</form>\n";
 
 ### Daily Statistics
-print "<FORM METHOD=GET ACTION=/cgi-lwt/mcr_elite.pl>\n";
+print "<FORM METHOD=GET ACTION=./mcr_elite.pl>\n";
 print " <B><FONT COLOR='#3333FF'>Daily Statistics (per server):</font></b>\n";
 print "  <TABLE WIDTH=780 BGCOLOR='#d0d0d0' BORDER=0>\n";
 print "  <TR>\n";
@@ -209,13 +222,15 @@ sub date_selector {
 
 	print "<b><font size=3>Month: </font></b>";
 	print "<select name=month>\n";
-	$i = 0;
+	my $i = 0;
 	for $month(@months) {
 		$i = $i+1;
+		&tddate($i);
+		$m = $t;
 		if( $i == ($tm->mon+1) ) {
-			print "<OPTION SELECTED VALUE=$i> $month\n";
+			print "<OPTION SELECTED VALUE=$m> $month\n";
 		} else {
-			print "<OPTION VALUE=$i> $month\n";
+			print "<OPTION VALUE=$m> $month\n";
 		}
 	}
 	print "</select>&nbsp;&nbsp\n";
@@ -223,10 +238,12 @@ sub date_selector {
 	print "<B><FONT SIZE=3>Day: </font></b>";
 	print "<SELECT NAME=day>\n";
 	for( $i=1; $i<=31; $i++ ) {
+		&tddate($i);
+		$d = $t;
 		if( $tm->mday == $i ) {
-			print "<OPTION SELECTED> $i\n";
+			print "<OPTION SELECTED VALUE=$d> $i\n";
 		} else {
-			print "<OPTION> $i\n";
+			print "<OPTION VALUE=$d> $i\n";
 		}
 	}
 	print("</select>\n");
@@ -241,4 +258,12 @@ sub date_selector {
 		}
 	}
 	print "</select><br>\n";
+}
+
+sub tddate($i) {
+	($t) = @_;
+	if($t < 10) {
+		$t = "0$t";
+	}
+	return($t);
 }

@@ -14,26 +14,28 @@
 use CGI;
 use DBD::mysql;
 use DBI;
+$| = 1;
 
 # - Variables and Setup --------------------------------
-my $database = "deez";
+my $database = "mcrt";
 my $db_hostname = "localhost";
 my $tablename = "callrecs";
-my $username = "";
-my $password = "";
+my $username = "nobody";
+my $password = "ibm53tmi";
 # - END Variable setup ---------------------------------
 
 BEGIN
 {
 use CGI::Carp qw/carpout fatalsToBrowser/;
-#use FileHandle;
-#my $CGI_LOG = new FileHandle ( ">> /var/adm/cgi_error.log");
-#carpout($CGI_LOG);
+use FileHandle;
+my $CGI_LOG = new FileHandle ( ">> /var/adm/cgi_error.log");
+carpout($CGI_LOG);
 }
 
 
 # Edit $LWTCONF if neeeded to point to config folder.
-$LWTCONF = "/opt/CSCOlwt/conf";
+#$LWTCONF = "/opt/CSCOlwt/conf";
+$LWTCONF = "/root/mcrt/conf";
 
 # Read default and over-ride variables...
 # customizations should go into lwt.cfg.
@@ -67,14 +69,23 @@ my $day = $q->param('day');	# get the day o' month
 my $year = $q->param('year');
 my $date = "$year-$month-$day";
 
-$db = DBI->connect("DBI:mysql:$database:$db_hostname" );
+# ------ Prepare SQL Access and Connect-----------------
+my $user = 'nobody';
+my $pwd = "ibm53tmi";
+#my $dsn = "dbi:mysql:feedback;host=sj-xxx-apps";
+my $dsn = "dbi:mysql:mcrt;host=localhost";
+my $dbh = DBI->connect($dsn, $user, $pwd )
+or die "Can't connect to mySQL database: $DBI::errstr\n";
+
+#$db = DBI->connect("DBI:mysql:$database:$db_hostname" );
 @columns = qw/server dso_slot dso_contr dso_chan slot port call_id user_id ip calling called std prot comp init_rx init_tx rbs 
 dpad retr sq snr rx_chars tx_chars rx_ec tx_ec bad timeon final_state disc_radius disc_modem disc_local
 disc_remote timestamp date time/;
 
-$sql = "\nSELECT * FROM $tablename where server=\"$devname\" AND date='$date';";
+#$sql = "\nSELECT * FROM $tablename where server=\"$devname\" AND date='$date';";
+$sql = qq{SELECT * FROM $tablename where server like "%$devname%" AND start_time like "$date%"};
 print "<!--SQL: $sql-->\n";
-$sth = $db->prepare($sql);
+$sth = $dbh->prepare($sql);
 $sth->execute();
 # Prints the header with the column names
 print(" <TABLE BGCOLOR=#FFFFFF border=1>\n");
@@ -104,7 +115,7 @@ print "</table>\n";
 print "<BR><H2> $rowcount entries found.</h2>\n";
 print template("$LWTHTML/lwt-end.lbi");
 $sth->finish();
-$db->disconnect();
+$dbh->disconnect();
 
 
 ################### SUBROUTINES #################################
