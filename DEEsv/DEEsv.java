@@ -193,6 +193,14 @@ public class DEEsv {
                 usage();
                 System.exit(1);
             }
+	    else if (argv[i].startsWith("-")) {
+		if (!argv[i].equals("-help") && !argv[i].equals("-m") &&
+		    !argv[i].equals("-continue") &&
+		    !argv[i].equals("-device") && !argv[i].equals("view") &&
+		    !argv[i].equals("-input")) {
+		    System.err.println("* Fatal error * Unknown command argument OR unexpected argument: " + argv[i]);
+		}
+	    }
         }
 
         // Obtain a DataOutputStream to write error output.
@@ -204,12 +212,7 @@ public class DEEsv {
             catch (Exception e) {
                 System.err.println("Failed to create logfile.");
                 if (debugLevel == 1) {
-                    if (e.getMessage() != null) {
-                        System.err.println(e.getMessage());
-                    }
-                    else {
-                        System.err.println("Encountered NullPointerException");
-                    }
+                    System.err.println(e.getMessage());
                 }
                 else if (debugLevel > 1) {
                     e.printStackTrace(System.err);
@@ -252,7 +255,12 @@ public class DEEsv {
         catch (Exception e) {
             System.err.println("Failed to create CSV file.");
             if (debugLevel == 1) {
-                System.err.println(e.getMessage());
+		if (e.getMessage() != null) {
+                    System.err.println(e.getMessage());
+		}
+		else {
+		    System.err.println("Encountered NullPointerException");
+		}
             }
             else if (debugLevel > 1) {
                 e.printStackTrace(System.err);
@@ -276,7 +284,6 @@ public class DEEsv {
         Process p = null;
         String args = "";
         InputStream pIn = null;
-        InputStream pErr = null;
 
         for (int i = 0; i < argv.length; i++) {
             if (argv[i] != null) {
@@ -290,13 +297,10 @@ public class DEEsv {
 
         p = r.exec(NMSROOT + SEP + "bin" + SEP + CWEXPORT + " " + args);
         pIn = p.getInputStream();
-        pErr = p.getErrorStream();
         byte b[] = new byte[4096];
-        byte c[] = new byte[4096];
         while (true) {
             int len = pIn.read(b);
-            int ler = pErr.read(c);
-            if (len == -1 && ler == -1) break;
+            if (len == -1) break;
             if (len > 0) {
                 String str = new String(b, 0, len);
                 // XXX This is ugly.
@@ -304,11 +308,8 @@ public class DEEsv {
                 if (idx >= 0) {
                     str = str.substring(0, idx);
                 }
-                System.err.println(str);
-            }
-            if (ler > 0) {
-                String str = new String(c, 0, ler);
-                System.err.println(str);
+                System.err.print(str);
+		System.err.flush();
             }
         }
 
