@@ -23,14 +23,12 @@ sub new {
     my $class = ref($that) || $that;
 
     my $self = {
-		# Hell Are there diffent Kinds of TCP connects?  Need to keep reading :)
-        Name      => 'Default TCP Connect Operation',
-        Type      => $SAA::Operations::TYPE_TCP_CONN,
-        Protocol  => $SAA::Operations::PROTO_TCP_CONN,
-        Threshold => 5000,
-        Frequency => 60,
-        Timeout   => 5000,
-        ToS       => 0,
+
+        # Hell Are there diffent Kinds of TCP connects?  Need to keep reading :)
+        Name     => 'Default TCP Connect Operation',
+        Type     => $SAA::Operations::TYPE_TCP_CONN,
+        Protocol => $SAA::Operations::PROTO_TCP_CONN,
+        Control  => $SAA::Operations::CONTROL,
     };
 
     bless( $self, $class );
@@ -42,10 +40,7 @@ use vars qw(
   $Name
   $Type
   $Protocol
-  $Threshold
-  $Frequency
-  $Timeout
-  $ToS
+  $Control
 );
 
 sub name {
@@ -63,67 +58,16 @@ sub type {
 
 sub protocol {
 
+    # XXX - Should we even keep this sub here from tcpConnect? Nick -oo-
+    # Protocol can tcpConnect
 
-# XXX - Should we even keep this sub here from tcpConnect? Nick -oo-
-# Protocol can tcpConnect
-    
-	my $self = attr shift;
+    my $self = attr shift;
     if (@_) { $Protocol = shift; }
     return $Protocol;
 }
 
-sub threshold {
+sub control {
     my $self = attr shift;
-    if (@_) {
-        my $threshold = shift;
-        if ( $threshold < 0 || $threshold > $self->timeout()
-          || $threshold > $SAA::Operations::MAX_THRESHOLD )
-        {
-            return $Threshold;
-        }
-        $Threshold = $threshold;
-    }
+    if (@_) { $Control = shift; }
     return $Threshold;
-}
-
-sub timeout {
-    my $self = attr shift;
-    if (@_) {
-        my $timeout = shift;
-        if ( $timeout < 0 || $timeout < $self->threshold()
-          || $timeout > $SAA::Operations::MAX_TIMEOUT )
-        {
-            return $Timeout;
-        }
-        $Timeout = $timeout;
-    }
-    return $Timeout;
-}
-
-sub frequency {
-    my $self = attr shift;
-    if (@_) {
-        my $frequency = shift;
-
-        # Per the MIB, this value cannot be less than $Timeout.
-        if ( $frequency < 0 || $frequency < $self->timeout()
-          || $frequency > $SAA::Operations::MAX_FREQUENCY )
-        {
-            return $Frequency;
-        }
-        $Frequency = $frequency;
-    }
-    return $Frequency;
-}
-
-sub tos {
-    my $self = attr shift;
-    if (@_) {
-        my $tos = shift;
-        if ( $tos < 0 || $tos > 255 ) {
-            return $ToS;
-        }
-        $ToS = $tos;
-    }
-    return $ToS;
 }
