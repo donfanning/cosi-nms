@@ -3,14 +3,14 @@ package SAA::User;
 use strict;
 require 5.002;
 use Carp;
-use vars qw(@ISA @EXPORT);
+use vars qw(@ISA @EXPORT_OK);
 use Exporter;
 use Carp;
-use Crypt::CBC;
+use Digest::MD5 qw(md5_hex);
 use lib qw(..);
 use conf::prefs qw(KEY);
 
-@ISA    = qw(Exporter);
+@ISA       = qw(Exporter);
 @EXPORT_OK = qw(
   PERMS_GUEST
   PERMS_USER
@@ -47,31 +47,17 @@ sub username {
 }
 
 sub password {
-    my $self      = shift;
-    my $encrypted = 0;
-    $encrypted = shift if (@_);
+    my $self = shift;
 
     if (@_) {
 
-        # Store the password in a Blowfish cipher in memory
+        # Store the password as a MD5 hash in memory
         # and in the database
         my $pass = shift;
-        if ($encrypted) {
-            $self->{password} = $pass;
-            return $self->{password};
-        }
-        my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
-
-        $self->{password} = $cipher->encrypt_hex($pass);
+        $self->{password} = md5_hex($pass);
     }
 
-    if ($encrypted) {
-        return $self->{password};
-    }
-    my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
-    my $pass = $cipher->decrypt_hex( $self->{password} );
-
-    return $pass;
+    return $self->{password};
 }
 
 sub firstname {
@@ -90,14 +76,30 @@ sub perms {
     my $self = shift;
     if (@_) {
         my $perms = shift;
-        if ( $perms < PERMS_GUEST
-            || $perms > PERMS_ADMIN )
-        {
+        if ( $perms < PERMS_GUEST || $perms > PERMS_ADMIN ) {
             croak "SAA::User::perms: Invalid user permissions: $perms";
         }
         $self->{perms} = $perms;
     }
     return $self->{perms};
+}
+
+sub validate_passwd {
+    my $self = shift;
+
+    if (@_) {
+        my $check_pass = shift;
+        if ( md5_hex($check_pass) ne $self->password() ) {
+            return;
+        }
+    }
+    else {
+        if ( $self->password() ) {
+            return;
+        }
+    }
+
+    1;
 }
 
 1;
