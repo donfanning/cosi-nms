@@ -1,0 +1,130 @@
+<HTML>
+<HEAD>
+<META NAME="author" CONTENT="marcus">
+<META NAME="FileOwner" CONTENT="marcus">
+<META NAME="FileName" CONTENT="snmptrans.html">
+<META NAME="Language" CONTENT="US_en">
+
+
+<TITLE>SNMP Translate / Search</TITLE>
+
+</HEAD>
+
+<SCRIPT LANGUAGE="JavaScript">
+<!-- //
+
+function isBlank (s) {
+        for (var i = 0; i < s.length; i++) {
+                var c = s.charAt(i);
+                if ((c != '') && (c != '\n') && (c != '\t')) return false;
+        }
+        return true;
+}
+
+function verifyTrans (f) {
+	var oid = f.oid.value;
+
+	if (isBlank(oid)) {
+		alert("You must specify an object identifier or object name to translate.");
+		return false;
+	}
+
+	return true;
+}
+
+function verifySearch (f) {
+	var pattern = f.pattern.value;
+
+	if (isBlank(pattern)) {
+		alert("You must specify a search pattern.");
+		return false;
+	}
+
+	return true;
+}
+
+// -->
+</script>
+
+<H1>SNMP Translate &amp; Search</h1>
+
+<BODY BGCOLOR="FFFFFF">
+
+<P><A HREF="snmptrans_help.html"><B>Online Documentation</B></A> is available for help with this tool's User Interface, Results, and Error Messages.</P>
+
+
+<P>
+<TABLE BORDER="0">
+<FORM NAME="snmptrans" METHOD="POST" ACTION="/cgi-bin/snmptransc.pl" onSubmit="
+	return verifyTrans(this);
+">
+	<TR>
+		<TD ALIGN="RIGHT"><B>Object Identifier or Object Name:</B> </TD>
+		<TD ALIGN="LEFT"><INPUT TYPE="TEXT" NAME="oid"
+		MAXLENGTH="120"></TD>
+                <TD ALIGN="LEFT"><INPUT TYPE="CHECKBOX" NAME="bg" VALUE="1">
+                <I>r.e.</I></TD>
+
+	</TR>
+</TABLE>
+<B><I>
+<P>
+	Translate Options
+</P>
+</I></B>
+<TABLE BORDER="0">
+	<TR>
+		<TD><INPUT TYPE="RADIO" VALUE="" NAME="xOps" CHECKED>
+		<B>Simple Translation
+		<TD><INPUT TYPE="RADIO" VALUE="detail" NAME="xOps">
+		<B>Detailed Translation</B></TD>
+		<TD><INPUT TYPE="RADIO" VALUE="tree" NAME="xOps">
+		<B>Tree Translation</B></TD>
+	</TR>
+</TABLE>
+<TABLE BORDER="0">
+	<TR ALIGN="CENTER">
+		<TD ALIGN="LEFT"><INPUT TYPE="SUBMIT"
+		NAME="action" VALUE="Translate"></TD>
+		<TD ALIGN="RIGHT"><INPUT TYPE="RESET" VALUE="Cancel"></TD>
+	</TR>
+</TABLE>
+</form>
+
+<P>
+
+<H3>-OR-</h3>
+
+<P>
+<TABLE BORDER="0">
+<FORM METHOD=POST ACTION="/cgi-bin/snmptransc.pl" NAME="snmpsearch" onSubmit="
+	return verifySearch(this);
+">
+	<TR>
+		<TD ALIGN="RIGHT"><B>Search Pattern:</b> </td>
+		<TD ALIGN="LEFT"><INPUT TYPE="TEXT" NAME="pattern"
+		MAXLENGTH="120"></td>
+		<TD ALIGN="LEFT"><INPUT TYPE="CHECKBOX" NAME="descr" VALUE="1">
+		<SMALL><I>Search description</I></SMALL></TD>
+		
+	</tr>
+</table>
+<TABLE BORDER="0">
+	<TR ALIGN="CENTER">
+		<TD ALIGN="RIGHT"><INPUT TYPE="SUBMIT" NAME="action"
+		VALUE="Find Objects"></td>
+		<TD ALIGN="LEFT"><INPUT TYPE="RESET" VALUE="Cancel"></td>
+	</tr>
+</table>
+</form>
+
+<P>
+
+<P>
+</p>
+
+<hr>
+
+</BODY>
+</HTML>
+

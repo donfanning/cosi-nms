@@ -1,0 +1,358 @@
+<HTML>
+<HEAD>
+<META NAME="author" CONTENT="marcus">
+<META NAME="FileName" CONTENT="snmptrans_help.html">
+<META NAME="EncodeDesc" CONTENT="">
+<META NAME="Language" CONTENT="US_en">
+
+
+
+<TITLE>SNMP Translate / Search</title>
+</head>
+ 
+<BODY BGCOLOR="#ffffff">
+<H1>SNMP Translate &amp; Search Online Documentation</h1>
+
+<H2>Contents</h2>
+
+<UL>
+<LI><A HREF="#Purpose &amp; Scope">Purpose &amp; Scope</a>
+<LI><A HREF="#User Interface">User Interface</a>
+<UL>
+<LI><A HREF="#Inputs">Inputs</a>
+<LI><A HREF="#Actions">Actions</a>
+</ul>
+<LI><A HREF="#Interpreting Results">Interpreting Results</a>
+<UL>
+<LI><A HREF="#Sample Output 1">Sample Output 1</a>
+<LI><A HREF="#Sample Output 2">Sample Output 2</a>
+<LI><A HREF="#Sample Output 3">Sample Output 3</a>
+<LI><A HREF="#Sample Output 4">Sample Output 4</a>
+<!-- <LI><A HREF="#Sample Output 5">Sample Output 5</a> -->
+</ul>
+<LI><A HREF="#Error Messages &amp; Warnings">Error Messages &amp; Warnings</a>
+<UL>
+<LI><A HREF="#Errors">Errors</a>
+</ul>
+</ul>
+
+<H2><A NAME="Purpose &amp; Scope">Purpose &amp; Scope</a></h2>
+
+<P>The purpose of this tool is to provide users a way of translating object
+IDs to object names and vice versa in a fast and easy manner.  Trying to do
+such translations manually is time consuming, and susceptible to to errors
+and confusion.</p>
+
+<P>While this tool is useful, it does not teach a full understanding of
+MIB syntax or MIB structure.  It does its best to condense the MIB to
+show the important bits of the objects.  It also does not teach SNMP
+fundamentals.  It is highly recommended that users understand the mechanics 
+behind SNMP by reading other sources like 
+<u>SNMP, SNMPv2, SNMPv3, and RMON 1 and 2</u> by Stallings.</p>
+
+<P>This tool, while it does provide an interface to read MIBs,
+does not cover how to compile those MIBs into various management applications.
+For help and tips on compiling MIBs, please read the 
+<A HREF="ftp://ftp.cisco.com/pub/mibs/app_notes/mib-compilers">
+mib-compilers</a> document from Cisco Systems, Inc.</p>
+
+<P>For help on determining what MIBs are supported on various Cisco devices, please
+see the <A HREF="ftp://ftp.cisco.com/pub/mibs/supportlists">
+support lists</a>.  <B>NOTE: The support lists are not 100% accurate, and
+should only be used as an initial reference.</b></p>
+
+<H2><A NAME="User Interface">User Interface</a></h2>
+
+<H3><A NAME="Inputs">Inputs</a></h3>
+
+<P><Em>Object Identifier or Object Name</em> is an input that specifies the OID
+or object name to translate.</p>
+
+<UL>
+<LI>It can be a fully-qualified OID (e.g. .1.3.6.1.2.1), a fully-qualified 
+object name (e.g. .iso.org.dod.internet.mgmt.mib-2), or a short object name 
+(e.g. mib-2)<BR>
+<LI>The leading '.' can be omitted (e.g. 1.3.6.1.2.1 or .1.3.6.1.2.1)<BR>
+<LI>Object names are case sensitive.<BR>
+</ul>
+
+<P><Em>r.e.</em> is a checkbox that allows for regular expression and
+"best-guess" pattern matching with object names.  By enabling this checkbox,
+the tool will do a case insensitive, regular expression search for the
+specified object name pattern.  All POSIX 1003.2 extendend regular expressions 
+are supported.  For more information on regular expressions, and regular 
+expression syntax, please see click <A HREF="re_format.html">here</a>.</p>
+
+<UL>
+<LI>Turning on regular expression support is a way to do case insensitive
+translations.<BR>
+<LI>Note that multiple matches are obviously possible, so the best result is 
+currently calculated as the one that matches the closest to the beginning of
+the node name and the highest in the tree.<BR>
+<LI>Multiple indexes is not supported as a '.' is treated as a regular
+expression metacharacter.<BR>
+</ul>
+
+<P><Em>Translate Options</em> are radio buttons that allow for determining 
+the output for the translation.</p>
+
+<UL>
+<LI>A <Em>Simple Translation</em> will return a ``OID = object name'' or 
+``object name = OID'' pair.  This is useful for getting a quick translation
+for an object name or OID.<BR>
+<LI><Em>Detail Output</em> returns a considerable amount of information
+on an object.<BR>
+<LI><Em>Tree Output</em> draws the MIB tree starting from the given OID
+or object name.  This will be useless if a leaf object is given.  If an OID
+or object is given that is high in the tree, the output will take a long
+time to display.  <B>This output is the most useful for decoding unknown
+traps or notifications.</b><BR>
+</ul>
+
+<P><Em>Search Pattern</em> is a text field that specifies a string to find
+within the MIB tree.</p>
+
+<P><Em>Search description</em> is a checkbox that enables support for 
+searching object descriptions.  With this checked, both object
+names as well as their descriptions will be searched for the given pattern.
+Without this option, only the object names are searched.</p>
+
+<UL>
+<LI>The search pattern can be a simple string (e.g. <CODE>apple</code>), or 
+a POSIX 1003.2 compliant extended <a href="re_format.html">regular
+expression</a>
+(e.g. <CODE>.*voice.*qual.*</code>)<BR>
+<LI>The search pattern is case insensitive.<BR>
+<LI>Depending on how complex the search pattern is, the search may take a long
+time to return.  The more complex the pattern, the shorter the wait will be.
+<BR>
+</ul>
+
+<H3><A NAME="Actions">Actions</a></h3>
+
+<P><Em>Translate</em></p>
+
+<UL>
+<LI>This will run the translation on the given inputs.
+</ul>
+
+<P><Em>Find Objects</em></p>
+
+<UL>
+<LI>This will run a search using the given search pattern.
+</ul>
+
+<H2><A NAME="Interpreting Results">Interpreting Results</a></h2>
+
+<H3><A NAME="Sample Output 1">Sample Output 1</a></h3>
+
+<P><Em>Source:</em> This output is obtained by doing a simple translation of
+<CODE>ciscoStackMIB</code>.  The output will display <CODE>ciscoStackMIB</code> 
+and the corresponding OID for that object.</p>
+
+<PRE>
+ciscoStackMIB = .1.3.6.1.4.1.9.5.1
+</pre>
+
+<P><Em>Understanding:</em> <CODE>ciscoStackMIB</code> is the short object name 
+that needs to be translated.  The object identifier for this object is 
+<CODE>.1.3.6.1.4.1.9.5.1</code>.</p>
+
+<!--
+<H3><A NAME="Sample Output 2">Sample Output 2</a></h3>
+
+<P><Em>Source:</em> This output is obtained by doing a simple translation of
+<CODE>.*stack.*</code> with the r.e. checkbox checked.</p>
+
+<PRE>
+ifStackTable = .1.3.6.1.2.1.31.1.2
+</pre>
+
+<P><Em>Understanding:</em> The regular expression <CODE>.*stack.*</code> 
+says, "match zero or more of any character, followed by the word stack, 
+followed by zero or more of any character."  Using the rules stated above, 
+this will match the node highest up in the tree, and closest to the beginning 
+of the node.</p>
+-->
+
+<H3><A NAME="Sample Output 2">Sample Output 2</a></h3>
+
+<P><Em>Source:</em> This output is obtained by doing a tree 
+translation on <CODE>system</code>.</p>
+
+<PRE>
+.1.3.6.1.2.1
++--<FONT COLOR="green">system</font>(1) <FONT COLOR="#DC00DC"><SMALL>detail</small></font>
+   |
+   +-- -R-- String    <FONT COLOR="#DC00DC">sysDescr</font>(1)
+   |        Textual Convention: DisplayString
+   |        Size: 0..255
+   +-- -R-- ObjID     <FONT COLOR="#DC00DC">sysObjectID</font>(2)
+   +-- -R-- Timeticks <FONT COLOR="green">sysUpTime</font>(3) <FONT COLOR="#DC00DC"><SMALL>detail</small></font>
+   |  |
+   |  +--<FONT COLOR="#DC00DC">sysUpTimeInstance</font>(0)
+   |
+   +-- -RW- String    <FONT COLOR="#DC00DC">sysContact</font>(4)
+   |        Textual Convention: DisplayString
+   |        Size: 0..255
+   +-- -RW- String    <FONT COLOR="#DC00DC">sysName</font>(5)
+   |        Textual Convention: DisplayString
+   |        Size: 0..255
+   +-- -RW- String    <FONT COLOR="#DC00DC">sysLocation</font>(6)
+   |        Textual Convention: DisplayString
+   |        Size: 0..255
+   +-- -R-- Integer   <FONT COLOR="#DC00DC">sysServices</font>(7)
+   +-- -R-- Timeticks <FONT COLOR="#DC00DC">sysORLastChange</font>(8)
+   |        Textual Convention: TimeStamp
+   |
+   +--<FONT COLOR="green">sysORTable</font>(9) <FONT COLOR="#DC00DC"><SMALL>detail</small></font>
+   |  |
+   |  +--<FONT COLOR="green">sysOREntry</font>(1) <FONT COLOR="#DC00DC"><SMALL>detail</small></font>
+   |  |  |
+   |  |  +-- ---- Integer   <FONT COLOR="#DC00DC">sysORIndex</font>(1)
+   |  |  +-- -R-- ObjID     <FONT COLOR="#DC00DC">sysORID</font>(2)
+   |  |  +-- -R-- String    <FONT COLOR="#DC00DC">sysORDescr</font>(3)
+   |  |  |        Textual Convention: DisplayString
+   |  |  |        Size: 0..255
+   |  |  +-- -R-- Timeticks <FONT COLOR="#DC00DC">sysORUpTime</font>(4)
+   |  |  |        Textual Convention: TimeStamp
+</pre>
+
+<P><Em>Understanding:</em> The OID <CODE>1.3.6.1.2.1</code> at the top 
+of the output denotes the object identifier for the parent node of this tree.
+The colors in this output are important.  Everything colored 
+<FONT COLOR="green">green</font> is a branch node.  Clicking on those
+objects will redraw the tree starting at that point.  Everything colored 
+<FONT COLOR="#DC00DC">magenta</font> is a leaf node.  Clicking on those objects
+will reveal detail on the object.  Also, clicking on the <FONT COLOR="#DC00DC">
+<SMALL>detail</small></font> link will reveal detail about a branch node.</p>
+
+<P>The <CODE>----</code> next to leaf nodes represents the access of those 
+nodes.  <CODE>-R--</code> refers to read-only access, <CODE>-RW-</code> 
+refers to read-write access, <CODE>CR--</code> refers to read-create access, 
+and <CODE>----</code> indicates the object is not accessible.</p>
+
+<P>The number in parenthesis next to the object name refers to the object's
+subid in the tree.  For instance, the <CODE>(4)</code> next to 
+<CODE>sysContact</code>, indicates that sysContact is system.4.</p>
+
+<P>Traps and notifications have the word <B>Trap</b> preceeding them in 
+bold-face.  To find traps or notifications quickly, do a search for "Trap" 
+using your browser's page search capability.</p>
+
+<H3><A NAME="Sample Output 3">Sample Output 3</a></h3>
+
+<P><Em>Source:</em> This output is obtained by doing a detailed translation
+of <CODE>rttMonThresholdNotification</code>.</p>
+
+<PRE>
+.1.3.6.1.4.1.9.9.42.2.0.3
+rttMonThresholdNotification OBJECT-TYPE
+        -- FROM CISCO-RTTMON-MIB
+        TRAP
+        VARBINDS        { rttMonCtrlAdminTag, rttMonHistoryCollectionAddress, rttMonCtrlOperOverThresholdOccurred }
+        DESCRIPTION    "A rttMonThresholdNotification indicates the 
+       occurrence of a threshold violation for a RTT operation,
+       and it indicates the previous violation has subsided for
+       a subsequent RTT operation.  Precisely, this has resulted
+       in rttMonCtrlOperOverThresholdOccurred changing value.  
+  
+       When the RttMonRttType is 'pathEcho', this 
+       notification will only be sent when the threshold
+       violation occurs during an operation to the target and
+       not to a hop along the path to the target.  This also
+       applies to the subsiding of a threshold condition.
+
+       If History is not being collected, the instance values 
+       for the rttMonHistoryCollectionAddress object will not 
+       be valid.  When RttMonRttType is not 'echo' or 'pathEcho'
+       the rttMonHistoryCollectionAddress object will be null."
+::= { iso(1) org(3) dod(6) internet(1) private(4) enterprises(1) cisco(9) ciscoMgmt(9) ciscoRttMonMIB(42) rttMonNotificationsPrefix(2) rttMonNotifications(0) 3 } 
+
+</pre>
+
+<P><Em>Understanding:</em> The OID at the top of the output denotes the object
+indetifier for this node.  The next line displays the short object name for
+this node, and indicates that this node is an OBJECT-TYPE.  The next line
+tells what MIB that this object can be found in. The next line indicates what 
+type of object this node is.  In this example, a Trap object is being 
+displayed.  Other types include, OCTET STRING, Counter, Gauge, TimeTicks, 
+IpAddress, Opaque, OBJECT ID, NetAddress, Null, BitString, Counter64, 
+NsapAddress, Integer, and UInteger.</p>
+
+<P>Since this object is a trap, a list of variable bindings, or varbinds is
+provided.  Varbinds are sent along with the trap to further describe why
+the trap was sent.  In this example, three varbinds are sent with the trap.
+Clicking on a varbind name will yield details about that varbind.</p>
+
+<P>The <CODE>DESCRIPTION</code> field is taken directly from the object's
+definition within the MIB.  The final piece of information shows where in the
+MIB tree this object can be found.</p>
+
+<H3><A NAME="Sample Output 4">Sample Output 4</a></h3>
+
+<P><Em>Source:</em> This output is taken from a search for
+<CODE>modem.*inuse</code>.</p>
+
+<!-- Begin output -->
+<H3>Found 3 match(es)</h3>
+<TABLE BORDER="0">
+<TR>
+<TD>cmSystemModemsInUse</td>
+<TD><SMALL>[detail] | [<FONT COLOR="lightgrey">tree</font>]</small></td>
+</tr>
+<TR>
+<TD>ciscoHealthMonNumModemsInUse</td>
+<TD><SMALL>[detail] | [<FONT COLOR="lightgrey">tree</font>]</small></td>
+</tr>
+<TR>
+<TD>ciscoHealthMonModemsInUse</td>
+<TD><SMALL>[detail] | [<FONT COLOR="lightgrey">tree</font>]</small></td>
+</tr>
+</table>
+<!-- End output -->
+
+<P><Em>Understanding:</em> This output shows the matching objects based
+on the search pattern given.  All objects have a detail link next to them
+that will provide a detailed translation on the given object.  If the object
+is a branch node, the tree link will be active.  Clicking on that link will
+produce a tree starting from the given branch node.  If the object is a leaf
+node, the tree link will be greyed out.</p>
+
+<H2><A NAME="Error Messages &amp; Warnings">Error Messages &amp; Warnings</a></h2>
+
+<H3><A NAME="Errors">Errors</a></h3>
+
+<DL>
+<P><Em>SNMP Translate Error</em></p>
+<DD>Either the object name or object identifier that was entered was not found 
+within the MIB tree, or the pattern entered was invalid. If you are sure the 
+object entered is valid, then perhaps the object is found in a MIB that has 
+not been loaded into this tool.  Send email to 
+<A HREF="mailto:marcus@marcuscom.com">marcus@marcuscom.com</a> to request the MIB to 
+be loaded.<BR>
+<BR>
+</dl>  
+
+<DL>
+<P><Em>SNMP Search Error</em></p>
+<DD>No objects were found matching the given search pattern.  Please check your
+search pattern, and verify it is correct.  You may also want to check the 
+<Em>Search description</em> checkbox.  If the pattern is correct, and you
+believe the pattern should return an object or objects, then perhaps there is
+a MIB missing from this tool.  Send email to <A HREF="mailto:marcus@marcuscom.com">
+marcus@marcuscom.com</a> to request the MIB to be loaded.<BR>
+<BR>
+</dl>
+
+<DL>
+<P><Em>Bad Regular Expression</em></p>
+<DD>The regular expression entered does not meet POSIX 1003.2 extended 
+format standards.  Please refer to the regular expression
+<A HREF="re_format.html">manual</a> for help on correct syntax.<BR>
+<BR>
+</dl>
+
+</body>
+</html>
+
