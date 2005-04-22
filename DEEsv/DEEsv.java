@@ -37,7 +37,7 @@ import org.xml.sax.*;
 
 public class DEEsv {
     public final static String CWEXPORT = "cwexport";
-    public final static String VERSION = "1.1";
+    public final static String VERSION = "1.2";
     public final static String rcsid = "$Id$";
 
     public static String NMSROOT = System.getProperty("NMSROOT");
@@ -193,7 +193,7 @@ public class DEEsv {
             else if (argv[i].startsWith("-")) {
                 if (!argv[i].equals("-help") && !argv[i].equals("-m") &&
                         !argv[i].equals("-continue") &&
-                        !argv[i].equals("-device") && !argv[i].equals("view") &&
+                        !argv[i].equals("-device") && !argv[i].equals("-view") &&
                         !argv[i].equals("-input") && !argv[i].equals("-u")) {
                     System.err.println("* Fatal error * Unknown command argument OR unexpected argument: " + argv[i]);
                     System.exit(1);
@@ -282,6 +282,7 @@ public class DEEsv {
         Process p = null;
         String args = "";
         InputStream pIn = null;
+	int exitValue;
 
         for (int i = 0; i < argv.length; i++) {
             if (argv[i] != null) {
@@ -312,16 +313,18 @@ public class DEEsv {
         }
 
         p.waitFor();
+	exitValue = p.exitValue();
+	p.destroy();
 
-        if (p.exitValue() != 0) {
+        if (exitValue != 0) {
             throw new Exception("cwexport command failed with exit status " +
-                                p.exitValue());
+                                exitValue);
         }
     }
 
     static void usage() {
-        System.err.println("(C) Copyright 2002, 2003 MarcusCom, Inc.  All Rights Reserved");
-        System.err.println("CiscoWorks 2000 command line interface for exporting inventory\ndata in CSV format.");
+        System.err.println("(C) Copyright 2002-2005 MarcusCom, Inc.  All Rights Reserved");
+        System.err.println("CiscoWorks command line interface for exporting inventory\ndata in CSV format.");
         System.err.println("");
         System.err.println("General syntax to run a command with arguments is");
         System.err.println("\tDEEsv <command> <arguments>");
@@ -337,12 +340,12 @@ public class DEEsv {
         System.err.println("");
         System.err.println("-sep <character> : Set the separator character to <character> (default is ',')");
         System.err.println("");
-        System.err.println("See the cwexport help within CiscoWorks 2000 for more information.");
+        System.err.println("See the cwexport help within CiscoWorks for more information.");
     }
 
     static void version() {
-        System.out.println("Copyright (C) 2002, 2003 MarcusCom, Inc. All Rights Reserved.");
-        System.out.println("DEEsv: CSV wrapper to CiscoWorks 2000 Data Extracting Engine\ncommand line interface");
+        System.out.println("Copyright (C) 2002-2005 MarcusCom, Inc. All Rights Reserved.");
+        System.out.println("DEEsv: CSV wrapper to CiscoWorks Data Extracting Engine\ncommand line interface");
         System.out.println("        Version " + VERSION);
     }
 
