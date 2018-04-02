@@ -1,0 +1,3465 @@
+head     1.1;
+branch   1.1.1;
+access   ;
+symbols  arelease:1.1.1.1 avendor:1.1.1;
+locks    ; strict;
+comment  @# @;
+
+
+1.1
+date     2001.10.23.18.23.31;  author robelewi;  state Exp;
+branches 1.1.1.1;
+next     ;
+
+1.1.1.1
+date     2001.10.23.18.23.31;  author robelewi;  state Exp;
+branches ;
+next     ;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/usr/local/bin/wish -f
+
+#############################################
+##	
+##	Usage : debugger
+##	Author: Venkatesh Srinivasan (vesriniv@@cisco.com)
+##	Description :
+##			This tool helps in understanding the debug messages
+##	which is got on the router consoles on providing the debug messages in 
+##	the text widget of the tool and selecting the required debug button .
+##	it supports 3 main voip debugs *1 debug voip ccapi inout *2 debug isdn
+##	q931 *3 debug vtsp all . On selecting the matching debug button on the
+##	bottom of the text widget it gives a detailed information about the 
+##	debug message and translates various hex codes in the message to 
+##	human readable macros which will help in debugging the problem
+##
+##
+##############################################
+
+
+#########################################################################
+##
+##	Main program which invokes the debugger window with a blank text 
+##	widget where the debugs need to be pasted.
+##
+##########################################################################
+
+
+# get this out of the way -- we want to draw the whole user interface
+# behind the scenes, then pop up in all of its well-laid-out glory
+
+wm withdraw .
+
+wm withdraw .
+destroy .fil_screen
+toplevel .fil_screen
+wm protocol .fil_screen WM_DELETE_WINDOW { exit }
+
+set Cause_reason "NOT KNOWN"
+set Cause_infer "Did not match any of the known cause codes"
+option add {*Entry*foreground} black
+option add {*Entry*background} white
+option add {*Button*foreground} black
+option add {*Radiobutton*foreground} black
+option add {*Label*foreground} black
+option add {*Listbox*foreground} black
+option add {*Text*foreground} black
+option add {*Checkbutton*foreground} black
+
+#wm geometry .fil_screen 770x730+0+598
+wm title .fil_screen "debugger"
+frame .fil_screen.frm1 -relief groove -borderwidth 5
+frame .fil_screen.frm2 -relief groove -borderwidth 5
+pack .fil_screen.frm1 -pady 1m -expand y 
+pack .fil_screen.frm2 -pady 2m -expand y 
+
+text .fil_screen.frm1.txt -width 80 -height 45 \
+                         -yscrollcommand { .fil_screen.frm1.vscroll set\
+}\
+                        -background white
+scrollbar .fil_screen.frm1.vscroll -orient vertical \
+                         -command { .fil_screen.frm1.txt yview }
+pack .fil_screen.frm1.txt -side left -expand y 
+pack .fil_screen.frm1.vscroll -side right -fill y -expand y 
+.fil_screen.frm1.txt tag configure lightbluetag -background lightblue \
+		-foreground black
+.fil_screen.frm1.txt tag configure bluetag -background lightblue \
+		-foreground black 
+.fil_screen.frm1.txt tag configure greentag -background green \
+		-foreground black
+.fil_screen.frm1.txt tag configure redtag -background red \
+		-foreground black
+.fil_screen.frm1.txt tag configure yellowtag -background yellow \
+		-foreground black
+
+## Bind the text widget for the PageUp and PageDown keys and Cntrl-F and Cntrl-b
+## keys to scroll forward and backward
+
+
+bind .fil_screen <Control-f> {
+
+	.fil_screen.frm1.txt yview scroll 1 pages
+
+			}
+
+bind .fil_screen <Control-b> {
+
+	.fil_screen.frm1.txt yview scroll -1 pages
+
+			}
+
+## Get the debug buttons on the main window and pass the control to the called
+## procedures
+
+button .fil_screen.frm2.but1 -text "QUIT" -anchor sw \
+	-command {exit}
+
+button .fil_screen.frm2.but2 -text "VOIP CCAPI" -anchor sw \
+	-command { 
+
+	.fil_screen configure -cursor watch
+	label .fil_screen.label -text "Running ......" -font { Helvetica -16 bold }
+
+	pack .fil_screen.label -anchor sw
+	update
+	Voip_ccapi_para
+	destroy .fil_screen.label
+	.fil_screen configure -cursor {}
+	update 
+}
+
+button .fil_screen.frm2.but3 -text "VTSP ALL" -anchor sw \
+	-command { 
+
+	.fil_screen configure -cursor watch
+	label .fil_screen.label -text "Running ......" -font { Helvetica -16 bold }
+	pack .fil_screen.label -anchor sw
+	update
+	Vtsp_all_para
+	destroy .fil_screen.label
+	.fil_screen configure -cursor {}
+	update
+
+	}
+
+#button .fil_screen.frm2.but4 -text "VTSP SESSION" -anchor sw \
+	-command { catch [ Vtsp_session_para ] }
+
+button .fil_screen.frm2.but5 -text "ISDN Q931" -anchor sw \
+	-command { 
+
+	.fil_screen configure -cursor watch
+	label .fil_screen.label -text "Running ......" -font { Helvetica -16 bold }
+	pack .fil_screen.label -anchor sw
+	update
+	Isdn_q931_para
+
+	destroy .fil_screen.label
+	.fil_screen configure -cursor {}
+	update
+
+	}
+
+button .fil_screen.frm2.but6 -text "Find" -anchor sw \
+	-command {
+
+	do-find
+
+		}
+
+button .fil_screen.frm2.but7 -text "Clear" -anchor sw \
+	-command {
+		
+		.fil_screen.frm1.txt delete 1.0 99999999.0
+
+		}
+	
+
+pack .fil_screen.frm2.but1 \
+	.fil_screen.frm2.but2 .fil_screen.frm2.but3 \
+	.fil_screen.frm2.but5 .fil_screen.frm2.but6 \
+	.fil_screen.frm2.but7 -side left -padx 2m
+
+
+proc Save_debugs_to_file { } {
+
+	set Proc_id [pid]
+
+        set fil_screen_file [open /tmp/debug_file.$Proc_id w 0755 ]
+
+        set debug_output [.fil_screen.frm1.txt get 1.0 9999999.0 ]
+
+        puts $fil_screen_file "$debug_output"
+
+        close $fil_screen_file
+
+	}
+
+#########################################################################
+##
+##	Voip_ccapi_para - This procedure collects the key parameters from
+##	the "voip ccapi" debug message and passes them to the Open_report
+##	Procedure which invokes a new window to display these parameters
+##
+#########################################################################
+
+
+proc Voip_ccapi_para { } {
+
+	set Proc_id [pid]
+
+        set fil_screen_file [open /tmp/debug_file.$Proc_id w 0755 ]
+
+        set debug_output [.fil_screen.frm1.txt get 1.0 9999999.0 ]
+
+        puts $fil_screen_file "$debug_output"
+
+        close $fil_screen_file
+
+	 
+set ccapi_events "cc_api_call_setup_ind cc_api_call_digit cc_api_call_report_digits_done cc_api_call_alert cc_api_call_proceeding cc_api_call_connected cc_api_bridge_done cc_api_caps_ind cc_api_caps_ack cc_api_call_disconnected cc_api_bridge_drop_done cc_api_icpif cc_api_call_disconnect_done"
+
+set ssaevents "ssaCallSetupInd ssaSetupPeer ssaReportDigitsDone ssaCallProc ssaIgnore ssaAlert ssaConnect ssaConfCreateDone ssaConfDestroyDone ssaDisconnectDone"
+
+## Collecting the subscriber type
+
+	if { [ regexp {subscriber_type_str=RegularLine} $debug_output ] } {
+
+		set Incoming_call_leg "POTS"
+
+		}
+
+	if { [ regexp {subscriber_type_str=Unknown} $debug_output ] } {
+
+		set Incoming_call_leg "VOIP"
+
+		}
+
+	regexp {\->encapType \([0-9]\)} $debug_output Temp_Encap_type 
+
+	catch [ set Temp_Encap_type2 [ lindex [ split $Temp_Encap_type "(" ] 1 ]]
+	catch [ set Encap_type [ lindex [ split $Temp_Encap_type2 ")" ] 0 ] ]
+
+## Collecting the Encapsulation type
+
+	catch [ case $Encap_type {
+	
+		0 { set Outgoing_call_leg "Unknown" }
+		1 { set Outgoing_call_leg "POTS" }
+		2 { set Outgoing_call_leg "VOIP" }
+		3 { set Outgoing_call_leg "MMOIP" }
+		4 { set Outgoing_call_leg "VOATM" }
+		5 { set Outgoing_call_leg "VOFR" }
+		6 { set Outgoing_call_leg "VIDEOCODEC" }
+		7 { set Outgoing_call_leg "VIDEOATM" }
+		8 { set Outgoing_call_leg "PROXY" }
+		9 { set Outgoing_call_leg "LAST" }
+		default { set Outgoing_call_leg "Unknown" }
+		} ]
+
+
+	set Callid_flag "NOTSET"
+
+	set Matched_callid_flag "NOTMATCHED"
+	
+	set count 1
+
+	set filpointer [ open /tmp/debug_file.$Proc_id r ]
+
+##
+###### Collecting other parameters like Calling/called number , dial-peers etc
+##
+	while { [ gets $filpointer line] >= 0 } {
+
+
+		if { [ regexp {cc_api_call_setup_ind} $line ] } {
+
+			regexp {calling=[0-9]+} $line Temp_calling_number
+
+			catch [ set Calling_num [ lindex [ split $Temp_calling_number "=" ] 1 ] ]
+
+			regexp {called=[0-9]+} $line Temp_called_number2
+			catch [ set Called_num [ lindex [ split $Temp_called_number2 "=" ] 1 ] ]
+			regexp {peer_tag=[0-9]+} $line Temp_peer_tag
+			catch [ set In_peer_tag [ lindex [ split $Temp_peer_tag "=" ] 1 ] ]
+			}
+
+		if { [ regexp {ccIFCallSetupRequestPrivate} $line ] } {
+			regexp {calling=[0-9]+} $line Temp_calling_number
+			catch [ set Calling_num1 [ lindex [ split $Temp_calling_number "=" ] 1 ] ]
+			catch [ set Calling_num [ lindex [ split $Temp_calling_number "=" ] 1 ] ]
+			regexp {called=[0-9]+} $line Temp_called_number
+			catch [ set Called_num2 [ lindex [ split $Temp_called_number "="] 1 ] ]
+			catch [ set Called_num [ lindex [ split $Temp_called_number "="] 1 ] ]
+			regexp {peer_tag=[0-9]+} $line Temp_peer_tag
+			catch [ set Out_peer_tag [ lindex [ split $Temp_peer_tag "=" ] 1 ] ]
+			}
+
+		if { [ regexp {cc_api_call_disconnected} $line ] } {
+			catch [ regexp {cause=0x[0-9]+} $line Temp_cause_code ]
+			catch [ set Cause_code [ lindex [ split $Temp_cause_code "=" ] 1 ] ]
+
+			global dec_cause_code Cause_reason Cause_infer
+			set dec_cause_code [ format %d $Cause_code ]
+
+			Disconnect_cause $dec_cause_code
+			catch [ switch -exact $dec_cause_code {
+
+				0 { 
+					set Cause_reason "CC_CAUSE_UNINITIALIZED"
+					set Cause_infer "Cause code was uninitialized"
+				}
+					
+				1 { 
+					set Cause_reason "CC_CAUSE_UANUM"
+					set Cause_infer "Unallocated/Unassigned number - The Number was sent to the switch in the correct format; however, thenumber is not assigned to any destination equipment." 
+					}
+
+				2 { 
+					set Cause_reason "CC_CAUSE_NO_ROUTE_TO_TRANSIT_NETWORK"
+					set Cause_infer "No route to specified transit network - The exchange is asked to route the call through an unrecognized intermediate network."
+					}
+
+				3 { 
+					set Cause_reason "CC_CAUSE_NO_ROUTE"
+					set Cause_infer "No route to destination - The call was routed through an intermediate network that does not serve the destination address"
+					}
+				4 {
+					set Cause_reason "CC_CAUSE_SEND_INFO_TONE"
+					set Cause_infer ""
+					}
+				5 {
+					set Cause_reason "CC_CAUSE_MISDIALLED_TRUNK_PREFIX"
+					set Cause_infer "The Trunk prefix digits dialled are incorrect - please check"
+					}
+				6 {
+					set Cause_reason "CC_CAUSE_CHANNEL_UNACCEPTABLE"
+					set Cause_infer "Channel Unacceptable - The service quality of the specified channel is insufficient to accept the connection"
+					}
+				7 {
+					set Cause_reason "CC_CAUSE_CALL_AWARDED"
+					set Cause_infer "Call awarded and being delivered in an established channel - The user is assigned an incoming call that is being connected to an already-established call channel."
+					}
+				8 {
+					set Cause_reason "CC_CAUSE_PREEMPTION"
+					set Cause_infer ""
+					}
+				9 {
+					set Cause_reason "CC_CAUSE_PREEMPTION_RESERVED"
+					set Cause_infer ""
+					}
+				15 { 
+					set Cause_reason "CC_CAUSE_GLARE"
+					set Cause_infer "A Glare condition has occured , check for the signalling"
+					}
+				#16 {
+				#	set Cause_reason "CC_CAUSE_NORM"
+				#	set Cause_infer "Normal call clearing - Normal call clearing has occurred"
+				#	}
+				17 {
+					set Cause_reason "CC_CAUSE_BUSY"
+					set Cause_infer "User busy - The called system acknowledges the connection request but is unable to accept the call because all B channels are in use."
+					}
+				18 {
+					set Cause_reason "CC_CAUSE_NORS"
+					set Cause_infer "No user responding - The connection cannot be completed because the destination does not respond to the call. "
+					}
+				19 {
+					set Cause_reason "CC_CAUSE_NOAN"
+					set Cause_infer "No answer from user - User alerted - The destination responds to the connection request but fails to complete the connection within the prescribed time. The problem is at the remote end of the connection"
+					}
+				20 {
+
+					set Cause_reason "CC_CAUSE_SUBSCRIBER_ABSENT"
+					set Cause_infer "Subscriber - not present"
+					}
+				21 {
+					set Cause_reason "CC_CAUSE_REJECT"
+					set Cause_infer "Call rejected - The destination is capable of accepting the call but rejected the call for an unknown reason"
+					}
+				22 {
+					set Cause_reason "CC_CAUSE_NUMBER_CHANGED"
+					set Cause_infer "Number changed - The ISDN number used to set up the call is not assigned to any system"
+					}
+
+				26 {
+					set Cause_reason "CC_CAUSE_NON_SELECTED_USER_CLEARING"
+					set Cause_infer "Non-selected user clearing  - The destination is capable of accepting the call but rejected the call because it was not assigned to the user."
+	
+					}
+				27 {
+					set Cause_reason "CC_CAUSE_DESTINATION_OUT_OF_ORDER"
+					set Cause_infer "Designation out of order - The destination cannot be reached because the interface is not functioning correctly, and a signaling message cannot be delivered. This might be a temporary condition, but it could last for an extended period of time. For example, the remote equipment might be turned off"
+					}
+				28 {
+					set Cause_reason "CC_CAUSE_INVALID_NUMBER"
+					set Cause_infer "Invalid number format - The connection could be established because the destination address was presented in an unrecognizable format or because the destination address was incomplete."
+					}
+				29 {
+					set Cause_reason "CC_CAUSE_FACILITY_REJECTED"
+					set Cause_infer "Facility rejected - The facility requested by the user cannot be provided by the network"
+					}
+				30 {
+					set Cause_reason "CC_CAUSE_RESPONSE_TO_STATUS_ENQUIRY"
+					set Cause_infer "Response to STATUS ENQUIRY - The status message was generated in direct response to the prior receipt of a status enquiry message. "
+					}
+				31 {
+					set Cause_reason "CC_CAUSE_UNSP"
+					set Cause_infer "Normal, unspecified - Reports the occurrence of a normal event when no standard cause applies. No action required."
+					}
+				34 {
+
+					set Cause_reason "CC_CAUSE_NO_CIRCUIT"
+					set Cause_infer "No circuit/channel available - The connection cannot be established because no appropriate channel is available to take the call."
+					}
+				35 { 
+
+					set Cause_reason "CC_CAUSE_REQUESTED_VPCI_VCI_NOT_AVAILABLE"
+					set Cause_infer "No VPCI_VCI is available to take the call."
+					}
+				36 {
+					set Cause_reason "CC_CAUSE_VPCI_VCI_ASSIGNMENT_FAILURE"
+					set Cause_infer "VPCI_VCI assignment failed"
+					}
+				37 {
+					set Cause_reason "CC_CAUSE_CELL_RATE_NOT_AVAILABLE"
+					set Cause_infer "CC_CAUSE_CELL_RATE_NOT_AVAILABLE"
+					}
+				38 {
+					set Cause_reason "CC_CAUSE_NETWORK_OUT_OF_ORDER"
+					set Cause_infer "Network problem , network is out of order"
+					}
+				39 {
+					set Cause_reason "CC_CAUSE_PERM_FRAME_MODE_OUT_OF_SERVICE"
+					set Cause_infer "CC_CAUSE_PERM_FRAME_MODE_OUT_OF_SERVICE"
+					}
+				40 {
+					set Cause_reason "CC_CAUSE_PERM_FRAME_MODE_OPERATIONAL"
+					set Cause_infer "CC_CAUSE_PERM_FRAME_MODE_OPERATIONAL"
+					}
+				41 {
+					set Cause_reason "CC_CAUSE_TEMPORARY_FAILURE"
+					set Cause_infer "Temporary failure - An error occurred because the network is not functioning correctly. The problem will be resolved shortly"
+					}
+				42 {
+					set Cause_reason "CC_CAUSE_SWITCH_CONGESTION"
+					set Cause_infer "Switching equipment Congestion - The destination cannot be reached because the network switching equipment is temporarily overloaded.
+					}
+				43 { 
+					set Cause_reason "CC_CAUSE_ACCESS_INFO_DISCARDED"
+					set Cause_infer "Access information discarded - The network cannot provide the requested access information"
+					}
+				44 {
+					set Cause_reason "CC_CAUSE_NO_REQ_CIRCUIT"
+					set Cause_infer "Requested circuit/channel not available - The remote equipment cannot provide the requested channel for an unknown reason. This might be a temporary problem."
+					}
+				45 { 
+					set Cause_reason "CC_CAUSE_NO_VPCI_VCI_AVAILABLE"
+					set Cause_infer "CC_CAUSE_NO_VPCI_VCI_AVAILABLE"
+					}
+				46 {
+					set Cause_reason "CC_CAUSE_PRECEDENCE_CALL_BLOCKED"
+					set Cause_infer "CC_CAUSE_PRECEDENCE_CALL_BLOCKED"
+					}
+				47 { 
+					set Cause_reason "CC_CAUSE_NO_RESOURCE"
+					set Cause_infer "Resources unavailable, unspecified - The requested channel or service is unavailable for an unknown reason. This might be a temporary problem."
+					}
+				49 {
+					set Cause_reason "CC_CAUSE_QOS_UNAVAILABLE"
+					set Cause_infer "The requested Quality of Service is unavailable"
+					}
+				50 {
+					set Cause_reason "CC_CAUSE_FACILITY_NOT_SUBCRIBED"
+					set Cause_infer "Requested facility not subscribed - The remote equipment supports the requested supplementary service by subscription only."
+					}
+				53 {
+					set Cause_reason "CC_CAUSE_CUG_OUTGOING_CALLS_BARRED"
+					set Cause_infer "CC_CAUSE_CUG_OUTGOING_CALLS_BARRED"
+					}
+				55 {
+					set Cause_reason "CC_CAUSE_CUG_INCOMING_CALLS_BARRED"
+					set Cause_infer "CC_CAUSE_CUG_INCOMING_CALLS_BARRED"
+					}
+				57 {
+					set Cause_reason "CC_CAUSE_BEARER_CAPABILITY_NOT_AUTHORIZED"
+					set Cause_infer "Bearer capability not authorized - The user requested a bearer capability that the network provides, but the user is not authorized to use it. This might be a subscription problem."
+					}
+				58 {
+					set Cause_reason "CC_CAUSE_BEARER_CAPABILITY_NOT_AVAILABLE"
+					set Cause_infer "Bearer capability not presently available - The network normally provides the requested bearer capability, but it is unavailable at the present time. This might be due to a temporary network problem or to a subscription problem"
+					}
+				62 {
+					set Cause_reason "CC_CAUSE_INCONSISTENCY_IN_INFO_AND_CLASS"
+					set Cause_infer "Inconsistent In band Information and class"
+					}
+				63 {
+					set Cause_reason "CC_CAUSE_NOSV"
+					set Cause_infer "Service or option not available, unspecified - The network or remote equipment was unable to provide the requested service option for an unspecified reason. This might be a subscription problem."
+					}
+				65 {
+					set Cause_reason "CC_CAUSE_BEARER_CAPABILITY_NOT_IMPLEMENTED"
+					set Cause_infer "Bearer capability not implemented - The network cannot provide the bearer capability requested by the user."
+
+					}
+				66 {
+					set Cause_reason "CC_CAUSE_CHAN_TYPE_NOT_IMPLEMENTED"
+					set Cause_infer "Channel type not implemented . The network or destination equipment does not support the requested channel type"
+					}
+				69 {
+					set Cause_reason "CC_CAUSE_FACILITY_NOT_IMPLEMENTED"
+					set Cause_infer "Requested facility not implemented - The remote equipment does not support the requested supplementary service"
+					}
+				70 {
+					set Cause_reason "CC_CAUSE_RESTRICTED_DIGITAL_INFO_BC_ONLY"
+					set Cause_infer "Only restricted digital information bearer - The network is unable to provide unrestricted digital information bearer capability"
+					}
+				79 {
+					set Cause_reason "CC_CAUSE_SERVICE_NOT_IMPLEMENTED"
+					set Cause_infer "Service or option not implemented, unspecified - The network or remote equipment is unable to provide the requested service option for an unspecified reason. This might be a subscription problem."
+
+					}
+				81 {
+					set Cause_reason "CC_CAUSE_INVALID_CALL_REF_VALUE"
+					set Cause_infer "The remote equipment received a call with a call reference that is not currently in use on the user-network interface"
+					}
+				82 {
+					set Cause_reason "CC_CAUSE_CHANNEL_DOES_NOT_EXIST"
+					set Cause_infer "Identified channel does not exist - The receiving equipment is requested to use a channel that is not activated on the interface for calls."
+					}
+				83 {
+					set Cause_reason "CC_CAUSE_CALL_EXISTS_CALL_ID_IN_USE"
+					set Cause_infer "A suspended call exists , but this call identity does not - The network received a call resume request. The call resume request contained a Call Identify information element that indicates that the call identity is being used for a suspended call. "
+					}
+				84 {
+					set Cause_reason "CC_CAUSE_CALL_ID_IN_USE"
+					set Cause_infer "Call identity in use  - The network received a call resume request. The call resume request contained a Call Identify information element that indicates that it is in use for a suspended call."
+					}
+				85 {
+					set Cause_reason "CC_CAUSE_NO_CALL_SUSPENDED"
+					set Cause_infer "No call suspended - The network received a call resume request when there was not a suspended call pending. This might be a transient error that will be resolved by successive call retries."
+					}
+				86 {
+					set Cause_reason "CC_CAUSE_CALL_CLEARED"
+					set Cause_infer "Call having the requested call identity has been cleared - The network received a call resume request. The call resume request contained a Call Identity information element, which once indicated a suspended call. However, the suspended call was cleared either by timeout or by the remote user."
+
+					}
+				87 {
+					set Cause_reason "CC_CAUSE_USER_NOT_IN_CUG"
+					set Cause_infer "CC_CAUSE_USER_NOT_IN_CUG"
+					}
+				88 {
+					set Cause_reason "CC_CAUSE_INCOMPATIBLE_DESTINATION"
+					set Cause_infer "Incompatible destination - Indicates that an attempt was made to connect to non-ISDN equipment . For example , to an analog line."
+					}
+				90 {
+					set Cause_reason "CC_CAUSE_NON_EXISTENT_CUG"
+					set Cause_infer "CC_CAUSE_NON_EXISTENT_CUG"
+					}
+				91 {
+					set Cause_reason "CC_CAUSE_INVALID_TRANSIT_NETWORK"
+					set Cause_infer "Invalid transit network selection - The exchange was asked to route the call through an unrecognized intermediate network"
+					}
+				93 {
+					set Cause_reason "CC_CAUSE_AAL_PARMS_NOT_SUPPORTED"
+					set Cause_infer "CC_CAUSE_AAL_PARMS_NOT_SUPPORTED"
+					}
+				95 {
+					set Cause_reason "CC_CAUSE_INVALID_MESSAGE"
+					set Cause_infer "Invalid Message - An invalid message was received , and no standard cause applies . This is usually due to a D- channel error . If this error occurs systematically , report it to your service provider"
+					}
+				96 {
+					set Cause_reason "CC_CAUSE_MANDATORY_IE_MISSING"
+					set Cause_infer "Mandatory Information element is missing - The receiving equipment received a message that did not include one of the mandatory information elements . This is usually due to a D- channel error . If this error occurs systematically , report it to your service provider"
+					}
+				97 {
+					set Cause_reason "CC_CAUSE_MESSAGE_TYPE_NOT_IMPLEMENTED"
+					set Cause_infer "The receiving equipment received an unrecognized message , either because the message type was valid but not supported . The cause is due to either a problem with the remote configuration or a problem with the local D channel"
+					}
+				98 {
+					set Cause_reason "CC_CAUSE_MESSAGE_TYPE_NOT_COMPATIBLE"
+					set Cause_infer "Message not compatible with call state or message type non-existent or not implemented - The remote equipment received an invalid message , and no standard cause applies . This cause is due to a D-channel error . If this error occurs systematically , report it to your service provider." 
+					}
+				99 {
+					set Cause_reason "CC_CAUSE_IE_NOT_IMPLEMENTED"
+					set Cause_infer "Information element non-existent or not implemented . - The remote equipment received a message that includes information elements , which were not recognized . This is usually a D- Channel error . If this error occurs systematically , report it to your service provider" 
+
+					}
+				100 {
+					set Cause_reason "CC_CAUSE_INVALID_IE_CONTENTS"
+					set Cause_infer "Invalid information element contents - The remote equipment received a message that includes invalid information in the information element . This is usually due to D- channel error."
+					}
+				101 {
+					set Cause_reason "CC_CAUSE_MESSAGE_IN_INCOMP_CALL_STATE"
+					set Cause_infer "Message not compatible with call state - The remote equipment received an unexpected message that does not correspond to the current state of the connection . Thi is usually due to a D- channel problem.
+
+					}
+				102 {
+					set Cause_reason "CC_CAUSE_RECOVERY_ON_TIMER_EXPIRY"
+					set Cause_infer "Recovery on timer expires - An error - handling ( recovery ) procedure was initiated by a timer expiry . This is usually a temporary problem"
+					}
+				103 {
+					set Cause_reason "CC_CAUSE_NON_IMPLEMENTED_PARAM_PASSED_ON"
+					set Cause_infer "CC_CAUSE_NON_IMPLEMENTED_PARAM_PASSED_ON"
+					}
+				110 {
+					set Cause_reason "CC_CAUSE_UNRECOGNIZED_PARAM_MSG_DISCARDED"
+					set Cause_infer "CC_CAUSE_UNRECOGNIZED_PARAM_MSG_DISCARDED"
+					}
+				111 {
+					set Cause_reason "CC_CAUSE_PROTOCOL_ERROR"
+					set Cause_infer "Protocol error unspecified - An unspecified D- channel error when no other standard"
+					}
+				126 {
+					set Cause_reason "CC_CAUSE_NO_VOICE_RESOURCE"
+					set Cause_infer "CC_CAUSE_NO_VOICE_RESOURCE"
+					}
+				127 {
+					set Cause_reason "CC_CAUSE_INTERWORKING"
+					set Cause_infer "Internetworking error - An event occurred , but the network does not provide causes for the action that it takes . The precise problem is unknown."
+					}
+				128 {
+					set Cause_reason "CC_CAUSE_NEXT_NODE_UNREACHABLE"
+					set Cause_infer "CC_CAUSE_NEXT_NODE_UNREACHABLE"
+					}
+				129 {
+					set Cause_reason "CC_CAUSE_HTSPM_OUT_OF_SERVICE"
+					set Cause_infer "CC_CAUSE_HTSPM_OUT_OF_SERVICE"
+					}
+				170 {
+					set Cause_reason "CC_CAUSE_NO_DSP_CHAN"
+					set Cause_infer "CC_CAUSE_NO_DSP_CHAN"
+					}
+				171 {
+					set Cause_reason "CC_CAUSE_CODEC_INCOMPATIBLE"
+					set Cause_infer "Codec is incompatible"
+					}
+				172 {
+					set Cause_reason "CC_CAUSE_DSP_ERROR"
+					set Cause_infer "CC_CAUSE_DSP_ERROR"
+					}
+				180 {
+					set Cause_reason "CC_CAUSE_GLARING_SWITCH_PRI"
+					set Cause_infer "CC_CAUSE_GLARING_SWITCH_PRI"
+					}
+				#default {
+				#	set Cause_reason "NOT KNOWN"
+				#	set Cause_infer "NOT UNKNOWN - Does not match any of the known cause codes"
+				#	} 
+
+	} ]
+					
+		
+	}
+					
+
+		if { [ regexp {ccCallSetContext} $line ] } {
+			regexp {callID=0x[A-F0-9a-z]*} $line Temp_callid
+			if { $Callid_flag == "NOTSET" } {
+
+				catch [ set Originating_callid [ lindex [ split $Temp_callid "=" ] 1 ] ]
+				set Callid_flag "SET"
+			} else {
+				catch [ set Terminating_callid [ lindex [ split $Temp_callid "=" ] 1 ] ]
+
+			} 
+
+		}
+	
+		foreach el $ccapi_events {
+
+			set Length [ string length $el ]
+
+			catch [	set result [ .fil_screen.frm1.txt search -forward  -nocase -- $el $count.0 $count.80 ]]
+
+			catch [	.fil_screen.frm1.txt tag add greentag $result "$result + ${Length}c" ]
+
+				}
+
+		foreach el $ssaevents {
+			set Length [ string length $el ]
+			catch [ set result [ .fil_screen.frm1.txt search -forward -nocase -- $el $count.0 $count.80 ]]
+			catch [ .fil_screen.frm1.txt tag add bluetag $result "$result + ${Length}c" ]
+
+			}
+
+		if { [ regexp {cc_api_call_disconnected} $line ] } {
+
+			catch [ regexp {callID=0x[0-9A-F]*} $line Temp_callid ]
+			catch [ set Matched_callid2 [ lindex [ split $Temp_callid "=" ] 1 ] ]
+
+			if { $Matched_callid_flag == "NOTMATCHED" } {
+				catch [ set Matched_callid "$Matched_callid2" ]
+				catch [ set Matched_callid_flag "MATCHED" ]
+				if { $Matched_callid == "$Originating_callid" } {
+					catch [ set Disconnect_party "ORIGINATING Party" ]
+
+					} else {
+					catch [ set Disconnect_party "TERMINATING Party" ]
+
+						}
+				}
+
+			}
+
+## Collecting the Codec negotiated..
+
+		if { [ regexp {codec=0x[0-9A-Fa-f]+} $line Temp_codec ] } {
+
+			catch [ case $Temp_codec {
+
+			codec=0x1 { set Codec "CC_CAP_CODEC_G711U" }
+			codec=0x2 { set Codec "CC_CAP_CODEC_G711A" }
+			codec=0x4 { set Codec "CC_CAP_CODEC_G729IETF" }
+			codec=0x8 { set Codec "CC_CAP_CODEC_G729a" }
+			codec=0x10 { set Codec "CC_CAP_CODEC_G726r16" }
+			codec=0x20 { set Codec "CC_CAP_CODEC_G726r24" }
+			codec=0x40 { set Codec "CC_CAP_CODEC_G726r32" }
+			codec=0x80 { set Codec "CC_CAP_CODEC_G728" }
+			codec=0x100 { set Codec "CC_CAP_CODEC_G723r63" }
+			codec=0x200 { set Codec "CC_CAP_CODEC_G723r53" }
+			codec=0x400 { set Codec "CC_CAP_CODEC_GSM" }
+			codec=0x800 { set Codec "CC_CAP_CODEC_G729b" }
+			codec=0x1000 { set Codec "CC_CAP_CODEC_G729ab" }
+			codec=0x2000 { set Codec "CC_CAP_CODEC_G723ar63" }
+			codec=0x4000 { set Codec "CC_CAP_CODEC_G723ar53" }
+			codec=0x8000 { set Codec "CC_CAP_CODEC_G729" }
+			codec=0x10000 { set Codec "CC_CAP_CODEC_T38FAX" }
+			codec=0x20000 { set Codec "CC_CAP_CODEC_CLEAR_CH" }
+			codec=0x40000 { set Codec "CC_CAP_CODEC_GSMEFR" }
+			default { set Codec "UNKNOWN" }
+
+				} ]
+				
+		catch [ if { [ regexp {fax_rate=0x[0-9A-Fa-f]+} $line Temp_fax ] } {
+
+			case $Temp_fax {
+
+			fax_rate=0x1 { set Fax_capability "CC_CAP_FAX_NONE" }
+			fax_rate=0x2 { set Fax_capability "CC_CAP_FAX_VOICE" }
+			fax_rate=0x4 { set Fax_capability "CC_CAP_FAX_144" }
+			fax_rate=0x8 { set Fax_capability "CC_CAP_FAX_96" }
+			fax_rate=0x10 { set Fax_capability "CC_CAP_FAX_72" }
+			fax_rate=0x20 { set Fax_capability "CC_CAP_FAX_48" }
+			fax_rate=0x40 { set Fax_capability "CC_CAP_FAX_24" }
+			fax_rate=0x80 { set Fax_capability "CC_CAP_FAX_120" }
+			default { set Fax_capability "UNKNOWN" }
+
+			}
+
+		} ]
+		catch [ if { [ regexp {vad=0x[0-9A-Fa-f]+} $line Temp_vad ] } {
+			
+			case $Temp_vad {
+
+			vad=0x1 { set Vad_capability "CC_CAP_VAD_OFF" }
+			vad=0x2 { set Vad_capability "CC_CAP_VAD_ON" }
+
+				}
+
+			} ]
+
+		}
+						
+	set count [ expr $count + 1 ]
+	}	
+
+	if { [info local Calling_num ] != "Calling_num" } { set Calling_num "Info not Available" }
+
+	if { [info local Called_num ] != "Called_num" } { set Called_num "Info not Available" }
+
+	if { [info local In_peer_tag ] != "In_peer_tag" } { set In_peer_tag "Info not Available" }
+
+	if { [info local Out_peer_tag ] != "Out_peer_tag" } { set Out_peer_tag "Info not Available" }
+
+	if { [info local Cause_code ] != "Cause_code" } { set Cause_code "Info not Available" }
+
+	if { [info local Incoming_call_leg ] != "Incoming_call_leg" } { set Incoming_call_leg "Info not Available" }
+
+	if { [info local Outgoing_call_leg ] != "Outgoing_call_leg" } { set Outgoing_call_leg "Info not Available" }
+
+	if { [info local Originating_callid ] != "Originating_callid" } { set Originating_callid "Info not Available" }
+
+	if { [info local Terminating_callid ] != "Terminating_callid" } { set Terminating_callid "Info not Available" }
+
+	if { [info local Disconnect_party ] != "Disconnect_party" } { set Disconnect_party "NOT KNOWN" }
+
+	if { [info local Codec ] != "Codec" } { set Codec "NOT KNOWN" }	
+
+	if { [info local Fax_capability ] != "Fax_capability" } { set Fax_capability "NOT KNOWN" }
+
+	if { [info local Vad_capability ] != "Vad_capability" } { set Vad_capability "NOT KNOWN" }
+	
+	if { [info global Cause_reason ] != "Cause_reason" } { set Cause_reason "NOT KNOWN" }
+	
+	if { [info global Cause_infer ] != "Cause_infer" } { set Cause_infer "NOT KNOWN" }
+
+	Open_report $Calling_num $Called_num $In_peer_tag $Out_peer_tag $Cause_code $Incoming_call_leg $Outgoing_call_leg $Originating_callid $Terminating_callid $Disconnect_party $Codec $Fax_capability $Vad_capability
+
+}
+
+#####>>>>>>>>>>>>>End of Voip_ccapi_para <<<<<<<<<<<<<<<<<<<############
+
+##########################################################################
+##
+##	Open_report - This procedure invokes a new window to display the
+##	key ccapi parameters like calling/called numbers etc which were 
+##	collected from the debug messages and it calls the Detailed_events_para
+##	procedure to give a detailed report on the call flow pertinent to
+##	"ccapi voip" .
+##
+###########################################################################
+
+proc Open_report { Calling_num Called_num In_peer_tag Out_peer_tag Cause_code Incoming_call_leg Outgoing_call_leg Originating_callid Terminating_callid Disconnect_party Codec Fax_capability Vad_capability } {
+
+	global Cause_reason Cause_infer
+
+	wm withdraw .
+	destroy .report
+	toplevel .report
+	wm title .report "debug voip ccapi report" 
+	frame .report.frm1 -relief groove -borderwidth 5 -bd 2
+        frame .report.frm2 -relief groove -borderwidth 5
+        frame .report.frm3 -relief groove -borderwidth 5
+        pack .report.frm1 -pady 1m -expand y
+        pack .report.frm2 -pady 2m -expand y
+        pack .report.frm3 -pady 2m -expand y
+
+
+	label .report.frm1.can -image ::router_map::bimage -background white  -foreground blue -height 100 -width 594
+
+	text .report.frm2.txt -width 75 -height 15 -font { Helvetica -14 bold } 
+
+	pack .report.frm2.txt
+
+	.report.frm2.txt insert end "\tCalling number - $Calling_num\n"
+
+	.report.frm2.txt insert end "\tCalled number - $Called_num\n"
+
+	.report.frm2.txt insert end "\tIncoming dial-peer - $In_peer_tag\n"
+
+	.report.frm2.txt insert end "\tOutgoing dial-peer - $Out_peer_tag\n"
+
+	.report.frm2.txt insert end "\tOriginating Callid - $Originating_callid\n"
+
+	.report.frm2.txt insert end "\tTerminating Callid - $Terminating_callid\n"
+
+	.report.frm2.txt insert end "\tIncoming Call_leg - $Incoming_call_leg\n"
+	
+	.report.frm2.txt insert end "\tOutgoing Call_leg - $Outgoing_call_leg\n"
+
+	.report.frm2.txt insert end "\tCodec Negotiated - $Codec\n"
+
+	.report.frm2.txt insert end "\tFax Capability Negotiated - $Fax_capability\n"
+
+	.report.frm2.txt insert end "\tVoice Activity Detection - $Vad_capability\n"
+	.report.frm2.txt insert end "\tDisconnect cause code - $Cause_reason\n"
+	
+	.report.frm2.txt insert end "\tDisconnect reason - $Cause_infer\n"
+
+	.report.frm2.txt insert end "\tDisconnect was issued first by $Disconnect_party\n"
+
+	pack .report.frm1.can
+
+	Detailed_events_para
+
+	text .report.frm3.txt -width 80 -height 30 \
+		-yscrollcommand { .report.frm3.vscroll set } -background white \
+		-font { Helvetica -14 bold }
+	scrollbar .report.frm3.vscroll -orient vertical \
+		-command { .report.frm3.txt yview }
+	pack .report.frm3.txt -side left -expand y
+	pack .report.frm3.vscroll -side right -fill y -expand y
+
+	set Proc_id [pid]
+	set fil_screen_file [open /tmp/report.$Proc_id r ]
+	while {[gets $fil_screen_file line]>=0} {
+		.report.frm3.txt insert end $line\n
+
+		}	
+	close $fil_screen_file
+
+	#####################
+	##	Bind the text to scroll to Page Up and down Keys and
+	##	Control-f and Control-b Keys
+	#####################
+
+	bind .report <Up> { .report.frm3.txt yview scroll -1 pages }
+	bind .report <Down> { .report.frm3.txt yview scroll 1 pages }
+
+	bind .report <Control-f> {
+
+		.report.frm3.txt yview scroll 1 pages
+
+		}
+
+	bind .report <Control-b> {
+
+		.report.frm3.txt yview scroll -1 pages
+
+		}	
+
+}
+
+#################################
+##	End of Open_report Procedure
+#################################
+
+#########################################################################
+##
+##	Isdn_q931_para - This procedure adds colour tags to the key isdn
+##	events in the debug message and collects the key parameters from the
+##	debugs and passes it to the Open_isdnq931_report2 procedure to display
+##	them .
+##
+#########################################################################
+
+proc Isdn_q931_para { } {
+
+	set Proc_id [pid]
+
+        set fil_screen_file [open /tmp/debug_file.$Proc_id w 0755 ]
+
+        set debug_output [.fil_screen.frm1.txt get 1.0 9999999.0 ]
+
+        puts $fil_screen_file "$debug_output"
+
+        close $fil_screen_file
+
+	set Q931_events "SETUP SETUP_ACK CALL_PROC ALERTING CONNECT CONNECT_ACK DISCONNECT RELEASE RELEASE_COMP RESTART RESTART_ACK STATUS_ENQ INFORMATION"
+
+	catch [ regexp {Bearer Capability i = 0x[0-9a-fA-F]+} $debug_output Bearer_capability ]
+
+	catch [ regexp {Bearer Capability i = (0x[0-9a-fA-F][0-9a-fA-F])([0-9a-fA-F][0-9a-fA-F])} "$Bearer_capability" Temp_bearer Capability Transfer_rate_t ]
+
+	catch [ set Transfer_rate "0x$Transfer_rate_t" ]
+
+	catch [ set Capability_final_t [ expr 0x10 & $Capability ] ]
+	catch [ set Capability_final [ format "0x%x" $Capability_final_t ] ]
+	catch [ set Transfer_rate_final_t [ expr 0x10 & $Transfer_rate ] ]
+	catch [ set Transfer_rate_final [ format "0x%x" $Transfer_rate_final_t ] ]
+
+
+	if { [ info local Capability_final ] != "Capability_final" } { set Capability_final "UNKNOWN" }
+
+	if { [ info local Transfer_rate_final ] != "Transfer_rate_final" } { set Transfer_rate_final "UNKNOWN" }
+
+	catch [ case $Capability_final {
+
+		0x0 { set Capability_neg "BEAR_CAP_SPEECH - Speech Bearer Capability" }
+		0x08 { set Capability_neg "BEAR_CAP_UNREST_DIG - Unrestricted Digital Capability" }
+		0x09 { set Capability_neg "BEAR_CAP_REST_DIG - Restricted Digital Capability" }
+		0x10 { set Capability_neg "BEAR_CAP_3DOT1K_AUDIO - 3.1KHz Audio Capability" }
+		0x11 { set Capability_neg "BEAR_CAP_7K_AUDIO - 7KHz Audio Capability" }
+		0x18 { set Capability_neg "BEAR_CAP_VIDEO - Video Capability" }
+		0x01 { set Capability_neg "BEAR_CAP_V110 - V.110 User Info Layer 1 Protocol" }
+		0x08 { set Capability_neg "BEAR_CAP_V120 - V.120 User Info Layer 1 Protocol" }
+		default { set Capability_neg "UNKNOWN" }
+		} ]
+
+
+	catch [ case $Transfer_rate_final {
+
+		0x10 { set Transfer_neg "BEAR_RATE_64KBPS - B_CHANNEL_UNITS" }
+		0x13 { set Transfer_neg "BEAR_RATE_384KBPS - H0_CHANNEL_UNITS" }
+		0x15 { set Transfer_neg "BEAR_RATE_1536KBPS - H11_CHANNEL_UNITS" }
+		0x17 { set Transfer_neg "BEAR_RATE_1920KBPS - H12_CHANNEL_UNITS" }
+		default { set Transfer_neg "UNKNOWN transfer Rate" }
+
+		} ]
+
+	catch [ regexp {Cause i = 0x[a-zA-Z0-9 \-\_]+} $debug_output Cause_isdn ]
+
+	catch [ regexp {0x[0-9a-fA-F][0-9a-fA-F]} "$Cause" Orig_point ]
+
+	if { [ info local Orig_point ] != "Orig_point" } { set Orig_point "Info not Available" }
+
+	catch [ case $Orig_point {
+
+		0x80 { set Orig_message "From the router" }
+		0x81 { set Orig_message "From the private network near the local user [(possibly a local private branch exchange (PBX)" }
+		0x82 { set Orig_message "From the public network near the local user (local telco switch)" }
+		0x83 { set Orig_message "From the transit network (in the ISDN cloud)" }
+		0x84 { set Orig_message "From the public network near the remote user (remote telco switch)." }
+		0x85 { set Orig_message "From the private the network near the remote user (possibly a remote PBX)." }
+
+		0x87 { set Orig_message "From the international network" }
+		0x8A { set Orig_message "From a network beyond the internetworking point." }
+		default { set Orig_message "From UNKNOWN Party" }
+
+		} ]
+
+	catch [ regexp {Channel ID i = 0x[0-9a-fA-F]+} $debug_output Channel_id ]
+
+	catch [ if { [ regexp {0101} $Channel_id ] } {
+	
+		set Channel_type "Channel B1"
+
+			} ]
+	catch [ if { [ regexp {0102} $Channel_id ] } {
+		set Channel_type "Channel B2"
+		} ]
+
+	catch [ if { [ regexp {83} $Channel_id ] } {
+		set Channel_type "Any B-Channel"
+
+		} ]
+
+	catch [ if { [ regexp {89} $Channel_id ] } {
+		set Channel_type "Channel B1-exclusive"
+
+		} ]
+
+	catch [ if { [ regexp {8A} $Channel_id ] } {
+		set Channel_type "Channel B2-exclusive"
+	
+		} ]
+
+	catch [ if { [ regexp {81} $Channel_id ] } {
+		set Channel_type "Channel B1-preferred"
+
+		} ]
+
+	catch [ if { [ regexp {82} $Channel_id ] } {
+		set Channel_type "Channel B2-preferred"
+
+		} ]
+	
+		
+	catch [ if { [ regexp {ISDN Se[0-9]:15} $debug_output ] } {
+			set Line_type "E1 PRI"
+		} ]
+
+	catch [ if { [ regexp {ISDN Se[0-9]:23} $debug_output ] } {
+			set Line_type "T1 PRI"
+		} ]
+
+	catch [ if { [ regexp {ISDN BR} $debug_output ] } {
+
+			set Line_type "BRI"
+
+		} ]
+		
+	
+	set count 1
+
+	set filepointer [ open /tmp/debug_file.$Proc_id r ]
+
+			
+	while { [ gets $filepointer line ] >= 0 } {
+
+		if { [ regexp {RX <-} $line ] } {
+
+			set el "RX <-"
+			set Length [ string length "RX <-" ]
+			catch [ set result [ .fil_screen.frm1.txt search -forward -nocase -- $el $count.0 $count.80 ]]
+			catch [ .fil_screen.frm1.txt tag add yellowtag $result "$result + ${Length}c" ]
+			}
+
+		if { [ regexp {TX ->} $line ] } {
+
+			set el "TX ->"
+			set Length [ string length "TX ->" ]
+			catch [ set result [ .fil_screen.frm1.txt search -forward -- $el $count.0 $count.80 ]]
+			catch [ .fil_screen.frm1.txt tag add bluetag $result "$result + ${Length}c" ]
+			}
+
+
+	foreach el $Q931_events {
+
+		set el " $el "
+		set Length [ string length $el ]
+		catch [ set result [ .fil_screen.frm1.txt search -forward -- $el $count.0 $count.80 ]]
+		catch [ .fil_screen.frm1.txt tag add greentag $result "$result + ${Length}c" ]
+		}
+
+
+	if { [ regexp {Calling Party Number} $line ] } {
+
+		catch [ regexp {'[0-9a-zA-Z]+'} $line Calling_numq931 ]
+		catch [ regexp {Plan:[A-Za-z, :\(\)\-\_\=]+} $line Calling_linetype ]
+		}
+
+	if { [ regexp {Called Party Number} $line ] } {
+
+		catch [ regexp {'[0-9a-zA-Z]+'} $line Called_numq931 ]
+		catch [ regexp {Plan:[A-Za-z, :\(\)\-\_\=]+} $line Called_linetype ]
+		}
+
+
+	set count [ expr $count + 1 ]
+	}
+
+
+	if { [ info local Bearer_capability ] != "Bearer_capability" } { set Bearer_capability "Info not Available" }
+
+	if { [ info local Channel_id ] != "Channel_id" } { set Channel_id "Info not Available" }
+
+	if { [ info local Calling_numq931 ] != "Calling_numq931" } { set Calling_numq931 "Info not Available" }
+
+	if { [ info local Called_numq931 ] != "Called_numq931" } { set Called_numq931 "Info not Available" }
+
+	if { [ info local Line_type ] != "Line_type" } { set Line_type "Info not Available" }
+
+	if { [ info local Orig_point ] != "Orig_point" } { set Orig_point  "Info not Available" }
+
+	if { [ info local Orig_message ] != "Orig_message" } { set Orig_message "Info not Available" }
+
+	if { [ info local Channel_type ] != "Channel_type" } { set Channel_type "UKNOWN channel type" }
+
+	if { [ info local Cause_isdn ] != "Cause_isdn" } { set Cause_isdn "NOT KNOWN" }
+
+
+	Open_isdnq931_report2 $Bearer_capability $Channel_id $Calling_numq931 $Called_numq931 $Line_type $Orig_point $Orig_message $Capability_neg $Transfer_neg $Channel_type $Cause_isdn
+ 
+}
+
+################################
+##	End of Isdn_q931_para Procedure
+#################################
+
+
+#########################################################################
+##
+##	Open_isdnq931_report2 - This procedure opens up a new window and
+##	displays the key parameters like calling number , called number etc
+##	that was found in the isdn q931 debugs . This also calls the
+##	Detailed_events_isdnq931_para procedure to provide a detailed report
+##	on the call flow pertinent to isdn q931
+##
+########################################################################
+
+
+proc Open_isdnq931_report2 { Bearer_capability Channel_id Calling_numq931 Called_numq931 Line_type Orig_point Orig_message Capability_neg Transfer_neg Channel_type Cause_isdn } {
+
+	wm withdraw .
+        destroy .report2
+        toplevel .report2
+	wm title .report2 "debug isdn q931 report"
+        frame .report2.frm1 -relief groove -borderwidth 5 -bd 2
+        frame .report2.frm2 -relief groove -borderwidth 5
+        frame .report2.frm3 -relief groove -borderwidth 5
+        pack .report2.frm1 -pady 1m -expand y
+        pack .report2.frm2 -pady 2m -expand y
+        pack .report2.frm3 -pady 2m -expand y
+
+	label .report2.frm1.can -image ::router_map::bimage -background white -foreground blue -height 100 -width 594
+
+	text .report2.frm2.txt -width 75 -height 10 -font { Helvetica -14 bold }
+	
+	pack .report2.frm2.txt
+
+	.report2.frm2.txt insert end "\t\tCalling Number - $Calling_numq931\n"
+	.report2.frm2.txt insert end "\t\tCalled Number - $Called_numq931\n"
+	.report2.frm2.txt insert end "\t\tCapability Negotiated - $Capability_neg\n"
+	.report2.frm2.txt insert end "\t\tBearer Transfer Rate - $Transfer_neg\n"
+	.report2.frm2.txt insert end "\t\t$Orig_point indicates disconnect was issued\n\t\t - $Orig_message\n"
+	.report2.frm2.txt insert end "\t\t$Channel_id indicates channel type is $Channel_type\n"
+	.report2.frm2.txt insert end "\t\tIsdn Line type - $Line_type\n"
+	.report2.frm2.txt insert end "\t\tDisconnect $Cause_isdn\n"
+
+	pack .report2.frm1.can
+
+	Detailed_events_isdnq931_para $Bearer_capability $Calling_numq931 $Called_numq931 $Capability_neg $Transfer_neg $Channel_id $Channel_type
+
+	text .report2.frm3.txt -width 80 -height 30 \
+		-yscrollcommand { .report2.frm3.vscroll set } -background white \
+		-font { Helvetica -14 bold }
+
+	scrollbar .report2.frm3.vscroll -orient vertical \
+		-command { .report2.frm3.txt yview }
+
+	pack .report2.frm3.txt -side left -expand y
+        pack .report2.frm3.vscroll -side right -fill y -expand y
+
+        set Proc_id [pid]
+        set fil_screen_file [open /tmp/report.$Proc_id r ]
+        while {[gets $fil_screen_file line]>=0} {
+                .report2.frm3.txt insert end $line\n
+
+                }
+        close $fil_screen_file
+
+	bind .report2 <Up> { .report2.frm3.txt yview scroll -1 pages }
+	bind .report2 <Down> { .report2.frm3.txt yview scroll 1 page }
+	bind .report2 <Control-f> { .report2.frm3.txt yview scroll 1 page }
+	bind .report2 <Control-b> { .report2.frm3.txt yview scroll -1 page }
+
+	}
+
+#############################
+##	End of Open_isdnq931_report2 Procedure
+##############################
+
+##########################################################################
+##
+##	Detailed_events_para - This procedure generates a detailed report for
+##	for the ccapi debugs , It looks for the varios cc_api functions in the
+##	debugs and converts the hex codes generated by them to Macros
+##
+###########################################################################
+
+proc Detailed_events_para { } {
+
+	global Cause_reason Cause_infer
+	set Proc_id [pid]
+
+	set counter 1
+
+	set Callid_assign "NOTASSIGNED"
+
+	set filepoint [ open /tmp/debug_file.$Proc_id r ]
+
+	set writefile [ open /tmp/report.$Proc_id w 0755 ]
+
+	while { [ gets $filepoint Line_var ] >= 0 } {
+
+                if { [ regexp {cc_api_call_setup_ind} $Line_var ] } {
+
+			if {[regexp {callInfo} $Line_var ] } {
+			catch [ regexp {callID=0x[0-9A-F]*} $Line_var cid ]
+			if { [info local cid ] != "cid" } { set cid "Unknown - Junk" }
+			set Message "cc_api_call_setup_ind :\n\tMessage from the SPI to CCAPI notifying us that there is an incoming call\n\tcallInfo - will contain called/calling number after ccCallSetupRequest\n\tCallid -$cid temporary (junk) value for now\n\n"
+
+			puts $writefile $Message
+
+                } else {
+			set Message "cc_process_call_setup_ind :\n\tProcess call alerting messages from service providers. All call alerting messages go to the VCM where the call is then routed to the appropriate application.\n\n"
+			puts $writefile $Message
+			}
+								}
+
+                if { [ regexp {sess_appl} $Line_var ] } {
+
+			regexp {ev[0-9A-Za-z\=\)\(\_\-]*} $Line_var State_temp
+	
+			catch [ set State_temp2 [ lindex [ split $State_temp ")" ] 0 ] ]
+
+			catch [ set State [ lindex [ split $State_temp2 "(" ] 1 ] ]
+			if { [info local State ] != "State" } { set State "UNKNOWN" }
+                        
+			set Message "sess_appl:\n\tThe Session Application subsystem processes the call events from the ccapi subsystem. The state $State was obtained\n\n"
+			puts $writefile $Message
+				
+							}
+
+                if { [ regexp {ccCallSetContext} $Line_var ] } {
+
+			catch [ regexp {callID=0x[0-9A-F]*} $Line_var callid ]
+
+			if { [ info local callid ] != "callid" } { set callid "UNKNOWN" }
+			if { $Callid_assign == "NOTASSIGNED" } {
+
+			catch [ set Message "ccCallSetContext :\n\tSSA sets up the memory context pointer for the outgoing call leg\n\tThe callid for the first call leg is $callid\n\n" ]
+			catch [ set Callid_assign "ASSIGNED" ]
+				} else {
+
+				catch [ set Message "ccCallSetContext :\n\tSSA sets up the memory context pointer for the outgoing call leg\n\tThe callid for the second call leg is $callid\n\n" ]
+					}
+
+			puts $writefile $Message
+
+                        }
+
+#                if { [ regexp {ccCallSetPeer} $Line_var ] } {
+
+
+#                        }
+
+#                if { [ regexp {ccCallSetupAck} $Line_var ] } {
+
+#                        }
+
+                if { [ regexp {cc_api_call_digit} $Line_var ] } {
+
+			catch [ regexp {mode=[0-9]} $Linevar Mode ]
+
+				catch [case $Mode {
+
+			mode=0 { set Message "cc_api_call_digit :\n\tCollect a digit , mode indicates type of call $Mode means CC_CALL_NORMAL - Regular telephony call\n\n" }
+
+			mode=1 { set Message "cc_api_call_digit :\n\tCollect a d
+igit , mode indicates type of call , $Mode means CC_CALL_TRUNK - A Trunk connection\n\n" }
+
+			mode=2 { set Message "cc_api_call_digit :\n\tCollect a digit , mode indicates type of call , $Mode means CC_CALL_LOOPBACK_COMPRESSED - Establish a call to an interface and immediately loopback the compresSed\n\n" }
+
+			mode=3 { set Message "cc_api_call_digit :\n\tCollect a digit , mode indicates type of call , $Mode means CC_CALL_LOOPBACK_UNCOMPRESSED - Establish a call to an interface and loopback data after running it\n\n" }
+
+			mode=4 { set Message "cc_api_call_digit :\n\tCollect a digit , mode indicates type of call , $Mode means CC_CALL_LOOPBACK_RTP - Establish a real-time transport loop back on the interface\n\n" }
+
+			default { set Message "cc_api_call_digit :\n\tCollect a digit , mode indicates type of call , $Mode means Mode UNKNOWN\n\n"}
+
+			}
+
+			### End of case
+						]
+
+			puts $writefile $Message
+
+
+				}
+
+		if { [ regexp {cc_api_call_digit_begin} $Line_var ] } {
+
+			if { [ regexp {digit=[0-9]+} $Line_var Digit ] } {
+
+				set Message "cc_api_call_digit_begin : CCAPI has begun to collect digit and the digit to be collected is $Digit\n" 
+			
+				puts $writefile $Message
+
+				}
+			}
+
+		if { [ regexp {cc_api_call_digit_end} $Line_var ] } {
+
+			if { [ regexp {digit=[0-9]+} $Line_var Digit ] } {
+
+				set Message "cc_api_call_digit_end : CCAPI has collected the digit $Digit\n"
+				puts $writefile $Message
+				}
+
+			}
+	
+                if { [ regexp {ssaSetupPeer} $Line_var ] } {
+
+			if { [ regexp {destPat\([0-9]+\)} $Line_var Destpat ] } {
+				catch [ set Message "ssaSetupPeer :\n\tSession Application found a match for destination $Destpat , It now has to set up this new peer.\n\n" ]
+				puts $writefile $Message
+			}
+ 
+                        }
+
+                if { [ regexp {cc_api_call_alert} $Line_var ] } {
+
+			catch [ regexp {sig_ind=0x[0-9A-F]} $Line_var Sig_ind ]
+
+			catch [ case $Sig_ind {
+
+			sig_ind=0x0 { set Signal "CC_SIG_DIAL" }
+			sig_ind=0x1 { set Signal "CC_SIG_RINGBACK" }
+			sig_ind=0x2 { set Signal "CC_SIG_INTERCEPT" }
+			sig_ind=0x3 { set Signal "CC_SIG_NETWORK_CONGESTION" }
+			sig_ind=0x4 { set Signal "CC_SIG_BUSY" }
+			sig_ind=0x5 { set Signal "CC_SIG_CONFIRM" }
+			sig_ind=0x6 { set Signal "CC_SIG_ANSWER" }
+			sig_ind=0x7 { set Signal "CC_SIG_CALL_WAITING" }
+			sig_ind=0x8 { set Signal "CC_SIG_OFFHOOK_WARNING" }
+			sig_ind=0x9 { set Signal "CC_SIG_PREEMPTION" }
+			sig_ind=0x3F { set Signal "CC_SIG_TONES_OFF" }
+			sig_ind=0x40 { set Signal "CC_SIG_ALERT_PATERN_0" }
+			sig_ind=0x41 { set Signal "CC_SIG_ALERT_PATERN_1" }
+			sig_ind=0x42 { set Signal "CC_SIG_ALERT_PATERN_2" }
+			sig_ind=0x43 { set Signal "CC_SIG_ALERT_PATERN_3" }
+			sig_ind=0x44 { set Signal "CC_SIG_ALERT_PATERN_4" }
+			sig_ind=0x45 { set Signal "CC_SIG_ALERT_PATERN_5" }
+			sig_ind=0x46 { set Signal "CC_SIG_ALERT_PATERN_6" }
+			sig_ind=0x47 { set Signal "CC_SIG_ALERT_PATERN_7" }
+			sig_ind=0x4F { set Signal "CC_SIG_ALERT_OFF" }
+			default { set Signal "UNKNOWN" }
+
+			} ]
+
+				### End of case ####
+
+			catch [ set Message "cc_api_call_alert :\n\tcall_alert is received from the SPI. This is from the other side in response to our CallSetupRequest message. Signal indication $Sig_ind denotes $Signal\n\n" ]
+
+			puts $writefile $Message
+
+                        }
+
+		if { [ regexp {ccConferenceCreate} $Line_var ] } {
+			set Message "cc_api_bridge_done :\n\tNow the two call legs are going to be merged\n\n"
+					}
+
+
+                if { [ regexp {cc_api_bridge_done} $Line_var ] } {
+
+			catch [ regexp {confID=0x[0-9A-F]*} $Line_var Conf_id ]
+
+			if { [ info local Conf_id ] != "Conf_id" } { set Conf_id "UNKNOWN" }
+
+			catch [ set Message "cc_api_bridge_done :\n\tEach Callleg acknowledges the conference. The Conference ID is assigned , here it is $Conf_id\n\n" ]
+
+			catch [ puts $writefile $Message ]
+
+
+                        }
+
+                if { [ regexp {cc_api_caps_ack} $Line_var ] } {
+		
+		set Message "cc_api_caps_ack :\n\tSession Application decides on a common set of capabilities and acknowledges , like the codecs , fax rate etc\n\n"
+		puts $writefile $Message
+
+                        }
+
+                if { [ regexp {cc_api_call_connected} $Line_var ] } {
+
+			set Message "cc_api_call_connected :\n\tCall_connected was received . This means that the other side has picked up the phone and the audio path will now be cut through\n\n"
+
+			puts $writefile $Message
+
+                        }
+
+                if { [ regexp {cc_api_call_disconnected} $Line_var ] } {
+
+#			catch [ regexp {cause=0x[0-9A-Z]*} $Line_var Cause ]
+
+			catch [ regexp {callID=0x[0-9A-Z]*} $Line_var Callid ]	
+
+#			catch [ case $Cause {
+			
+#			cause=0x1 { set Code "CC_CAUSE_UANUM - Unassigned/Unallocated Number" }
+#			cause=0x3 { set Code "CC_CAUSE_NO_ROUTE - No route to destination" }
+#			cause=0x10 { set Code "CC_CAUSE_NORM - Normal call clearing" }
+#			cause=0x11 { set Code "CC_CAUSE_BUSY - User Busy" }
+#			cause=0x12 { set Code "No user Response" }
+#			cause=0x13 { set Code "No User Answer" }
+#			cause=0x15 { set Code "Call Rejected" }
+#			cause=0x1C { set Code "Invalid Number" }
+#			cause=0x1F { set Code "Nornal - Unspecified" }
+#			cause=0x22 { set Code "No circuit" }
+#			cause=0x2C { set Code "No requested Circuit" }
+#			cause=0x2F { set Code "No Resource" }
+#			cause=0x3F { set Code "Service or Option not available , Unspecified" }
+#			default { set Code "UNKNOWN" }
+
+#			} ]
+
+			catch [ set Message "cc_api_call_disconnected :\n\tThis call was Hung up from side with callid - $Callid and the disconnect Causecode is $Cause_reason - $Cause_infer\n\n" ]
+
+			puts $writefile $Message	
+
+                        }
+
+
+	set counter [ expr $counter + 1 ]
+
+	}
+
+	close $writefile
+
+}
+
+#################################
+##	End of Detailed_events_para procedure
+#################################
+
+#########################################################################
+##
+##	Detailed_events_isdnq931_para - This procedures provides a detailed
+##	report for the isdn q931 debug
+##
+#########################################################################
+
+proc Detailed_events_isdnq931_para { Bearer_capability Calling_numq931 Called_numq931 Capability_neg Transfer_neg Channel_id Channel_type } {
+
+	set Proc_id [pid]
+
+        set counter 1
+
+        set filepoint [ open /tmp/debug_file.$Proc_id r ]
+
+        set writefile [ open /tmp/report.$Proc_id w 0755 ]
+
+        while { [ gets $filepoint Line_var ] >= 0 } {
+
+		if { [ regexp { SETUP } $Line_var ]} {
+
+			if { [ regexp {RX <-} $Line_var ] } {
+				set Action "Received"
+
+			}
+			if { [ regexp {TX ->} $Line_var ] } {
+				set Action "Transmitted"
+			}
+		if [ catch { regexp {pd = [0-9A-F]*} $Line_var Pd } 0 ] {
+
+			set Pd "UNKNOWN"
+
+			}
+
+		if [ catch { regexp {callref = 0x[0-9A-F]*} $Line_var Call_ref } 0 ] {
+			set Call_ref "UNKNOWN"
+
+			} 
+
+		
+		catch [ set Message "SETUP : $Action a setup message to initiate call establishment between peer network layers\n\t$Pd Indicates the protocol discriminator. The protocol discriminator distinguishes messages for call control over the user-network ISDN interface from other ITU-T-defined messages, including other Q.931messages , It is 8 for call control Messages\n\t$Call_ref Indicates the call reference number in hexadecimal. The value of this field indicates the number of calls made from either the router (outgoing calls) or the network (incoming calls). Generally  the originator of SETUP message sets the high-order bit of the call reference number to 0. The destination of the connection sets the high-order bit to 1 in subsequent call control messages, such as the CONNECT message.\n" ]
+		puts $writefile $Message
+
+		}
+
+		if { [ regexp {Bearer Capability} $Line_var ] } {
+
+			set Message "$Bearer_capability Indicates the requested bearer service to be provided by the network . This indicates the transmission type , speed etc\nTransmission type is $Capability_neg\nSpeed is $Transfer_neg\n\n"
+
+			puts $writefile $Message
+
+		}
+
+		if { [ regexp {Channel ID} $Line_var ] } {
+
+		set Message "$Channel_id identifies the channel type , Here it is $Channel_type\n\n"
+		puts $writefile $Message
+
+		}
+
+		if { [ regexp {Calling Party Number} $Line_var ] } {
+
+			set Message "Calling number - $Calling_numq931\n"
+			puts $writefile $Message
+
+		}
+
+		if { [ regexp {Called Party Number} $Line_var ] } {
+
+			set Message "Called number - $Called_numq931\n\n"
+			puts $writefile $Message
+		}
+
+		if { [ regexp { SETUP_ACK } $Line_var ] } {
+
+			if { [ regexp {RX <-} $Line_var ] } {
+                                set Action "Received"
+
+                        }
+			if { [ regexp {TX ->} $Line_var ] } {
+                                set Action "Transmitted"
+                        }
+
+			set Message "SETUP_ACK : $Action acknowledgement for the SETUP message\n\n"
+			puts $writefile $Message
+		}
+
+		if { [ regexp { CALL_PROC } $Line_var ] } {
+	
+			if { [ regexp {RX <-} $Line_var ] } {
+                                set Action "Received"
+
+                        }
+			if { [ regexp {TX ->} $Line_var ] } {
+                                set Action "Transmitted"
+                        }
+
+			set Message "CALL_PROC: $Action CALL PROCEEDING message; the requested call setup has begun and no more call setup information will be accepted.\n\n"
+			puts $writefile $Message
+
+			}
+
+		if { [ regexp { ALERTING } $Line_var ] } {
+
+			if { [ regexp {RX <-} $Line_var ] } {
+                                set Action "Received"
+
+                        }
+			if { [ regexp {TX ->} $Line_var ] } {
+                                set Action "Transmitted"
+                        }
+			set Message "ALERTING: $Action ALERT message - so far Good .\n\n"
+			puts $writefile $Message
+
+			}
+
+		if { [ regexp { CONNECT } $Line_var ] } {
+		
+			if { [ regexp {RX <-} $Line_var ] } {  
+                                set Action "Received"  
+
+                        }
+			if { [ regexp {TX ->} $Line_var ] } {   
+                                set Action "Transmitted"       
+                        }      
+			set Message "CONNECT: $Action CONNECT message . Indicates that the called user has accepted the call\n\n"
+			puts $writefile $Message
+
+			}
+
+		if { [ regexp { CONNECT_ACK } $Line_var ] } {
+
+			if { [ regexp {RX <-} $Line_var ] } { 
+                                set Action "Received" 
+
+                        }
+			if { [ regexp {TX ->} $Line_var ] } {
+                                set Action "Transmitted"
+                        }
+			set Message "CONNECT_ACK : $Action CONNECT_ACK message .Indicates that the calling user acknowledges the called user's acceptance of the call.\n\n"
+			puts $writefile $Message
+
+			}
+
+		if { [ regexp { DISCONNECT } $Line_var ] } {
+
+			if { [ regexp {RX <-} $Line_var ] } {  
+                                set Action "Received"  
+
+                        }
+			if { [ regexp {TX ->} $Line_var ] } {   
+                                set Action "Transmitted"       
+                        }      
+			set Message "DISCONNECT: $Action DISCONNECT message - Indicates either that the user side has requested the network to clear an end-to-end connection or that the network has cleared the end-to-end connection\n\n"
+			puts $writefile $Message
+
+			}
+
+		if { [ regexp {Cause i = 0x[0-9a-fA-F]*} $Line_var Cause ] } {
+
+			set Message "$Line_var - Indicates the cause of the disconnect\n"
+			puts $writefile $Message
+
+			}
+		if { [regexp {Looking Shift to Codeset 6} $Line_var ] } {
+	
+			set Message "Looking Shift to Codeset 6 : Indicates that the next information elements will be interpreted according to information element identifiers assigned in codeset 6. Codeset 6 means that the information elements are specific to the local network\n\n"
+
+			puts $writefile $Message
+
+		}
+
+		if { [regexp { RELEASE } $Line_var ] } {
+
+			 if { [ regexp {RX <-} $Line_var ] } {
+                                set Action "Received"
+
+                        }
+			if { [ regexp {TX ->} $Line_var ] } {
+                                set Action "Transmitted"
+                        }
+			set Message "RELEASE : $Action a RELEASE message Indicates that the sending equipment will release the channel and call reference. The recipient of this message should prepare to release the call reference and channel.\n\n"
+			puts $writefile $Message
+		}
+
+		if { [regexp { RELEASE_COMP } $Line_var ] } {
+
+			if { [ regexp {RX <-} $Line_var ] } {
+                                set Action "Received"
+
+                        }
+			if { [ regexp {TX ->} $Line_var ] } {
+                                set Action "Transmitted"
+                        }
+			set Message "RELEASE_COMP : $Action a RELEASE_COMP message - Indicates that the sending equipment has received a RELEASE message and has now released the call reference and channel.\n\n"
+
+			puts $writefile $Message
+
+		}
+
+
+	}
+
+	close $writefile
+
+}
+
+###################################
+##	End of Detailed_events_isdnq931_para procedure
+###################################
+
+######################################################################
+##
+##	Vtsp_all_para - This procedure Collects the key vtsp parameters and
+##	passes them to the Open_report_vtsp procedure which opens up in a
+##	report format
+##
+#########################################################################
+
+
+proc Vtsp_all_para { } {
+
+	set Proc_id [pid]
+
+        set fil_screen_file [open /tmp/debug_file.$Proc_id w 0755 ]
+
+        set debug_output [.fil_screen.frm1.txt get 1.0 9999999.0 ]
+
+        puts $fil_screen_file "$debug_output"
+
+        close $fil_screen_file
+
+	set count 1
+	
+	set filepointer [ open /tmp/debug_file.$Proc_id r ]
+
+	while { [ gets $filepointer line ] >= 0 } {
+
+		if { [ regexp {vtsp_tsp_call_setup_ind} $line ] } {
+
+			if { [ regexp {calling_number=[0-9a-fA-F]*} $line Temp_calling_num ] } {
+				catch [ set Calling_num [ lindex [ split $Temp_calling_num "=" ] 1 ] ]
+
+				}
+			if { [ regexp {called_number=[0-9a-fA-F]*} $line Temp_called_num ] } {
+				catch [ set Called_num [ lindex [ split $Temp_called_num "=" ] 1 ] ]
+
+				}
+			}
+
+			if { [ regexp {subscriber=[a-zA-Z0-9\_\-]+} $line Temp_subscriber ] } {
+				catch [ set Subscriber_type [ lindex [ split $Temp_subscriber "=" ] 1 ] ]
+
+				}
+			if { [ regexp {vtsp_get_dialpeer_tag: tag = [0-9a-zA-Z]+} $line Temp_peer ] } {
+
+				catch [ regexp {tag = [0-9]+} "$Temp_peer" Peer_tag ]	
+
+				}
+
+			if { [ regexp {act_caps_ind:[A-Za-z0-9 \_\,\-\=]+Encap [0-9A-Za-z \_\,\-\=]+Vad} $line ] } {
+				catch [ regexp {CC_[A-Za-z\_0-9\-]+} $line Dsp_encap ]
+
+				catch [ regexp {Vad [0-9]+} $line Vad_neg_t ]
+				catch [ regexp {Codec 0x[0-9A-Fa-f]+} $line Codec_neg_t ]
+				catch [ regexp {[0-9]+} $Vad_neg_t Temp_vad ]
+
+				catch [ case $Temp_vad {
+
+					1 { set Vad_neg "CC_CAP_VAD_OFF" }
+					2 { set Vad_neg "CC_CAP_VAD_ON" }
+					default { set Vad_neg "NOT KNOWN" }
+
+					} ]
+
+				
+				catch [ switch -exact $Codec_neg_t {
+
+					"Codec 0x1" { set Codec_neg "CC_CAP_CODEC_G711U" }
+					"Codec 0x2" { set Codec_neg "CC_CAP_CODEC_G711A" }
+					"Codec 0x4" { set Codec_neg "CC_CAP_CODEC_G729IETF" }
+					"Codec 0x8" { set Codec_neg "CC_CAP_CODEC_G729a" }
+					"Codec 0x10" { set Codec_neg "CC_CAP_CODEC_G726r16" }
+					"Codec 0x20" { set Codec_neg "CC_CAP_CODEC_G726r24" }
+					"Codec 0x40" { set Codec_neg "CC_CAP_CODEC_G726r32" }
+					"Codec 0x80" { set Codec_neg "CC_CAP_CODEC_G728" }
+					"Codec 0x100" { set Codec_neg "CC_CAP_CODEC_G723r63" }
+					"Codec 0x200" { set Codec_neg "CC_CAP_CODEC_G723r53" }
+					"Codec 0x400" { set Codec_neg "CC_CAP_CODEC_GSM" }
+					"Codec 0x800" { set Codec_neg "CC_CAP_CODEC_G729b" }
+					"Codec 0x1000" { set Codec_neg "CC_CAP_CODEC_G729ab" }
+
+					"Codec 0x2000" { set Codec_neg "CC_CAP_CODEC_G723ar63" }
+					"Codec 0x4000" { set Codec_neg "CC_CAP_CODEC_G723ar53" }
+					"Codec 0x8000" { set Codec_neg "CC_CAP_CODEC_G729" }
+					"Codec 0x10000" { set Codec_neg "CC_CAP_CODEC_T38FAX" }
+					"Codec 0x20000" { set Codec_neg "CC_CAP_CODEC_CLEAR_CH" }
+					"Codec 0x40000" { set Codec_neg "CC_CAP_CODEC_GSMEFR" }
+					default { set Codec_neg "NOT KNOWN" }
+
+					} ]	
+	
+					
+				}
+
+	if { [ regexp {FaxRate [0-9]+} $line Temp_fax_cap ] } {
+
+		catch [ switch -exact $Temp_fax_cap {
+
+			"FaxRate 1" { set Fax_cap "CC_CAP_FAX_NONE" }
+			"FaxRate 2" { set Fax_cap "CC_CAP_FAX_VOICE" }
+			"FaxRate 4" { set Fax_cap "CC_CAP_FAX_144" }
+			"FaxRate 8" { set Fax_cap "CC_CAP_FAX_96" }
+			"FaxRate 10" { set Fax_cap "CC_CAP_FAX_72" }
+			"FaxRate 20" { set Fax_cap "CC_CAP_FAX_48" }
+			"FaxRate 40" { set Fax_cap "CC_CAP_FAX_24" }
+			"FaxRate 80" { set Fax_cap "CC_CAP_FAX_120" }
+			default { set Fax_cap "NOT KNOWN" }
+
+			} ]
+
+		}
+
+	if { [ regexp {SignalType [0-9]+} $line Temp_sig_type ] } {
+
+		catch [ switch -exact $Temp_sig_type {
+
+			"SignalType 1" { set Sig_type "CC_CAP_SIG_EXT" }
+			"SignalType 2" { set Sig_type "CC_CAP_SIG_NA_CAS" }
+			"SignalType 4" { set Sig_type "CC_CAP_SIG_MELCAS" }
+			"SignalType 8" { set Sig_type "CC_CAP_SIG_TRANS" }
+			default { set Sig_type "NOT KNOWN" }
+			} ]
+
+		}
+
+	if { [ regexp {DtmfRelay [0-9]+} $line Temp_Dtmf_type ] } {
+
+		catch [ switch -exact $Temp_Dtmf_type {
+
+			"DtmfRelay 0" { set Dtmf_type "CC_CAP_DTMF_RELAY_DISABLED" }
+			"DtmfRelay 1" { set Dtmf_type "CC_CAP_DTMF_RELAY_INBAND_VOICE" }
+			"DtmfRelay 2" { set Dtmf_type "CC_CAP_DTMF_RELAY_RTP" }
+			"DtmfRelay 4" { set Dtmf_type "CC_CAP_DTMF_RELAY_NSE" }
+			"DtmfRelay 8" { set Dtmf_type "CC_CAP_DTMF_RELAY_OUT_OF_BAND" }
+			"DtmfRelay 10" { set Dtmf_type "CC_CAP_DTMF_RELAY_SIGNAL" }
+			"DtmfRelay 20" { set Dtmf_type "CC_CAP_DTMF_RELAY_ALPHANUMERIC" }
+			"DtmfRelay 40" { set Dtmf_type "CC_CAP_DTMF_RELAY_HOOKFLASH" }
+			default { set Dtmf_type "NOT KNOWN" }
+
+			} ]
+
+			}
+
+	if { [ regexp {Modem [0-9]+} $line Modem_t ] } {
+
+		catch [ switch -exact $Modem_t {
+
+			"Modem 0" { set Modem_cap "CC_CAP_MODEM_OFF" }
+			"Modem 2" { set Modem_cap "CC_CAP_MODEM_ON" }
+			"Modem 4" { set Modem_cap "CC_CAP_MODEM_PASSTHRU_NSE" }
+			"Modem 8" { set Modem_cap "CC_CAP_MODEM_PASSTHRU_CA" }
+			"Modem 10" { set Modem_cap "CC_CAP_MODEM_PASSTHRU_CISCO" }
+			"Modem 20" { set Modem_cap "CC_CAP_MODEM_PASSTHRU_CISCO_E" }
+			"Modem 40" { set Modem_cap "CC_CAP_MODEM_PASSTHRU_NSE_AAL2" }
+			default { set Modem_cap "NOT KNOWN" }
+
+			} ]
+		}
+
+#	if { [ regexp {subscriber=[a-zA-Z0-9\_\-\=]+} $line ] } {
+
+#		catch [ regexp {subscriber=[a-zA-Z\_\-\=0-9]+} $line Subscriber_type ]
+
+#		}
+
+
+	if { [ regexp {act_[a-zA-Z0-9\_\-]+} $line Event ] } {
+
+		set Length [ string length $Event ]
+		catch [ set result [ .fil_screen.frm1.txt search -forward -- $Event $count.0 $count.80 ]]
+		catch [ .fil_screen.frm1.txt tag add greentag $result "$result + ${Length}c" ]
+
+		}
+
+	if { [ regexp {vtsp_[a-zA-Z0-9\_\-]+} $line Vtsp_event ] } {
+
+		set Length [ string length $Vtsp_event ]
+		catch [ set result [ .fil_screen.frm1.txt search -forward -- $Vtsp_event $count.0 $count.80 ]]
+		catch [ .fil_screen.frm1.txt tag add bluetag $result "$result + ${Length}c" ]
+
+		}
+
+
+	set count [ expr $count + 1 ]
+
+	}
+
+	close $filepointer
+
+	if { [info local Calling_num ] != "Calling_num" } { set Calling_num "UNKNOWN" }
+
+	if { [ info local Called_num ] != "Called_num" } { set Called_num "UNKNOWN" }
+	if { [ info local Peer_tag ] != "Peer_tag" } { set Peer_tag "NOT KNOWN" }
+
+	if { [ info local Subscriber_type ] != "Subscriber_type" } { set Subscriber_type "UNKNOWN" }
+
+	if { [ info local Dsp_encap ] != "Dsp_encap" } { set Dsp_encap "NOT KNOWN" }
+	if { [ info local Vad_neg ] != "Vad_neg" } { set Vad_neg "NOT KNOWN" }
+	if { [ info local Codec_neg ] != "Codec_neg" } { set Codec_neg "NOT KNOWN" }
+
+	if { [ info local Fax_cap ] != "Fax_cap" } { set Fax_cap "NOT KNOWN" }
+	if { [ info local Sig_type ] != "Sig_type" } { set Sig_type "NOT KNOWN" }
+	if { [ info local Dtmf_type ] != "Dtmf_type" } { set Dtmf_type "NOT KNOWN" }
+	if { [ info local Modem_cap ] != "Modem_cap" } { set Modem_cap "NOT KNOWN" }
+
+
+	Open_report_vtsp $Calling_num $Called_num $Peer_tag $Subscriber_type $Dsp_encap $Vad_neg $Codec_neg $Fax_cap $Sig_type $Dtmf_type $Modem_cap
+
+
+
+
+
+}
+
+#################################
+##	End of Open_report_vtsp Procedure
+#################################
+
+######################################################################
+##
+##	Open_report_vtsp : This procedure opens up a new window and lists out
+##	the key parameters collected from the vtsp debugs and calls the
+##	Detailed_events_vtsp_para procedure to generate the detailed report
+##
+#######################################################################
+
+proc Open_report_vtsp { Calling_num Called_num Peer_tag Subscriber_type Dsp_encap Vad_neg Codec_neg Fax_cap Sig_type Dtmf_type Modem_cap } {
+
+	wm withdraw .
+        destroy .report3
+        toplevel .report3
+	wm title .report3 "debug vtsp report"
+        frame .report3.frm1 -relief groove -borderwidth 5 -bd 2
+        frame .report3.frm2 -relief groove -borderwidth 5
+        frame .report3.frm3 -relief groove -borderwidth 5
+        pack .report3.frm1 -pady 1m -expand y
+        pack .report3.frm2 -pady 2m -expand y
+        pack .report3.frm3 -pady 2m -expand y
+
+	label .report3.frm1.can -image ::router_map::bimage -background white  -foreground blue -height 100 -width 594
+
+	pack .report3.frm1.can
+
+        text .report3.frm2.txt -width 75 -height 13 -font { Helvetica -14 bold }
+
+        pack .report3.frm2.txt
+
+
+	.report3.frm2.txt insert end "\tCalling Number - $Calling_num\n"
+	.report3.frm2.txt insert end "\tCalled Number - $Called_num\n"
+	.report3.frm2.txt insert end "\tSubcriber type - $Subscriber_type\n"
+	.report3.frm2.txt insert end "\tMatching dial peer - $Peer_tag\n"
+	.report3.frm2.txt insert end "\tDSP Encapsulation - $Dsp_encap\n"
+	.report3.frm2.txt insert end "\tVAD Capabilities - $Vad_neg\n"
+	.report3.frm2.txt insert end "\tCodec Negotiated - $Codec_neg\n"
+	.report3.frm2.txt insert end "\tFax Capabilities - $Fax_cap\n"
+	.report3.frm2.txt insert end "\tSignalling type - $Sig_type\n"
+	.report3.frm2.txt insert end "\tDTMF Relay Capabilities - $Dtmf_type\n"
+	.report3.frm2.txt insert end "\tModem Capabilities - $Modem_cap\n"
+
+
+	Detailed_events_vtsp_para
+
+	text .report3.frm3.txt -width 80 -height 30 \
+		-yscrollcommand { .report3.frm3.vscroll set } -background white \
+ 		-font { Helvetica -14 bold }
+	scrollbar .report3.frm3.vscroll -orient vertical \
+		-command { .report3.frm3.txt yview }
+	pack .report3.frm3.txt -side left -expand y
+	pack .report3.frm3.vscroll -side right -fill y -expand y
+	.report3.frm3.txt tag configure greentag -background green \
+			-foreground black
+	set Proc_id [pid]
+	set fil_screen_file [open /tmp/report3.$Proc_id r ]
+	set count 1
+	while {[gets $fil_screen_file line]>=0} {
+		.report3.frm3.txt insert end $line\n
+		if { [ regexp {act_[a-zA-Z0-9\_\-]+} $line Event ] } {
+			catch [ set Length [ string length $Event ] ]
+			catch [ set result [ .report3.frm3.txt search -forward -- $Event $count.0 $count.80 ] ]
+			catch [ .report3.frm3.txt tag add greentag $result "$result + ${Length}c" ]
+			}	
+		set count [ expr $count + 1 ]
+		}
+
+	close $fil_screen_file
+
+	bind .report3 <Control-f> { .report3.frm3.txt yview scroll 1 pages }
+	bind .report3 <Control-b> { .report3.frm3.txt yview scroll -1 pages }
+	bind .report3 <Up> { .report3.frm3.txt yview scroll -1 pages }
+	bind .report3 <Down> { .report3.frm3.txt yview scroll 1 pages }
+
+		
+}
+
+####################################
+##	End of Open_report_vtsp Procedure
+####################################
+
+###########################################################################
+##
+##	Detailed_events_vtsp_para - This procedure generates a detailed 
+##	report for Vtsp debugs . It reports the key vtsp events and the 
+##	action functions called as a result of it
+##
+###########################################################################
+
+
+proc Detailed_events_vtsp_para { } {
+
+	set Proc_id [pid]
+
+        set count 1
+
+        set filepoint [ open /tmp/debug_file.$Proc_id r ]
+
+        set writefile [ open /tmp/report3.$Proc_id w 0755 ]
+
+	set Message "The Key vtsp events that have occured in this call have been listed below .\n\tThe FSM - Finite State Machine defines the control flow of a call by specifying the action function to call in response to a given event under the current state . These action function calls have also been listed below\n\n\n"
+	puts $writefile $Message
+
+	set act_caps_ack_flag "NO"
+
+	while { [ gets $filepoint line] >= 0 } {
+
+		if { [ regexp {vtsp:\[[0-9a-zA-Z \:\-\_\(\)\,\]]*} $line vtsp_eventa ] } {
+
+			if { [ regexp {S_[A-Za-z\-\_0-9]+} $line t_state ] } {
+
+				set State $t_state
+				} else {
+
+				set State "UNKNOWN"
+				}
+
+			if { [ regexp {E_[A-Z0-9a-z\_\-]+} $line Event ] } {
+	
+					
+				if { [ regexp {E_CC_[A-Za-z0-9\-\_]+} $Event ] } {
+					set Message "\t- Indicates the current state is $State and the CCAPI event $Event has occurred\n"
+					puts $writefile $line
+					}
+				if { [ regexp {E_DSP_} $Event ] } {
+					set Message "\t- Indicates the current state is $State and the DSP event $Event has occurred\n"
+					puts $writefile $line
+					}
+
+				if { [ regexp {E_PH_} $Event ] } {
+					set Message "\t- Indicates the current state is $State and the Packet Handler event $Event has occurred\n"
+
+					puts $writefile $line
+					}
+				if { [ regexp {E_DSPRM_} $Event ] } {
+					set Message "\t- Indicates the current state is $State and the DSP Resource manager event $Event has occurred\n"
+					puts $writefile $line
+
+					}
+				}
+		
+
+		}
+
+
+
+	if { [ regexp {act_[a-zA-Z0-9\-\_]+} $line act_event ] } {
+
+		set Length [ string length $act_event ]
+		catch [ set result [ .report3.frm3.txt search -forward -- $act_event $count.0 $count.80 ] ]
+		catch [ .report3.frm3.txt tag add greentag $result "$result + ${Length}c" ]
+ 
+	case $act_event {
+
+		"act_pend_codec_defe*" {
+			
+			set Message "$act_event -\n\tThis state machine is pushed onto the state machine stack when we attempt to go into voice mode after caps ind but we have to wait for DSP download.   A new state machine is pushed for two reasons. Firstly, we may complete caps indication/ack from one of several state so we don't want to have to augment all of those states with special handling. Secondly, when we are waiting for the DSP to download we want to delay all other event processing until the DSP is back up."
+			puts $writefile $Message\n\n
+			}
+
+		"act_mod_rfax_mod*" {
+
+			set Message "$act_event -\n\tRemote Fax call leg receives codec download complete msg from the local Fax call leg."
+
+			puts $writefile $Message\n\n
+
+			}
+		"act_pend_codec_succes*" {
+
+			set Message "$act_event -\n\tCodec switching successful, open the voice channel and start processing voice packets. This action function is called when the fsm state is S_SETUP_INDICATED and the event E_DSPRM_PEND_SUCCESS occurs"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_pend_codec_fai*" {
+
+			set Message "$act_event -\n\tCodec switching failed. This action function is called when the fsm state is S_SETUP_INDICATED and the event E_DSPRM_PEND_FAILURE occurs ."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_terminat*" {
+
+			set Message "$act_event -\n\tClear call after all parties have indicated completion." 
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_ind_no_ds*" {
+
+			set Message "$act_event -\n\tNo DSP channel on a setup indication. For isdn case, dsprm_close should be called to clean up even when thedsprm_open failed. This is because in some platforms, tsp cdb is freed by dsprm_close.This action function is generally called when the fsm state is S_SETUP_IND_NO_DSP and the event E_TSP_DISCONNECT_CONF occurs"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_ind_pend_succes*" {
+
+			set Message "$act_event -\n\tGot a DSP channel after setup indication - continue processing the call.This action function is generally called when the fsm state is S_SETUP_IND_PEND and the event E_DSPRM_PEND_SUCCESS occurs"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_ind_pend_failur*" {
+
+			set Message "$act_event -\n\tGot a DSP open failure after setup indication from TSP. disconnect the call and wait for confirmation from TSP before destroying the cdb. This action function is generally called when the fsm state is S_SETUP_IND_PEND and event E_DSPRM_PEND_FAILURE occurs"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_ind_ac*" {
+
+			set Message "$act_event -\n\tApp wants call, needs digits, start digit collection. This action function is generally called when the fsm state is S_SETUP_INDICATED and event E_CC_SETUP_ACK occurs"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_req_no_dsp_dis*" {
+
+			set Message "$act_event -\n\tProcesses disconnect from CCAPI after failing to open DSP. This action function is generally called when the fsm state is S_SETUP_REQ_PEND and the "
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_req_fai*" {
+
+			set Message "$act_event -\n\tSetup request failed"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_req_fail_disc_con*" {
+
+			set Message "$act_event -\n\tThis action is called when dsprm_reopen failed on an isdn outgoing call. The tsp was told to clear the call and gave a confirmation that the call was now gone. We need to close the dsprm anyway for pending clean up purposes."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_req_fail_no_ds*" {
+
+			set Message "$act_event -\n\tThis action is called when CCAPI call setup request failed to allocated DSP, the DSPRM should not be closed to avoid closing the DSP which might involved in an active call"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_req_pend_suc*" {
+
+			set Message "$act_event -\n\tGot a DSP, request a call of TSP"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_req_pend_fai*" {
+
+			set Message "$act_event -\n\tCould not open DSP, indicate disconnect to CCAPI and wait for acknowledgement."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_req_dis*" {
+
+			set Message "$act_event -\n\tCall was disconnected while waiting for DSPRM open.  Now, close DSPRM and wait for close complete."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_fai*" {
+
+			set Message "$act_event -\n\tTried to setup a call.\nIf the fsm state is S_SETUP_FAIL and if TSP event E_TSP_DISCONNECT_CONF occurs thenthis action is invoked."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_alarm_setup_fai*" {
+
+			set Message "$act_event -\n\tTried to setup a call but failed, terminate."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_connec*" {
+
+			set Message "$act_event -\n\tApplication indicates connection."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_pre_con_disconnec*" {
+
+			set Message "$act_event -\n\tApplication indicates failure to complete incoming call. Generate failure tone to caller."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_generate_dis*" {
+
+			set Message "$act_event -\n\tIndicate to aplication that call disconnected."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_info_ind_defe*" {
+
+			set Message "$act_event -\n\tPass subsequent digits in overlap receiving up to application."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_info_in*" {
+
+			set Message "$act_event -\n\tPass subsequent digits in overlap receiving up to application."
+
+			puts $writefile $Message\n\n
+			}
+
+		"act_info_defe*" {
+
+			set Message "$act_event -\n\tPass subsequent digits in overlap receiving up to application."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_info" {
+
+			set Message "$act_event -\n\tpass the info digits to call leg"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_service_msg_up_defe*" {
+
+			set Message "$act_event -\n\tDefer the passing the service up to CCAPI"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_service_msg_u*" {
+
+			set Message "$act_event -\n\tpass the service up to CCAPI"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_service_msg_dow*" {
+
+			set Message "$act_event -\n\tpass the service down to call leg"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_disc_prog_in*" {
+
+			set Message "$act_event -\n\tpass the disconnect with progress ind down to call leg"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_ring_noan_time*" {
+
+			set Message "$act_event -\n\tThis function handles the ring no answer timeout event. It will disconnect the connection with NO_ANSWER."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_alar*" {
+
+			set Message "$act_event -\n\tThis function is called from any state where a call is active.  A disconnect is indicated to the higher layer thereby initiating the call teardown sequence."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_fax_dsprm_alar*" {
+
+			set Message "$act_event -\n\tThis function is called in S_FAX state. This is needed to distinguish the case where a E_CC_DISCONNECT has already been received. If the E_CC_DISCONNECT has already been received in S_FAX state then we must not go to S_WAIT_HOST_DISC state (as E_CC_DISCONNECT will not be received again"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_brid*" {
+
+			set Message "$act_event -\n\tBridge with the peer call leg.  Indicate our capabilities."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_caps_in*" {
+
+			set Message "$act_event -\n\tCapabilities indicated from the opposite call leg.  Take the rightmost bit of each capability and acknowledge.  However if the opposite call leg is of the same type as us, use the configured caps. for the interface (this is hidden configuration used for testing only"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_t38_lfax_mod*" {
+
+			set Message "$act_event -\n\tLocal call leg receives T38 codec download complete msg from opposite call leg, go to fax mode now"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_t38_start_rfax_dnl*" {
+	
+			set Message "$act_event -\n\tRemote T38 Fax call leg receives the T38 fax start request msg, so start T38 code download now"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_caps_ack_lfax_dnl*" {
+
+			set Message "$act_event -\n\tLocal T38 Fax call leg receives T38 start ack from the opposite call leg, download the fax codec now"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_caps_ac*" {
+
+			if { $act_caps_ack_flag != "YES" } {
+
+			set Message "$act_event -\n\tVerify capabilities and go into voice mode"
+			puts $writefile $Message\n\n
+
+			set act_caps_ack_flag "YES"
+			}
+
+			}
+
+		"act_caps_ack_fa*" {
+
+			set Message "$act_event -\n\tVerify capabilities and go into Fax mode"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_associat*" {
+
+			set Message "$act_event -\n\tPut the voice interface into play or record mode"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_disassociat*" {
+
+			set Message "$act_event -\n\tTake the voice interface out of play or record mode"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_gen_ton*" {
+
+			set Message "$act_event -\n\tGenerate a tone on the interface"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_set_digit_timeout*" {
+
+			set Message "$act_event -\n\tOverride configured digit timeouts"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_digit_begi*" {
+
+			set Message "$act_event -\n\tWe have been told to begin playing the digit."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_digit_en*" {
+
+			set Message "$act_event -\n\tApplication indicates stop playing digit."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_proceedin*" {
+
+			set Message "$act_event -\n\tIndicate proceeding. For isdn case, this sends proceeding to peer stack to support overlap signaling. Otherwise, this is null."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_alert" {
+
+			set Message "$act_event -\n\tIndicate audible alerting."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_progres*" {
+
+			set Message "$act_event -\n\tIndicate progress to tsp."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_alert_connec*" {
+
+			set Message "$act_event -\n\tWent into connect state, terminate alerting tone, if any."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_defer_cot_tes*" {
+
+			set Message "$act_event -\n\tThis function is called to defer the Continuity Test (COT) until DSP is ready and the capabilities exchange has finished."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_cot_tes*" {
+
+			set Message "$act_event -\n\tThis function is called to initiate or terminate the continuity test (COT) operation."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_cot_test_don*" {
+
+			set Message "$act_event -\n\tThis function is called when COT tone has been detected by DSP.Stop the timer and report the result to the application, if we are the originating switch (TX_THEN_RX case) If we're in terminating transponder mode, stop the timer. Transmit the go tone afterwards."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_cot_test_timeou*" {
+
+			set Message "$act_event -\n\tThis function is called upon timer expired when waiting for the Continuity tone detection from the DSP.  We need to report the failure result to application, if we're the originating switch (TX_THEN_RX case).  If we're the terminating switch, no need to report anythine."
+			puts $writefile $Message\n\n
+
+		 }
+
+		"act_dcollect_pro*" {
+
+			set Message "$act_event -\n\tCall is proceeding, stop DTMF collection."
+			puts $writefile $Message\n\n
+
+		}
+
+		"act_dcollect_time*" {
+
+			set Message "$act_event -\n\tUser Input timeout."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_report_digit_begi*" {
+
+			set Message "$act_event -\n\tThe application has asked to be notified of the digits and digit events , send it up"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_report_digit_en*" {
+
+			set Message "$act_event -\n\tPass input to app or other call leg and  restart timer."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_pend_proceedin*" {
+
+			set Message "$act_event -\n\tStarted a call to TSP now we get proceeding, this means we now have a bearer channel so we can insert the call into the active call table."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_disconnect_no_dsp_cha*" {
+
+			set Message "$act_event -\n\tStarted a call to TSP now we get a disconnect from CCAPI. create a dummy call record, request tsp disconnect"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_wrelease_releas*" {
+
+			set Message "$act_event -\n\tCall released by TSP, now close DSP."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_stats_complet*" {
+
+			set Message "$act_event -\n\tGot all stats, request disconnect."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_release_timeou*" {
+
+			set Message "$act_event -\n\tThis function is called after a the application hangs up the call but the caller doesn't disconnect.  It that case we start playing the off-hook alert tone to remind the user to hang up.  This code is only likely to run when the underlying interface is an FXS. This code does not attempt to compensate for buggy TSPs.  If the TSP does not respond, the call will hang."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_setup_pend_release_ind_idl*" {
+
+			set Message "$act_event -\n\tThis funtion is called when we have opened and possibly started the dsp but have not yet connected the call and received a disconnect."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_pcm_switchove*" {
+
+			set Message "$act_event -\n\tInitiate FAX/Modem PCM switchover due to local detection of FAX/Modem tone switch codec to G711(passthrough mode). Set timer to allow modem tone phase reversal detection and fax detection and no state change(TSE mode).
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_codec_switchove*" {
+
+			set Message "$act_event -\n\tInitiate codec switchover upon protocol violation message. The other side has switched over to a different codec. This causes the protocol violation msg reported."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_pcm_tone_detect_time*" {
+
+			set Message "$act_event -\n\tPCM_TONE_DETECT time allows the following: Time to detect modem phase reversal/fax. The detection should have been done by this time. Turn off tone detection. Change to Switchover state"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_pcm_switchou*" {
+
+			set Message "$act_event -\n\tSwitch out of PCM codec after modem session is done"
+			puts $writefile $Message\n\n
+
+			}
+	
+		"act_t38_fax_remote_dnld_ac*" {
+
+			set Message "$act_event -\n\tset the value for having received remote codec download complete ACK"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_lfax_switc*" {
+
+			set Message "$act_event -\n\tFax tone detected locally. Initiate switchover mechanism depending on the mode.\nFor passthrough mode:\n\tsend fax switchover packet, set timer to do so again if no ack.This function is recalled if timer expires.Switch to PCM(G711), if pcm passthru mode and automatic switchover are required.\nFor TSE mode:\n\tInform application about fax detection. Initiate sending TSE if not already sent"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_fax_t38_dnld_na*" {
+
+			set Message "$act_event -\n\tReceive T38 CAPS NAK, during FAX codec download, remember it now, switch back to Cisco Fax relay after codec download is completed."
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_lfax_downloa*" {
+
+			set Message "$act_event -\n\tGot fax_ack, initiate download"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_lfax_t38_na*" {
+
+			set Message "$act_event -\n\tReceive T38 CAPS NAK while waiting E_CC_T38_START (before fax codec downloaded) generate an alarm and disconnect the call."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_fax_t38_timeou*" {
+
+			set Message "$act_event -\n\tTimer times out while waiting for E_CC_T38_START or E_CC_T30_CAP_ACK event. End this T38 Fax call and switch back to voice."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_lfax_mod*" { 
+
+			set Message "$act_event -\n\tDownload of fax image complete - wait for other side to complete"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_wait_fax_fa*" {
+
+			set Message "$act_event -\n\tAck a set coding fax - go into fax_mode"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_rfax_mod*" {
+
+			set Message "$act_event -\n\tFAX download complete.  Indicate fax codec to remote end.The timer is used to resend set_codec_fax indication in case of packet network failure."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_rfax_switc*" {
+	
+			set Message "$act_event -\n\tUpon reciept of a set_codec_fax message, acknowledge and start download of FAX firmware."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_codec_restor*" {
+
+			set Message "$act_event -\n\tRestore all the DSP related parameters for switching back to original codec."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_pcm_so_timeou*" {
+
+			set Message "$act_event -\n\tOnce the PCM switchover timeout occurs, we must restore all the original DSP setting of the previous codec so as to be able to proceed with voice call capability."
+	
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_pcm_to_fax_relay_s*" {
+
+			set Message "$act_event -\n\tOnce the PCM switchover detects FAX tone, we must restore all the original DSP setting of the previous codec so as to be able to switch to FAX relay first.  After FAX is over, we shall be able to switch back to voice call with the original capability."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_disable_tone_de*" {
+
+			set Message "$act_event -\n\tThis function turns off the tone detect upon PCM SO; however, it need take care of the FAX relay case if the fax_relay flag is on. In the latter case, a regular FAX relay will be honoured."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_pcm_so_rfax_switc*" {
+
+			set Message "$act_event -\n\tThis function turns off the tone detect upon PCM SO; however, it need take care of the FAX relay case if the fax_relay flag is on. In the latter case, a regular FAX relay will be honoured."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_fax_time*" {
+
+			set Message "$act_event -\n\tFAX ack timer expired, send another FAX codec message, restart timer"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_wait_ack_ac*" {
+
+			set Message "$act_event -\n\tGot a fax ack, stop sending set_code_fax packets - start fax_mode."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_fax_fa*" {
+
+			set Message "$act_event -\n\tWe are going into fax mode but our ack was dropped, therefore, the remote end sent another one, ack that one to get things going."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_t38_fax_complet*" {
+
+			set Message "$act_event -\n\tT38 Fax relay completed, restore the xmit function, and request the new audio voice codec info."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_fax_complet*" {
+
+			set Message "$act_event -\n\tDownload of voice application complete following FAX operartion and subsequent termination.  Reload voice firmware indicate disconect to tsp."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_fax_to_voic*" {
+
+			set Message "$act_event -\n\tGot a disconnect from the host application during FAX operation, reload voice app."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_defer_dis*" {
+
+			set Message "$act_event -\n\tGot a disconnect request from CCAPI, defer until we get FAX_CLEARDOWN."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_defer_releas*" {
+
+			set Message "$act_event -\n\tGot a release indication from TSP - defer until we can handle it."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_fax_dis*" {
+
+			set Message "$act_event -\n\tRequest to disconnect  FAX state.  Defer processing of request , initiate switchback to voice mode."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_get_erro*" {
+
+			set Message "$act_event -\n\tProcess get_error response message."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_get_level*" {
+
+			set Message "$act_event -\n\tProcess get levels response message"
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_modem_phase_detecte*" {
+
+			set Message "$act_event -\n\tPhase reversal in the Modem tone is detected\n\tFor TSE mode:Inform application about modem tone detection.Initiate sending TSE event to the other end. Mark the mode to indicate VoiceBandData(VBD)\n\tFor NSE stand-alone mode:Inform originating gateway, turn off modem detection, and echo cancellation"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_codec_switchbac*" {
+
+			set Message "$act_event -\n\tUpon completion of fax/modem transmission, the voice/silence is detected by DSP(carrier loss).\n\tFor fax/mode passthru mode: Switch back to the original codec.\n\tFor TSE mode(sprint): turn echo canceler back on disable silence detection turn on vad"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_gen_inband_ms*" {
+
+			set Message "$act_event -\n\tGenerate an inband message destined for the remote gateway (via the DSP)."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_dual_tone_detecte*" {
+
+			set Message "$act_event -\n\tDual tone is detected by DSP"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_report_inband_ms*" {
+
+			set Message "$act_event -\n\tThe DSP received an inband message from the remote gateway.  Report this to the application"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_gen_inband_msg_don*" {
+
+			set Message "$act_event -\n\tThe DSP has informed us that, from its perspective, our request to generate an inband message was successful. Inform the application."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_seq_tone_detecte*" {
+
+			set Message "$act_event -\n\tSeq tone is detected by DSP"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_suspend_u*" {
+	
+			set Message "$act_event -\n\tpass the suspend up to CCAPI"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_suspend_ack_u*" {
+		
+			set Message "$act_event -\n\tpass the suspend_ack up to CCAPI"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_suspend_rej_u*" {
+
+			set Message "$act_event -\n\tpass the suspend_rej up to CCAPI"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_suspend_dow*" {
+
+			set Message "$act_event -\n\tpass the suspend down to call leg"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_suspend_rej_dow*" {
+
+			set Message "$act_event -\n\tpass the suspend reject down to the call leg"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_suspend_ack_dow*" {
+
+			set Message "$act_event -\n\tpass the suspend_ack down to the call leg"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_resume_u*" {
+
+			set Message "$act_event -\n\tpass the resume up to CCAPI"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_resume_ack_u*" {
+
+			set Message "$act_event -\n\tpass the resume_ack up to CCAPI"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_resume_rej_u*" {
+
+			set Message "$act_event -\n\tpass the resume_rej up to CCAPI"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_resume_dow*" {
+
+			set Message "$act_event -\n\tpass the resume down to call leg"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_resume_ack_dow*" {
+
+			set Message "$act_event -\n\tpass the resume_ack down to call leg"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_resume_rej_dow*" {
+
+			set Message "$act_event -\n\tpass the resume_rej down to call leg"
+
+			puts $writefile $Message\n\n
+
+			}
+
+		"act_proceeding_r2_pend_dia*" {
+
+			set Message "$act_event -\n\tThis action is needed to dial-out country specific signal if call is not completed."
+
+			puts $writefile $Message\n\n
+
+			}
+
+		}
+
+		}
+
+	set count [ expr $count + 1 ]
+
+	}
+
+	close $writefile
+
+
+}
+
+#####################################
+##	End of Detailed_events_vtsp_para Procedure
+#####################################
+
+###########################################################################
+#
+#	Procedure which invokes the Finder Widget to search patterns
+#
+###########################################################################
+
+
+proc do-find {} {
+
+	wm withdraw .
+        destroy .finder
+        toplevel .finder
+        frame .finder.frm1 -relief groove -borderwidth 5 -bd 2
+        frame .finder.frm2 -relief groove -borderwidth 5
+        frame .finder.frm3 -relief groove -borderwidth 5
+        pack .finder.frm1 -pady 1m -expand y
+        pack .finder.frm2 -pady 2m -expand y
+        pack .finder.frm3 -pady 2m -expand y
+
+        label .finder.frm1.findlab -text "Find what:" -font {Helvetica -12 bold }
+
+	entry .finder.frm1.findent -textvariable Find_var -bg white -fg black \
+		-font {Helvetica -12 }
+	focus .finder.frm1.findent
+	bind .finder.frm1.findent <Return> { catch [ Find_Next_Action $Find_var ] }
+
+	bind .finder <Escape> { destroy .finder }
+
+	global Last_result
+        set Last_result ""
+
+        label .finder.frm2.linenumlab -text "Line Number:" -font Helvetica-12
+	
+	entry .finder.frm2.linenument -textvariable Line_num -bg white \
+		-width 7 -fg black -font {Helvetica -12 }
+
+	button .finder.frm3.findnext -text "Find Next" -font {Helvetica -12 bold} -command { catch [ Find_Next_Action $Find_var ] }
+
+	button .finder.frm3.dismiss -text "Dismiss" -font {Helvetica -12 bold } \
+		-command {  destroy .finder }
+
+	pack .finder.frm1.findlab .finder.frm1.findent \
+		-side left
+
+	pack .finder.frm2.linenumlab .finder.frm2.linenument -side left
+
+	pack .finder.frm3.findnext .finder.frm3.dismiss -side left -padx 2m
+
+	}
+
+
+##########################################
+##	End of do-find procedure
+##########################################
+
+########################################################################
+#
+#       Procedure for Viewing the next occurence of the pattern in the do-find
+#
+########################################################################
+
+proc Find_Next_Action { Find_var } {
+
+	global Last_result Line_num
+	if { $Last_result != "" } {
+
+		set start [ .fil_screen.frm1.txt index "insert +1c" ]
+
+		} else {
+
+		set start 1.0
+
+		}
+
+	set result [ .fil_screen.frm1.txt search -forward  -nocase -- $Find_var $start ]
+
+	set Length [string length $Find_var ]
+        set Last_result $result
+        .fil_screen.frm1.txt mark set insert $result
+        .fil_screen.frm1.txt tag remove redtag 1.0 end
+        .fil_screen.frm1.txt tag add redtag $result "$result + ${Length}c"
+	.fil_screen.frm1.txt see $result
+
+        set Line_num [ lindex [ split $result "." ] 0 ]
+         
+
+	}
+
+
+#######################################################
+#	End of Find_Next_Action Procedure
+########################################################
+
+
+
+proc Disconnect_cause { dec_cause_code } {
+
+	global Cause_reason Cause_infer
+	catch [ switch -exact $dec_cause_code {
+
+                                0 { 
+                                        set Cause_reason "CC_CAUSE_UNINITIALIZED"
+                                        set Cause_infer "Cause code was uninitialized"
+                                }
+
+                                1 { 
+                                        set Cause_reason "CC_CAUSE_UANUM"
+                                        set Cause_infer "Unallocated/Unassigned number - The Number was sent to the switch in the correct format; however, thenumber is not assigned to any destination equipment." 
+                                        }
+
+                                2 { 
+                                        set Cause_reason "CC_CAUSE_NO_ROUTE_TO_TRANSIT_NETWORK"
+                                        set Cause_infer "No route to specified transit network - The exchange is asked to route the call through an unrecognized intermediate network."
+                                        }
+
+                                3 { 
+                                        set Cause_reason "CC_CAUSE_NO_ROUTE"
+                                        set Cause_infer "No route to destination - The call was routed through an intermediate network that does not serve the destination address"
+                                        }
+                                4 {
+                                        set Cause_reason "CC_CAUSE_SEND_INFO_TONE"
+                                        set Cause_infer ""
+                                        }
+                                5 {
+                                        set Cause_reason "CC_CAUSE_MISDIALLED_TRUNK_PREFIX"
+                                        set Cause_infer "The Trunk prefix digits dialled are incorrect - please check"
+                                        }
+                                6 {
+                                        set Cause_reason "CC_CAUSE_CHANNEL_UNACCEPTABLE"
+                                        set Cause_infer "Channel Unacceptable - The service quality of the specified channel is insufficient to accept the connection"
+                                        }
+                                7 {
+                                        set Cause_reason "CC_CAUSE_CALL_AWARDED"
+                                        set Cause_infer "Call awarded and being delivered in an established channel - The user is assigned an incoming call that is being connected to an already-established call channel."
+                                        }
+                                8 {
+                                        set Cause_reason "CC_CAUSE_PREEMPTION"
+                                        set Cause_infer ""
+                                        }
+                                9 {
+                                        set Cause_reason "CC_CAUSE_PREEMPTION_RESERVED"
+                                        set Cause_infer ""
+                                        }
+                                15 { 
+                                        set Cause_reason "CC_CAUSE_GLARE"
+                                        set Cause_infer "A Glare condition has occured , check for the signalling"
+                                        }
+                                16 {
+                                        set Cause_reason "CC_CAUSE_NORM"
+                                        set Cause_infer "Normal call clearing - Normal call clearing has occurred"
+                                        }
+                                17 {
+                                        set Cause_reason "CC_CAUSE_BUSY"
+                                        set Cause_infer "User busy - The called system acknowledges the connection request but is unable to accept the call because all B channels are in use."
+                                        }
+                                18 {
+                                        set Cause_reason "CC_CAUSE_NORS"
+                                        set Cause_infer "No user responding - The connection cannot be completed because the destination does not respond to the call. "
+                                        }
+                                19 {
+                                        set Cause_reason "CC_CAUSE_NOAN"
+                                        set Cause_infer "No answer from user - User alerted - The destination responds to the connection request but fails to complete the connection within the prescribed time. The problem is at the remote end of the connection"
+                                        }
+                                20 {
+
+                                        set Cause_reason "CC_CAUSE_SUBSCRIBER_ABSENT"
+                                        set Cause_infer "Subscriber - not present"
+                                        }
+                                21 {
+                                        set Cause_reason "CC_CAUSE_REJECT"
+                                        set Cause_infer "Call rejected - The destination is capable of accepting the call but rejected the call for an unknown reason"
+                                        }
+                                22 {
+                                        set Cause_reason "CC_CAUSE_NUMBER_CHANGED"
+                                        set Cause_infer "Number changed - The ISDN number used to set up the call is not assigned to any system"
+                                        }
+
+                                26 {
+                                        set Cause_reason "CC_CAUSE_NON_SELECTED_USER_CLEARING"
+                                        set Cause_infer "Non-selected user clearing  - The destination is capable of accepting the call but rejected the call because it was not assigned to the user."
+
+                                        }
+                                27 {
+                                        set Cause_reason "CC_CAUSE_DESTINATION_OUT_OF_ORDER"
+                                        set Cause_infer "Designation out of order - The destination cannot be reached because the interface is not functioning correctly, and a signaling message cannot be delivered. This might be a temporary condition, but it could last for an extended period of time. For example, the remote equipment might be turned off"
+                                        }
+                                28 {
+                                        set Cause_reason "CC_CAUSE_INVALID_NUMBER"
+                                        set Cause_infer "Invalid number format - The connection could be established because the destination address was presented in an unrecognizable format or because the destination address was incomplete."
+                                        }
+                                29 {
+                                        set Cause_reason "CC_CAUSE_FACILITY_REJECTED"
+                                        set Cause_infer "Facility rejected - The facility requested by the user cannot be provided by the network"
+                                        }
+                                30 {
+                                        set Cause_reason "CC_CAUSE_RESPONSE_TO_STATUS_ENQUIRY"
+                                        set Cause_infer "Response to STATUS ENQUIRY - The status message was generated in direct response to the prior receipt of a status enquiry message. "
+                                        }
+                                31 {
+                                        set Cause_reason "CC_CAUSE_UNSP"
+                                        set Cause_infer "Normal, unspecified - Reports the occurrence of a normal event when no standard cause applies. No action required."
+                                        }
+                                34 {
+
+                                        set Cause_reason "CC_CAUSE_NO_CIRCUIT"
+                                        set Cause_infer "No circuit/channel available - The connection cannot be established because no appropriate channel is available to take the call."
+                                        }
+                                35 { 
+
+                                        set Cause_reason "CC_CAUSE_REQUESTED_VPCI_VCI_NOT_AVAILABLE"
+                                        set Cause_infer "No VPCI_VCI is available to take the call."
+                                        }
+                                36 {
+                                        set Cause_reason "CC_CAUSE_VPCI_VCI_ASSIGNMENT_FAILURE"
+                                        set Cause_infer "VPCI_VCI assignment failed"
+                                        }
+                                37 {
+                                        set Cause_reason "CC_CAUSE_CELL_RATE_NOT_AVAILABLE"
+                                        set Cause_infer "CC_CAUSE_CELL_RATE_NOT_AVAILABLE"
+                                        }
+                                38 {
+                                        set Cause_reason "CC_CAUSE_NETWORK_OUT_OF_ORDER"
+                                        set Cause_infer "Network problem , network is out of order"
+                                        }
+                                39 {
+                                        set Cause_reason "CC_CAUSE_PERM_FRAME_MODE_OUT_OF_SERVICE"
+                                        set Cause_infer "CC_CAUSE_PERM_FRAME_MODE_OUT_OF_SERVICE"
+                                        }
+                                40 {
+                                        set Cause_reason "CC_CAUSE_PERM_FRAME_MODE_OPERATIONAL"
+                                        set Cause_infer "CC_CAUSE_PERM_FRAME_MODE_OPERATIONAL"
+                                        }
+                                41 {
+                                        set Cause_reason "CC_CAUSE_TEMPORARY_FAILURE"
+                                        set Cause_infer "Temporary failure - An error occurred because the network is not functioning correctly. The problem will be resolved shortly"
+                                        }
+                                42 {
+                                        set Cause_reason "CC_CAUSE_SWITCH_CONGESTION"
+                                        set Cause_infer "Switching equipment Congestion - The destination cannot be reached because the network switching equipment is temporarily overloaded.
+                                        }
+                                43 { 
+                                        set Cause_reason "CC_CAUSE_ACCESS_INFO_DISCARDED"
+                                        set Cause_infer "Access information discarded - The network cannot provide the requested access information"
+                                        }
+                                44 {
+                                        set Cause_reason "CC_CAUSE_NO_REQ_CIRCUIT"
+                                        set Cause_infer "Requested circuit/channel not available - The remote equipment cannot provide the requested channel for an unknown reason. This might be a temporary problem."
+                                        }
+                                45 { 
+                                        set Cause_reason "CC_CAUSE_NO_VPCI_VCI_AVAILABLE"
+                                        set Cause_infer "CC_CAUSE_NO_VPCI_VCI_AVAILABLE"
+                                        }
+                                46 {
+                                        set Cause_reason "CC_CAUSE_PRECEDENCE_CALL_BLOCKED"
+                                        set Cause_infer "CC_CAUSE_PRECEDENCE_CALL_BLOCKED"
+                                        }
+                                47 { 
+                                        set Cause_reason "CC_CAUSE_NO_RESOURCE"
+                                        set Cause_infer "Resources unavailable, unspecified - The requested channel or service is unavailable for an unknown reason. This might be a temporary problem."
+                                        }
+                                49 {
+                                        set Cause_reason "CC_CAUSE_QOS_UNAVAILABLE"
+                                        set Cause_infer "The requested Quality of Service is unavailable"
+                                        }
+                                50 {
+                                        set Cause_reason "CC_CAUSE_FACILITY_NOT_SUBCRIBED"
+                                        set Cause_infer "Requested facility not subscribed - The remote equipment supports the requested supplementary service by subscription only."
+                                        }
+                                53 {
+                                        set Cause_reason "CC_CAUSE_CUG_OUTGOING_CALLS_BARRED"
+                                        set Cause_infer "CC_CAUSE_CUG_OUTGOING_CALLS_BARRED"
+                                        }
+                                55 {
+                                        set Cause_reason "CC_CAUSE_CUG_INCOMING_CALLS_BARRED"
+                                        set Cause_infer "CC_CAUSE_CUG_INCOMING_CALLS_BARRED"
+                                        }
+                                57 {
+                                        set Cause_reason "CC_CAUSE_BEARER_CAPABILITY_NOT_AUTHORIZED"
+                                        set Cause_infer "Bearer capability not authorized - The user requested a bearer capability that the network provides, but the user is not authorized to use it. This might be a subscription problem."
+                                        }
+                                58 {
+                                        set Cause_reason "CC_CAUSE_BEARER_CAPABILITY_NOT_AVAILABLE"
+                                        set Cause_infer "Bearer capability not presently available - The network normally provides the requested bearer capability, but it is unavailable at the present time. This might be due to a temporary network problem or to a subscription problem"
+                                        }
+                                62 {
+                                        set Cause_reason "CC_CAUSE_INCONSISTENCY_IN_INFO_AND_CLASS"
+                                        set Cause_infer "Inconsistent In band Information and class"
+                                        }
+                                63 {
+                                        set Cause_reason "CC_CAUSE_NOSV"
+                                        set Cause_infer "Service or option not available, unspecified - The network or remote equipment was unable to provide the requested service option for an unspecified reason. This might be a subscription problem."
+                                        }
+                                65 {
+                                        set Cause_reason "CC_CAUSE_BEARER_CAPABILITY_NOT_IMPLEMENTED"
+                                        set Cause_infer "Bearer capability not implemented - The network cannot provide the bearer capability requested by the user."
+
+                                        }
+                                66 {
+                                        set Cause_reason "CC_CAUSE_CHAN_TYPE_NOT_IMPLEMENTED"
+                                        set Cause_infer "Channel type not implemented . The network or destination equipment does not support the requested channel type"
+                                        }
+                                69 {
+                                        set Cause_reason "CC_CAUSE_FACILITY_NOT_IMPLEMENTED"
+                                        set Cause_infer "Requested facility not implemented - The remote equipment does not support the requested supplementary service"
+                                        }
+                                70 {
+                                        set Cause_reason "CC_CAUSE_RESTRICTED_DIGITAL_INFO_BC_ONLY"
+                                        set Cause_infer "Only restricted digital information bearer - The network is unable to provide unrestricted digital information bearer capability"
+                                        }
+                                79 {
+                                        set Cause_reason "CC_CAUSE_SERVICE_NOT_IMPLEMENTED"
+                                        set Cause_infer "Service or option not implemented, unspecified - The network or remote equipment is unable to provide the requested service option for an unspecified reason. This might be a subscription problem."
+
+                                        }
+                                81 {
+                                        set Cause_reason "CC_CAUSE_INVALID_CALL_REF_VALUE"
+                                        set Cause_infer "The remote equipment received a call with a call reference that is not currently in use on the user-network interface"
+                                        }
+                                82 {
+                                        set Cause_reason "CC_CAUSE_CHANNEL_DOES_NOT_EXIST"
+                                        set Cause_infer "Identified channel does not exist - The receiving equipment is requested to use a channel that is not activated on the interface for calls."
+                                        }
+                                83 {
+                                        set Cause_reason "CC_CAUSE_CALL_EXISTS_CALL_ID_IN_USE"
+                                        set Cause_infer "A suspended call exists , but this call identity does not - The network received a call resume request. The call resume request contained a Call Identify information element that indicates that the call identity is being used for a suspended call. "
+                                        }
+                                84 {
+                                        set Cause_reason "CC_CAUSE_CALL_ID_IN_USE"
+                                        set Cause_infer "Call identity in use  - The network received a call resume request. The call resume request contained a Call Identify information element that indicates that it is in use for a suspended call."
+                                        }
+                                85 {
+                                        set Cause_reason "CC_CAUSE_NO_CALL_SUSPENDED"
+                                        set Cause_infer "No call suspended - The network received a call resume request when there was not a suspended call pending. This might be a transient error that will be resolved by successive call retries."
+                                        }
+                                86 {
+                                        set Cause_reason "CC_CAUSE_CALL_CLEARED"
+                                        set Cause_infer "Call having the requested call identity has been cleared - The network received a call resume request. The call resume request contained a Call Identity information element, which once indicated a suspended call. However, the suspended call was cleared either by timeout or by the remote user."
+
+                                        }
+                                87 {
+                                        set Cause_reason "CC_CAUSE_USER_NOT_IN_CUG"
+                                        set Cause_infer "CC_CAUSE_USER_NOT_IN_CUG"
+                                        }
+                                88 {
+                                        set Cause_reason "CC_CAUSE_INCOMPATIBLE_DESTINATION"
+                                        set Cause_infer "Incompatible destination - Indicates that an attempt was made to connect to non-ISDN equipment . For example , to an analog line."
+                                        }
+                                90 {
+                                        set Cause_reason "CC_CAUSE_NON_EXISTENT_CUG"
+                                        set Cause_infer "CC_CAUSE_NON_EXISTENT_CUG"
+                                        }
+                                91 {
+                                        set Cause_reason "CC_CAUSE_INVALID_TRANSIT_NETWORK"
+                                        set Cause_infer "Invalid transit network selection - The exchange was asked to route the call through an unrecognized intermediate network"
+                                        }
+                                93 {
+                                        set Cause_reason "CC_CAUSE_AAL_PARMS_NOT_SUPPORTED"
+                                        set Cause_infer "CC_CAUSE_AAL_PARMS_NOT_SUPPORTED"
+                                        }
+                                95 {
+                                        set Cause_reason "CC_CAUSE_INVALID_MESSAGE"
+                                        set Cause_infer "Invalid Message - An invalid message was received , and no standard cause applies . This is usually due to a D- channel error . If this error occurs systematically , report it to your service provider"
+                                        }
+                                96 {
+                                        set Cause_reason "CC_CAUSE_MANDATORY_IE_MISSING"
+                                        set Cause_infer "Mandatory Information element is missing - The receiving equipment received a message that did not include one of the mandatory information elements . This is usually due to a D- channel error . If this error occurs systematically , report it to your service provider"
+                                        }
+                                97 {
+                                        set Cause_reason "CC_CAUSE_MESSAGE_TYPE_NOT_IMPLEMENTED"
+                                        set Cause_infer "The receiving equipment received an unrecognized message , either because the message type was valid but not supported . The cause is due to either a problem with the remote configuration or a problem with the local D channel"
+                                        }
+                                98 {
+                                        set Cause_reason "CC_CAUSE_MESSAGE_TYPE_NOT_COMPATIBLE"
+                                        set Cause_infer "Message not compatible with call state or message type non-existent or not implemented - The remote equipment received an invalid message , and no standard cause applies . This cause is due to a D-channel error . If this error occurs systematically , report it to your service provider." 
+                                        }
+                                99 {
+                                        set Cause_reason "CC_CAUSE_IE_NOT_IMPLEMENTED"
+                                        set Cause_infer "Information element non-existent or not implemented . - The remote equipment received a message that includes information elements , which were not recognized . This is usually a D- Channel error . If this error occurs systematically , report it to your service provider" 
+
+                                        }
+                                100 {
+                                        set Cause_reason "CC_CAUSE_INVALID_IE_CONTENTS"
+                                        set Cause_infer "Invalid information element contents - The remote equipment received a message that includes invalid information in the information element . This is usually due to D- channel error."
+                                        }
+                                101 {
+                                        set Cause_reason "CC_CAUSE_MESSAGE_IN_INCOMP_CALL_STATE"
+                                        set Cause_infer "Message not compatible with call state - The remote equipment received an unexpected message that does not correspond to the current state of the connection . Thi is usually due to a D- channel problem.
+
+                                        }
+                                102 {
+                                        set Cause_reason "CC_CAUSE_RECOVERY_ON_TIMER_EXPIRY"
+                                        set Cause_infer "Recovery on timer expires - An error - handling ( recovery ) procedure was initiated by a timer expiry . This is usually a temporary problem"
+                                        }
+                                103 {
+                                        set Cause_reason "CC_CAUSE_NON_IMPLEMENTED_PARAM_PASSED_ON"
+                                        set Cause_infer "CC_CAUSE_NON_IMPLEMENTED_PARAM_PASSED_ON"
+                                        }
+                                110 {
+                                        set Cause_reason "CC_CAUSE_UNRECOGNIZED_PARAM_MSG_DISCARDED"
+                                        set Cause_infer "CC_CAUSE_UNRECOGNIZED_PARAM_MSG_DISCARDED"
+                                        }
+                                111 {
+                                        set Cause_reason "CC_CAUSE_PROTOCOL_ERROR"
+                                        set Cause_infer "Protocol error unspecified - An unspecified D- channel error when no other standard"
+                                        }
+                                126 {
+                                        set Cause_reason "CC_CAUSE_NO_VOICE_RESOURCE"
+                                        set Cause_infer "CC_CAUSE_NO_VOICE_RESOURCE"
+                                        }
+                                127 {
+                                        set Cause_reason "CC_CAUSE_INTERWORKING"
+                                        set Cause_infer "Internetworking error - An event occurred , but the network does not provide causes for the action that it takes . The precise problem is unknown."
+                                        }
+                                128 {
+                                        set Cause_reason "CC_CAUSE_NEXT_NODE_UNREACHABLE"
+                                        set Cause_infer "CC_CAUSE_NEXT_NODE_UNREACHABLE"
+                                        }
+                                129 {
+                                        set Cause_reason "CC_CAUSE_HTSPM_OUT_OF_SERVICE"
+                                        set Cause_infer "CC_CAUSE_HTSPM_OUT_OF_SERVICE"
+                                        }
+                                170 {
+                                        set Cause_reason "CC_CAUSE_NO_DSP_CHAN"
+                                        set Cause_infer "CC_CAUSE_NO_DSP_CHAN"
+                                        }
+                                171 {
+                                        set Cause_reason "CC_CAUSE_CODEC_INCOMPATIBLE"
+                                        set Cause_infer "Codec is incompatible"
+                                        }
+                                172 {
+                                        set Cause_reason "CC_CAUSE_DSP_ERROR"
+                                        set Cause_infer "CC_CAUSE_DSP_ERROR"
+                                        }
+                                180 {
+                                        set Cause_reason "CC_CAUSE_GLARING_SWITCH_PRI"
+                                        set Cause_infer "CC_CAUSE_GLARING_SWITCH_PRI"
+                                        }
+                                default {
+                                        set Cause_reason "NOT KNOWN"
+                                        set Cause_infer "NOT UNKNOWN - Does not match any of the known cause codes"
+                                        } 
+
+        } ]
+
+
+	}
+
+
+image create bitmap ::router_map::bimage \
+	-data {
+
+#define router_v_width 137
+#define router_v_height 89
+static char router_v_bits[] = {
+ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+ 0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x00,0x00,0xa0,0xaa,0xaa,0x2a,0x00,0x00,
+ 0x00,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x00,0xa8,0x5a,0x55,0x55,
+ 0x55,0x55,0x00,0x00,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x40,0x55,
+ 0x55,0x55,0x55,0x55,0x55,0x15,0x00,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,
+ 0x00,0xb5,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0x02,0x00,0x00,0x00,0x00,0xfe,
+ 0x00,0x00,0x00,0xa8,0x4a,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x00,0x00,
+ 0x00,0x00,0xfe,0x00,0x00,0x00,0x55,0xb5,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,
+ 0xaa,0x02,0x00,0x00,0x00,0xfe,0x00,0x00,0xa0,0xea,0x4f,0x55,0x55,0x55,0x55,
+ 0xf5,0xff,0xff,0x7f,0x15,0x00,0x00,0x00,0xfe,0x00,0x00,0x54,0x1d,0xb8,0xaa,
+ 0x52,0x55,0x55,0x15,0x00,0x00,0x00,0xaa,0x00,0x00,0x00,0xfe,0x00,0x00,0xd5,
+ 0x03,0xc0,0x55,0xad,0xaa,0xaa,0xaa,0x02,0x00,0x00,0xaa,0x02,0x00,0x00,0xfe,
+ 0x00,0xa0,0x52,0x00,0x00,0xab,0x52,0x55,0x55,0x95,0xea,0x00,0x00,0x54,0x15,
+ 0x00,0x00,0xfe,0x00,0x50,0xad,0x02,0x00,0x98,0xaa,0xaa,0x2a,0x55,0x3d,0x00,
+ 0x00,0x50,0x55,0x00,0x00,0xfe,0x00,0xa8,0x52,0x0a,0x00,0x60,0x55,0x55,0xa9,
+ 0xaa,0x0e,0x00,0x00,0x28,0x55,0x00,0x00,0xfe,0x00,0x56,0x55,0x15,0x00,0x00,
+ 0x57,0xa9,0xaa,0xaa,0x01,0x00,0x00,0xa0,0xaa,0x02,0x00,0xfe,0x80,0xa9,0xaa,
+ 0xaa,0x00,0x00,0x2c,0xf5,0x55,0x75,0x00,0x00,0x2a,0x40,0xa9,0x02,0x00,0xfe,
+ 0x40,0x96,0xaa,0xaa,0x02,0x00,0xe0,0x0f,0xaa,0x1a,0x00,0x00,0x55,0x85,0xaa,
+ 0x0a,0x00,0xfe,0x40,0xa9,0xaa,0xaa,0x0a,0x00,0x00,0x00,0xaa,0x02,0x00,0xa0,
+ 0xaa,0xb2,0xaa,0x0a,0x00,0xfe,0xa0,0xaa,0xaa,0xaa,0xaa,0x00,0x00,0x00,0xaa,
+ 0x00,0x00,0x94,0xaa,0xaa,0xaa,0x2a,0x00,0xfe,0x58,0x55,0x55,0x55,0xd5,0x02,
+ 0x00,0x80,0x2a,0x00,0x00,0x69,0xa9,0xaa,0xaa,0x2a,0x00,0xfe,0xa4,0xaa,0xaa,
+ 0xaa,0xaa,0x0a,0x00,0x40,0x05,0x00,0x40,0x95,0xaa,0xaa,0xaa,0xaa,0x00,0xfe,
+ 0x54,0x55,0x25,0x55,0xd5,0x01,0x00,0x80,0x2a,0x00,0x28,0x55,0x55,0x55,0x55,
+ 0x55,0x00,0xfe,0xa8,0xaa,0xaa,0xaa,0x0a,0x00,0x00,0x40,0x55,0x00,0xa4,0xaa,
+ 0xaa,0xaa,0xaa,0xaa,0x00,0xfe,0x54,0x55,0x55,0x55,0x55,0x55,0x55,0x55,0x55,
+ 0x01,0x55,0x55,0x55,0x55,0x95,0xaa,0x00,0xfe,0xaa,0x2a,0x55,0xa9,0xaa,0xaa,
+ 0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0x54,0x55,0x01,0xfe,0x4a,0x55,0x55,
+ 0xa5,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0x4a,0xa5,0xaa,0x54,0x01,0xfe,
+ 0xb4,0xaa,0xaa,0x9a,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,
+ 0xaa,0x00,0xfe,0x48,0xa9,0xaa,0xaa,0xaa,0xaa,0x0a,0x54,0xd5,0xff,0xff,0xff,
+ 0x57,0xaa,0xaa,0xaa,0x00,0xfe,0xa8,0xaa,0xaa,0xaa,0xaa,0xaa,0x02,0xa8,0x6a,
+ 0x00,0x00,0x00,0x50,0x55,0x55,0x55,0x00,0xfe,0x54,0x55,0x55,0x55,0x55,0xa5,
+ 0x00,0x60,0x6a,0x00,0x00,0x00,0xaa,0xaa,0xaa,0xaa,0x00,0xfe,0xaa,0xaa,0x4a,
+ 0x55,0x55,0x35,0x00,0x00,0x35,0x00,0x00,0xd0,0xaa,0xaa,0xaa,0x2a,0x01,0xfe,
+ 0x56,0x55,0xaa,0xaa,0x4a,0x0d,0x00,0xa0,0x15,0x00,0x80,0x55,0x55,0x55,0x55,
+ 0x95,0x01,0xfe,0x4a,0x55,0x55,0x55,0x55,0x03,0x00,0x48,0x1a,0x00,0x00,0xac,
+ 0xaa,0xaa,0xaa,0xca,0x01,0xfe,0x9e,0xaa,0xea,0xa4,0xea,0x00,0x00,0xa9,0x0a,
+ 0x00,0x00,0x50,0x55,0x25,0x55,0x65,0x01,0xfe,0x14,0x55,0x35,0x2b,0x35,0x00,
+ 0x40,0x55,0x05,0x28,0x00,0xc0,0xaa,0xaa,0x4a,0xa5,0x01,0xfe,0x7e,0x52,0x55,
+ 0x58,0x0d,0x00,0x20,0x55,0x85,0xaa,0x00,0x00,0xa6,0xaa,0x2a,0xf9,0x01,0xfe,
+ 0xd6,0xa8,0x6a,0xc0,0x03,0x00,0x54,0x55,0x51,0x55,0x05,0x00,0x58,0xaa,0xaa,
+ 0x54,0x01,0xfe,0xfa,0x53,0xa9,0x00,0x00,0x00,0x55,0x55,0xa5,0xaa,0x2a,0x00,
+ 0x60,0x55,0x55,0xff,0x01,0xfe,0x5e,0xa7,0xd6,0x00,0x00,0xa0,0xaa,0xaa,0xaa,
+ 0xaa,0x52,0x00,0x00,0xab,0x8a,0x55,0x01,0xfe,0xf4,0x1d,0x52,0x01,0x00,0xac,
+ 0xaa,0xaa,0xaa,0xaa,0xaa,0x02,0x00,0x54,0x61,0xff,0x01,0xfe,0xde,0xee,0xa8,
+ 0x01,0x00,0xc0,0xaa,0xaa,0xaa,0xaa,0xaa,0x0a,0x00,0x50,0xdc,0x55,0x01,0xfe,
+ 0xb6,0xbb,0x43,0x03,0x00,0x00,0xa8,0xaa,0xaa,0xaa,0xaa,0x2a,0x00,0x0a,0x7b,
+ 0xff,0x01,0xfe,0xfc,0xee,0x1f,0x55,0x55,0x55,0x55,0x55,0x55,0xaa,0xaa,0xaa,
+ 0x40,0xe1,0xdf,0x55,0x01,0xfe,0xae,0xbb,0xf6,0xa8,0xaa,0xaa,0x4a,0x55,0x55,
+ 0x55,0x55,0xd5,0x2a,0x7c,0x75,0xff,0x01,0xfe,0xf6,0xee,0xbb,0x06,0xaa,0xaa,
+ 0xaa,0xaa,0xaa,0xaa,0xaa,0xaa,0x82,0xad,0xdf,0x55,0x01,0xfe,0xba,0xbb,0xde,
+ 0xfb,0x40,0x55,0x55,0x55,0x55,0x55,0xa5,0x0a,0xfc,0xf7,0x75,0xff,0x01,0xfe,
+ 0xee,0xee,0xeb,0xae,0x1f,0xa8,0xaa,0x92,0xaa,0xaa,0x2a,0xe0,0x57,0x5d,0xdf,
+ 0x5b,0x01,0xfe,0xba,0xbb,0xbe,0xfb,0xf5,0x07,0x50,0x55,0xa9,0x12,0x80,0xbf,
+ 0xfa,0xf7,0xf5,0xee,0x01,0xfe,0xee,0xee,0xeb,0x5e,0x5f,0xf5,0x0f,0x00,0x00,
+ 0xc0,0xff,0xd5,0x5f,0x5d,0x5f,0x7b,0x01,0xfe,0xfa,0xbb,0xbe,0xeb,0xf5,0xbf,
+ 0xea,0xff,0xff,0x7f,0xad,0xfe,0xea,0xf7,0xf6,0xaf,0x01,0xfe,0xae,0xee,0xed,
+ 0x7e,0x5f,0xd5,0x03,0xb4,0x55,0x00,0xf7,0x57,0xbf,0xdd,0xbd,0xfa,0x01,0xfe,
+ 0xfa,0xbb,0xbb,0xd7,0xf5,0xff,0x06,0x78,0xff,0x00,0x5d,0xfd,0x75,0x77,0xd7,
+ 0x5f,0x01,0xfe,0xae,0xee,0xee,0x7a,0xbf,0xaa,0x03,0xd0,0xab,0x00,0xf7,0x6f,
+ 0xdf,0xdd,0xfd,0xea,0x01,0xfe,0xfa,0xbb,0xbb,0xdf,0xd5,0xff,0x0e,0x70,0x7d,
+ 0x80,0xbd,0xda,0x75,0xf7,0x57,0x7f,0x01,0xfe,0xde,0xfe,0xee,0x75,0xff,0xaa,
+ 0x0b,0xd0,0x2f,0x00,0xd7,0x7f,0xdf,0x5d,0xfd,0xab,0x01,0xfe,0x74,0xd7,0xbb,
+ 0xde,0xab,0xff,0x0e,0xf0,0x7a,0x80,0x7d,0xd5,0x76,0xf7,0xaf,0xfe,0x01,0xfe,
+ 0xde,0x7b,0xef,0xeb,0xfe,0xad,0x17,0x40,0x2f,0xc0,0xd7,0xff,0xdd,0xbd,0xfa,
+ 0x57,0x01,0xfe,0xf6,0xae,0xbb,0x7e,0x57,0xfb,0x1a,0xe0,0x3b,0x40,0xfd,0xaa,
+ 0x77,0xd7,0xaf,0xfa,0x01,0xfe,0x5c,0xfb,0xee,0xab,0xfb,0xaf,0x0f,0xa0,0x2e,
+ 0xc0,0x57,0xff,0xfd,0xfd,0xfa,0x5f,0x01,0xfe,0xf6,0xb7,0xbb,0xfe,0xae,0xfa,
+ 0x3a,0xc0,0x1b,0x60,0xfd,0x55,0x57,0xaf,0x5f,0xf5,0x01,0xfe,0x5e,0xed,0xee,
+ 0xab,0xfb,0xaf,0x2f,0x80,0x0e,0xc0,0x57,0xff,0xfd,0xf5,0xea,0x5f,0x01,0xfe,
+ 0xf4,0xbf,0xdd,0xfe,0xae,0xfa,0x3a,0xc0,0x1b,0x60,0xfd,0x55,0x57,0xbf,0x7f,
+ 0xf5,0x00,0xfe,0xb8,0xea,0xbb,0xab,0xfb,0xb7,0x5f,0x80,0x0e,0xf0,0x6f,0xff,
+ 0xfd,0xd5,0xd5,0xbf,0x00,0xfe,0xec,0xbf,0xee,0xfe,0xae,0xee,0x6a,0x80,0x0b,
+ 0xa0,0xda,0x55,0x6f,0xff,0x7e,0xd5,0x00,0xfe,0x78,0xed,0xbb,0xb7,0xfb,0xbb,
+ 0x5f,0x80,0x0e,0xf0,0x7f,0xff,0xdb,0x55,0xd7,0x7f,0x00,0xfe,0xd0,0x77,0xef,
+ 0xed,0xde,0xee,0xf6,0x00,0x03,0x58,0xd5,0x5b,0x7d,0xff,0xfd,0x1a,0x00,0xfe,
+ 0x60,0xbd,0xbb,0xbe,0xb7,0xbb,0x5d,0x00,0x06,0xf0,0xff,0xf6,0xd7,0x6b,0x57,
+ 0x1f,0x00,0xfe,0xc0,0xef,0xee,0xeb,0xfa,0xee,0xf7,0x01,0x07,0xbc,0x55,0x5f,
+ 0xfd,0xde,0xfd,0x0b,0x00,0xfe,0x00,0xb5,0xbb,0xbe,0xdf,0x7b,0x5d,0x01,0x00,
+ 0xdc,0xfe,0xf5,0xaf,0x7b,0x57,0x05,0x00,0xfe,0x00,0xff,0xee,0xed,0xea,0xde,
+ 0xf7,0x01,0x02,0xe8,0x57,0x5f,0xf5,0xde,0xfd,0x03,0x00,0xfe,0x00,0xa8,0xbb,
+ 0xbb,0xbf,0x6b,0xbd,0x02,0x00,0x7e,0xfd,0xf5,0xbf,0x77,0xaf,0x00,0x00,0xfe,
+ 0x00,0xf8,0x7e,0xef,0xea,0xfe,0xef,0x03,0x00,0xac,0x6f,0x5f,0xd5,0xda,0x7b,
+ 0x00,0x00,0xfe,0x00,0xa0,0xd7,0xbd,0xbf,0x57,0xb5,0x02,0x00,0xfa,0xba,0xf7,
+ 0xff,0xff,0x16,0x00,0x00,0xfe,0x00,0x00,0x7d,0xef,0xeb,0xfd,0xff,0x07,0x00,
+ 0xaf,0xef,0xbd,0x55,0x55,0x03,0x00,0x00,0xfe,0x00,0x00,0xd4,0xbb,0xbe,0x56,
+ 0x55,0x05,0x00,0xfd,0xba,0x6e,0xff,0xff,0x00,0x00,0x00,0xfe,0x00,0x00,0x60,
+ 0xed,0xeb,0xff,0xff,0x07,0x00,0xb7,0xef,0xf7,0xad,0x0a,0x00,0x00,0x00,0xfe,
+ 0x00,0x00,0x00,0xbf,0xbe,0x6a,0xab,0x0a,0x80,0xed,0x7a,0x5d,0xf7,0x03,0x00,
+ 0x00,0x00,0xfe,0x00,0x00,0x00,0xe8,0xeb,0xdf,0xfe,0x0f,0x80,0xbe,0xaf,0xf7,
+ 0x5d,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x7e,0xf5,0xab,0x0a,0x80,
+ 0xeb,0xfa,0x5d,0x03,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0xc0,0xbf,
+ 0xfe,0x1f,0xc0,0xbe,0x5f,0x17,0x00,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,
+ 0x00,0x00,0xd0,0x57,0x15,0x80,0xeb,0x6a,0x00,0x00,0x00,0x00,0x00,0x00,0xfe,
+ 0x00,0x00,0x00,0x00,0x00,0x00,0xf0,0xdf,0xff,0x3e,0x00,0x00,0x00,0x00,0x00,
+ 0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+ 0x00,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x00,0x00,
+ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,
+ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xfe,
+ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+ 0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+ 0x00,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x00,0x00,
+ 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xfe};
+
+
+}
+@
+
+
+1.1.1.1
+log
+@no message
+@
+text
+@@

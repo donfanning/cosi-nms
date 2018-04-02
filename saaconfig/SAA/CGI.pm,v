@@ -1,0 +1,266 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2003.08.31.22.19.34;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.12.04.05.54.35;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@Clean up all the source with a nice call to:
+
+perltidy -i=8 -t -pt=2 -bt=2 -sbt=2 -ci=4 -noll -sfs -nasc -ce
+@
+text
+@package SAA::CGI;
+
+use strict;
+require 5.002;
+use lib qw(..);
+use conf::prefs qw($TEMP_DIR $MAX_SESSIONS);
+
+use vars qw(@@ISA @@EXPORT);
+use Exporter;
+@@ISA    = qw(Exporter);
+@@EXPORT = qw(
+    return_error
+    session_start
+    session_destroy
+    session_register
+    $SESS_USER
+    $SESS_PERMS
+);
+
+use vars qw($SESS_USER $SESS_PERMS);
+
+sub return_error {
+        my ($q, $reason) = @@_;
+
+        print $q->header("text/html");
+        print $q->start_html("SAA Configurator Error");
+        print $q->h1("SAA Configurator Error");
+        print $q->p("The SAA Configurator encountered the following error: ");
+        print $q->p($q->i($reason));
+        print $q->end_html;
+
+        exit(0);
+}
+
+sub session_start {
+        my ($q) = shift;
+
+        my $cookie = $q->cookie(-name => "sess");
+
+        if (defined($cookie)) {
+                my $session_file = $TEMP_DIR . "/sess_" . $cookie;
+                local *FILE;
+
+                -e $session_file or return;
+                open FILE, $session_file or return;
+                my $q_saved = new CGI(\*FILE) or return;
+                close FILE;
+
+                $SESS_USER  = $q_saved->param("user");
+                $SESS_PERMS = $q_saved->param("perms");
+        } else {
+                return;
+        }
+
+        1;
+}
+
+sub session_register {
+        my ($q) = shift;
+
+        my $id           = _unique_id();
+        my $session_file = $TEMP_DIR . "/sess_" . $id;
+        local (*FILE, *DIR);
+
+        $SESS_USER  = $q->param("user");
+        $SESS_PERMS = $q->param("perms");
+
+        my $num_files = 0;
+        opendir DIR, $TEMP_DIR;
+        $num_files++ while readdir DIR;
+        closedir DIR;
+
+        if ($num_files > $MAX_SESSIONS) {
+                return;
+        }
+
+        open FILE, ">" . $session_file or return;
+        $q->save(\*FILE);
+        close FILE;
+
+        $id;
+}
+
+sub session_destroy {
+        my ($q) = shift;
+
+        my $cookie = $q->cookie(-name => "sess");
+        undef $SESS_USER;
+        undef $SESS_PERMS;
+
+        if (defined($cookie)) {
+                my $session_file = $TEMP_DIR . "/sess_" . $cookie;
+
+                unlink $session_file if -e $session_file;
+        }
+
+        1;
+}
+
+sub _unique_id {
+        return $ENV{UNIQUE_ID} if exists $ENV{UNIQUE_ID};
+
+        require Digest::MD5;
+
+        my $md5    = new Digest::MD5;
+        my $remote = $ENV{REMOTE_ADDR} . $ENV{REMOTE_PORT};
+
+        my $id = $md5->md5_base64(time, $$, $remote);
+        $id =~ tr|+/=|-_.|;
+
+        $id;
+}
+
+1;
+@
+
+
+1.1
+log
+@Contiue building out the CGI framework.  Add an API for creating and
+maintaining persisten user sessions.
+@
+text
+@d12 6
+a17 6
+  return_error
+  session_start
+  session_destroy
+  session_register
+  $SESS_USER
+  $SESS_PERMS
+d23 1
+a23 1
+    my ( $q, $reason ) = @@_;
+d25 6
+a30 6
+    print $q->header("text/html");
+    print $q->start_html("SAA Configurator Error");
+    print $q->h1("SAA Configurator Error");
+    print $q->p("The SAA Configurator encountered the following error: ");
+    print $q->p( $q->i($reason) );
+    print $q->end_html;
+d32 1
+a32 1
+    exit(0);
+d36 1
+a36 1
+    my ($q) = shift;
+d38 1
+a38 1
+    my $cookie = $q->cookie( -name => "sess" );
+d40 14
+a53 3
+    if ( defined($cookie) ) {
+        my $session_file = $TEMP_DIR . "/sess_" . $cookie;
+        local *FILE;
+d55 1
+a55 13
+        -e $session_file or return;
+        open FILE, $session_file or return;
+        my $q_saved = new CGI( \*FILE ) or return;
+        close FILE;
+
+        $SESS_USER  = $q_saved->param("user");
+        $SESS_PERMS = $q_saved->param("perms");
+    }
+    else {
+        return;
+    }
+
+    1;
+d59 1
+a59 1
+    my ($q) = shift;
+d61 15
+a75 3
+    my $id           = _unique_id();
+    my $session_file = $TEMP_DIR . "/sess_" . $id;
+    local ( *FILE, *DIR );
+d77 3
+a79 15
+    $SESS_USER  = $q->param("user");
+    $SESS_PERMS = $q->param("perms");
+
+    my $num_files = 0;
+    opendir DIR, $TEMP_DIR;
+    $num_files++ while readdir DIR;
+    closedir DIR;
+
+    if ( $num_files > $MAX_SESSIONS ) {
+        return;
+    }
+
+    open FILE, ">" . $session_file or return;
+    $q->save( \*FILE );
+    close FILE;
+d81 1
+a81 1
+    $id;
+d85 1
+a85 1
+    my ($q) = shift;
+d87 3
+a89 3
+    my $cookie = $q->cookie( -name => "sess" );
+    undef $SESS_USER;
+    undef $SESS_PERMS;
+d91 2
+a92 2
+    if ( defined($cookie) ) {
+        my $session_file = $TEMP_DIR . "/sess_" . $cookie;
+d94 2
+a95 2
+        unlink $session_file if -e $session_file;
+    }
+d97 1
+a97 1
+    1;
+d101 1
+a101 1
+    return $ENV{UNIQUE_ID} if exists $ENV{UNIQUE_ID};
+d103 1
+a103 1
+    require Digest::MD5;
+d105 2
+a106 2
+    my $md5    = new Digest::MD5;
+    my $remote = $ENV{REMOTE_ADDR} . $ENV{REMOTE_PORT};
+d108 2
+a109 2
+    my $id = $md5->md5_base64( time, $$, $remote );
+    $id =~ tr|+/=|-_.|;
+d111 1
+a111 1
+    $id;
+@
+

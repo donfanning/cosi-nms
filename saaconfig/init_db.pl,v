@@ -1,0 +1,409 @@
+head	1.4;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.4
+date	2003.09.01.02.36.39;	author knail1;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2003.09.01.00.15.54;	author knail1;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2002.02.09.20.41.31;	author knail1;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.02.04.01.15.40;	author knail1;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.4
+log
+@taking ip/name as ARGV's
+@
+text
+@#!/usr/bin/perl
+# script to create/reinit 'saaconf' database and the corresponding tables within the mysql subsystem
+
+use strict;
+use DBI;
+use Getopt::Std;
+use conf::prefs qw($DB_DRIVER $DB_HOST $DB_PORT $DB_USER $DB_PASS $DB_NAME);
+use conf::tables
+  qw($Create_Src $Create_Target $Create_Operation $Create_Collector $Create_User $Create_Ip_Echo_subop);
+use vars qw (
+  $sth
+  $opt_h
+  $opt_i
+  $opt_r
+);
+
+getopts('hir');
+
+sub help {
+    print STDOUT <<EOF;
+[init_db.pl] : script to create/reinitialize databasetables for saaconf
+syntax:
+reinit.pl [-h] [-i|-r]
+Options:
+	-i:		Initialize the database and create tables
+			[needs to be run prior to using saaconfig tool
+	-r:		Reinitialize (drop/readd) the tables for a fresh db
+	-h help:	Help (this window)
+EOF
+    exit;
+}
+
+sub CreateDb {
+    my ( $db_host, $user, $password, $db_name );
+
+    #still trying to figure out how to create the database itself
+    $db_host  = shift;
+    $user     = shift;
+    $password = shift;
+    $db_name  = shift;
+
+    #create the database here:
+    #have to figure out a way to pass the create database query to msql subsys
+    #http://www.mysql.com/doc/C/R/CREATE_DATABASE.html
+
+    return 1;
+}
+
+sub ConnectDb {
+	my $data_source = "dbi:".$DB_DRIVER.":database=".$DB_NAME.";host=".$DB_HOST.";port=".$DB_PORT;
+    my $dbh =
+      DBI->connect( $data_source, $DB_USER, $DB_PASS )
+      or die "SAA::DB: Unable to connect to database " . $DB_NAME;
+    return $dbh;
+}
+
+sub AddTables {
+    my $dbh = shift;
+
+    #creating Source Table:
+    #print "src: $Create_Src \n";
+    die "init_db: $dbh->err()\n" if ( !( $sth = $dbh->prepare($Create_Src) ) );
+    die "init_db: \$dbh->err()\n" if ( !( $sth->execute() ) );
+    print "Source Table Creation SAA_SOURCES done\n";
+
+    #creating Target Table:
+    die "init_db: $$dbh->err() \n"
+      if ( !( my $sth = $dbh->prepare($Create_Target) ) );
+    die "init_db: $dbh->err() \n" if ( !( $sth->execute() ) );
+    print "Target Table Creation SAA_TARGETS done\n";
+
+    #creating Operation Table:
+    #note: here the Operation Table would have info pointing to the sub-opertaion
+    #e.g. Path Echo being run, with enough info to obtain/modify info in that 
+    #sub-operation's table.
+    die "init_db: $$dbh->err() \n"
+      if ( !( $sth = $dbh->prepare($Create_Operation) ) );
+    die "init_db: $$dbh->err() \n" if ( !( $sth->execute() ) );
+    print "Operation Table Creation SAA_OPERATIONS done\n";
+
+    #creating Collector Table:
+    die "init_db: $$dbh->err() \n"
+      if ( !( $sth = $dbh->prepare($Create_Collector) ) );
+    die "init_db: $$dbh->err() \n" if ( !( $sth->execute() ) );
+    print "Collector Table Creation SAA_COLLECTORS done\n";
+
+    #creating User Table:
+    die "init_db: $$dbh->err() \n"
+      if ( !( $sth = $dbh->prepare($Create_User) ) );
+    die "init_db: $$dbh->err() \n" if ( !( $sth->execute() ) );
+    print "User Table Creation SAA_USERS done\n";
+
+    #creating Ip Echo Sup Operation
+    # note: I'm only creating ip echo for the time being...
+    die "init_db: $$dbh->err() \n"
+      if ( !( $sth = $dbh->prepare($Create_Ip_Echo_subop) ) );
+    die "init_db: $$dbh->err() \n" if ( !( $sth->execute() ) );
+    print "IpEchoOperation Table Creation SAA_IP_EHCO_SUBOP done\n";
+
+}
+
+sub DropTables {
+    my $dbh = shift;
+
+    #die "$!" if (!(my $sth = $dbh->prepare('show tables')));
+    #die "$sth->err" if (!($sth->execute()));
+    #die "$sth->err" if (!(my $array_ref = $sth->fetchall_arrayref));
+
+    die "$dbh->err"
+      if ( !( my $array_ref = $dbh->selectall_arrayref('show tables') ) );
+    my $rowcount = scalar(@@$array_ref);
+    print "No tables in database: saaconf \n " if ( $rowcount == 0 );
+    for ( my $i = 0 ; $i < $rowcount ; $i++ ) {
+        print "dropping $array_ref->[$i][0]  ";
+        my $tabledrop_statement = "DROP TABLE $array_ref->[$i][0] ";
+        my $sth                 = $dbh->prepare($tabledrop_statement);
+        die "$sth->err" if ( !( $sth->execute ) );
+        print(".. dropped\n");
+    }
+}
+
+sub KillConnect {
+    my $dbh = shift;
+
+    #$dbh->commit();
+    $dbh->disconnect();
+}
+
+sub Init_Db {
+    if ( &CreateDb( $DB_DRIVER, $DB_USER, $DB_PASS, $DB_NAME ) ) {
+        my $dbh = &ConnectDb( $DB_DRIVER, $DB_USER, $DB_PASS, $DB_NAME );
+        &AddTables($dbh);
+        &KillConnect($dbh);
+    }
+}
+
+sub ReInit_Db {
+    if ( &CreateDb( $DB_DRIVER, $DB_USER, $DB_PASS, $DB_NAME ) ) {
+        my $dbh = &ConnectDb( $DB_DRIVER, $DB_USER, $DB_PASS, $DB_NAME );
+        &DropTables($dbh);
+        &AddTables($dbh);
+        &KillConnect($dbh);
+    }
+}
+
+my $check_for_all = ( !( ($opt_i) | ($opt_h) | ($opt_r) ) );
+&Init_Db()   if ($opt_i);
+&help()      if ( ($opt_h) | ($check_for_all) );
+&ReInit_Db() if ($opt_r);
+@
+
+
+1.3
+log
+@connecting to remote db instead of local
+@
+text
+@a50 1
+	print("data_source is $data_source");
+a51 1
+      #DBI->connect( 'dbi:' . $DB_DRIVER . ':' . $DB_NAME . "\@@" . $DB_HOST . ":" . $DB_PORT, $DB_USER, $DB_PASS )
+@
+
+
+1.2
+log
+@fixed some DropTable issues. also using conf::tables.pm to create the requisite tables
+@
+text
+@d7 1
+a7 1
+use conf::prefs qw($DB_DRIVER $DB_USER $DB_PASS $DB_NAME);
+d50 2
+d53 2
+a54 1
+      DBI->connect( 'dbi:' . $DB_DRIVER . ':' . $DB_NAME, $DB_USER, $DB_PASS )
+@
+
+
+1.1
+log
+@script to initialize database/tables. Havent tested &DropTables(), need to figure out a way to create a DATABASE, and have only added IpEcho as a subOp for now
+@
+text
+@d4 1
+a4 1
+#use strict;
+a6 1
+getopt("hir");
+d8 8
+d17 1
+d20 2
+a21 2
+	print STDOUT <<EOF;
+reinit.pl : script to create/reinitialize databasetables for saaconf
+d30 2
+a31 2
+exit;
+	}
+d33 2
+d36 19
+a54 11
+sub CreateDb	{
+	my ($db_host, $user, $password, $db_name);
+	#still trying to figure out how to create the database itself
+	$db_host = shift;
+	$user = shift;
+	$password = shift;
+	$db_name = shift;
+
+ 	#create the database here:
+	#have to figure out a way to pass the create database query to msql subsys
+	#http://www.mysql.com/doc/C/R/CREATE_DATABASE.html
+d56 2
+a57 2
+	return 1
+		}
+d59 90
+a148 151
+sub ConnectDb	{
+	my $dbh = DBI->connect( 'dbi:' . $DB_DRIVER . ':' . $DB_NAME, $DB_USER, $DB_PASS )
+      or die "SAA::DB: Unable to connect to database " . $DB_NAME;
+	return $dbh;
+		}
+	
+sub AddTables	{
+	my $dbh = shift;
+	###################
+	#creating Source Table:
+	my $create_src = "CREATE TABLE IF NOT EXISTS SAA_SOURCES (
+	SrcId int PRIMARY KEY,
+	SrcAlias varchar(64) NOT NULL UNIQUE, 
+	SrcIpAddr varchar(127) NOT NULL UNIQUE, 
+	SrcDescr varchar(255),
+	SrcHostName varchar(64), 
+	SrcReadComm varchar(32),
+	SrcWriteComm varchar(32),
+	SrcIosVersion varchar(64),
+	SrcRttAppVersion varchar(64)
+	)";
+	die "init_db: $dbh->err()\n"	if (!(my $sth = $dbh->prepare($create_src)));
+	die "init_db: \$dbh->err()\n"	if (!($sth->execute()));
+	print "Source Table Creation SAA_SOURCES done\n";
+
+	###################
+	#creating Target Table:
+	my $create_target = "CREATE TABLE IF NOT EXISTS SAA_TARGETS (
+	TgtId int PRIMARY KEY,
+	TgtAlias varchar(64) NOT NULL UNIQUE,
+	TgtIpAddr varchar(127) NOT NULL UNIQUE,
+	TgtDescr varchar(255),
+	TgtHostName varchar (64),
+	TgtReadComm varchar (32),
+	TgtIosVersion varchar (64),
+	TgtRttAppVersion varchar (64)
+	)";
+	die "init_db: $$dbh->err() \n" if (!(my $sth = $dbh->prepare($create_target)));
+	die "init_db: $dbh->err() \n" if (!($sth->execute()));
+	print "Target Table Creation SAA_TARGETS done\n";
+
+	###################
+	#creating Operation Table:
+	#note: here the Operation Table would have info pointing to the sub-opertaion
+	#e.g. Path Echo being run, with enough info to obtain/modify info in that 
+	#sub-operation's table.
+	my $create_operation = "CREATE TABLE IF NOT EXISTS SAA_OPERATIONS (
+	OpId int PRIMARY KEY,
+	OpName varchar(64) NOT NULL,
+	OpDescr varchar(255),
+	OpOwner varchar(64), #rttMonCtrlAdminOwner
+	OpSubOperationTable varchar(255) NOT NULL, #e.g. SAA_IP_ECHO_SUBOP
+	OpSubOperationId varchar(255) NOT NULL, # The Id within the OpSubOperationTable
+	OpFrequency int, #rttMonCtrlAdminFrequency
+	OpTimeout int #rttMonCtrlAdminTimeout
+	)";
+
+	die "init_db: $$dbh->err() \n" if (!(my $sth = $dbh->prepare($create_operation)));
+        die "init_db: $$dbh->err() \n" if (!($sth->execute()));
+        print "Operation Table Creation SAA_OPERATIONS done\n";
+	
+	
+	###################
+	#creating Collector Table:
+	my $create_coll = "CREATE TABLE IF NOT EXISTS SAA_COLLECTORS (
+	CollId int PRIMARY KEY,
+ 	CollName varchar(127) NOT NULL UNIQUE,
+	CollDescr varchar(255),
+	CollSrcId int NOT NULL, #from SAA_SOURCES::SrcId
+	CollTgtId int NOT NULL, #from SAA_TARGETS::TgtId
+	CollOpId int NOT NULL, #from SAA_OPERATIONS::OpId
+	CollStartTime int, #rttMonScheduleAdminRttStartTime
+	CollDuration int, #rttMonScheduleAdminRttLife
+	CollEndTime int,
+	CollAdminIndex int #entry for this collector in the SAA Agent
+	)";	
+        die "init_db: $$dbh->err() \n" if (!(my $sth = $dbh->prepare($create_coll)))
+;
+        die "init_db: $$dbh->err() \n" if (!($sth->execute()));
+        print "Collector Table Creation SAA_COLLECTORS done\n";
+ 
+	
+	####################
+	#creating Ip Echo Sup Operation
+	# note: I'm only creating ip echo for the time being...
+	my $create_ip_echo = "CREATE TABLE IF NOT EXISTS SAA_IP_ECHO_SUBOP (
+	so_IpEchoId int PRIMARY KEY,
+	so_IpEchoDataSize int, #rttMonEchoAdminPktDataRequestSize	
+	so_IpEchoTos smallint, #rttMonEchoAdminTOS
+	so_IpEchoLsrEnable smallint, #rttMonEchoAdminLSREnable
+	LsrHop0 varchar(127),
+	LsrHop1 varchar(127),
+	LsrHop2 varchar(127),
+	LsrHop3 varchar(127),
+	LsrHop4 varchar(127),
+	LsrHop5 varchar(127),
+	LsrHop6 varchar(127),
+	LsrHop7 varchar(127)
+ 	)";
+	die "init_db: $$dbh->err() \n" if (!(my $sth = $dbh->prepare($create_ip_echo)))
+;      
+        die "init_db: $$dbh->err() \n" if (!($sth->execute()));
+        print "IpEchoOperation Table Creation SAA_IP_EHCO_SUBOP done\n";
+	
+	}
+
+sub DropTables	{
+	my $dbh = shift;
+	die "$!" if (!(my $sth = $dbh->prepare('show tables')));
+	die "$sth->err" if (!($sth->execute()));
+	die "$sth->err" if (!(my $array_ref = $sth->fetchall_arrayref));
+	my @@tables = @@$array_ref;
+	my $table;
+	foreach $table (@@tables)	{
+		chomp $table;
+		print "dropping $table..";
+		$tabledrop_statement = "drop $table";
+		$sth = $dbh->prepare($tabledrop_statement);
+		die "$sth->err" if (!($sth->execute));
+		print ("dropped\n");	
+					}
+		}	
+
+sub KillConnect	{
+	my $dbh = shift;
+	#$dbh->commit();
+	$dbh->disconnect();
+		}
+	
+sub Init_Db	{
+	if (&CreateDb($DB_HOST,$DB_USER,$DB_PASS,$DB_NAME)) {
+	my $dbh = &ConnectDb($DB_HOST,$DB_USER,$DB_PASS,$DB_NAME);
+	&AddTables($dbh);
+	&KillConnect($dbh);
+							}
+		}
+
+sub ReInit_Db	{
+	if (&CreateDb($DB_HOST,$DB_USER,$DB_PASS,$DB_NAME)) {
+	my $dbh = &ConnectDb($DB_HOST,$DB_USER,$DB_PASS,$DB_NAME);
+	&DropTables($dbh);
+	&AddTables($dbh);
+	&KillConnect($dbh);
+							}
+		}
+
+
+
+&Init_Db();
+#if ($opt_i) { 	&Init_Db() };
+#if ($opt_h) {	&help() };
+@
+

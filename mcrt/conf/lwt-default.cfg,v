@@ -1,0 +1,82 @@
+head	1.2;
+access;
+symbols
+	start:1.1.1.1 vendor:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2002.10.25.14.47.59;	author jpolache;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.04.25.20.24.49;	author jleonard;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2002.04.25.20.24.49;	author jleonard;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@*** empty log message ***
+@
+text
+@# Default Lightweight Tools Config File $LWTHOME/conf/lwt-default.cfg        
+# Can be overwritten by $LWTHOME/conf/lwt.cfg                                
+# Perl Code per O'Reilly Perl Cookbook. See: File Contents, Reading          
+#      Configuration Files.                                                  
+                                                                             
+# Install directory                                                          
+#$LWTDIR           = "/opt/CSCOlwt";                                          
+$LWTDIR           = "/root/mcrt";                                          
+$LWTCONFIG        = "/$LWTDIR/conf";                                         
+                                                                             
+# Device lists should be shared with other NMS/EMS applications. For the time
+# being, /cgi-lwt/device_lister.pl is used for the lightweight tools.        
+$DEVLISTFILE      = "$LWTCONFIG/devlist.dat";                                
+                                                                             
+# remember to set up your log folders/files and rotations.                   
+# includes /etc/syslog.conf, swatch, /usr/lib/newsyslog, newmcrlog.pl.       
+                                                                             
+$LOGDIR           = "/var";                                                  
+$MCRDIR           = "$LOGDIR/mcrt";                                          
+                                                                             
+#other directories in the CSCOlwt distribution...                            
+$LWTBIN           = "$LWTDIR/bin";                                           
+$LWTTEMP          = "$LWTDIR/temp";                                          
+$LWTHTML          = "$LWTDIR/html";                                          
+$LWTGRAPHICS      = "$LWTHTML/graphics";                                     
+                                                                             
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d7 2
+a8 1
+$LWTDIR           = "/opt/CSCOlwt";                                          
+d26 1
+a26 1
+                                                                             @
+
+
+1.1.1.1
+log
+@Initial import of mcrt reposit
+@
+text
+@@

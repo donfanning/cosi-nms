@@ -1,0 +1,128 @@
+head	1.1;
+branch	1.1.1;
+access;
+symbols
+	arelease:1.1.1.1
+	avendor:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2001.07.06.19.08.31;	author robelewi;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.07.06.19.08.31;	author robelewi;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@walk system,snmpwalk,.1.3.6.1.2.1.1,RFC1213-MIB,system
+walk cisco.lsystem, snmpwalk, .1.3.6.1.4.1.9.2.1,OLD-CISCO-SYS-MIB,lsystem
+table entPhysicalTable,snmptable -ib,.1.3.6.1.2.1.47.1.1.1         ,ENTITY-MIB,entPhysicalTable
+table entLogicalTable,snmptable -ib,.1.3.6.1.2.1.47.1.2.1,ENTITY-MIB,entLogicalTable
+walk chassis,snmpwalk,.1.3.6.1.4.1.9.3.6,OLD-CISCO-CHASSIS,chassis
+table cdspCardStatusTable, snmptable -ib,.1.3.6.1.4.1.9.9.86.1.1.1,CISCO-DSP-MGMT-MIB,cdspCardStatusTable
+get ifNumber,snmpget -Os, .1.3.6.1.2.1.2.1.0, IF-MIB, ifNumber
+table ifTable, snmptable, .1.3.6.1.2.1.2.2, IF-MIB, ifTable
+table lifTable, snmptable -ib,.1.3.6.1.4.1.9.2.2.1,OLD-CISCO-INTERFACES-MIB, lifTable
+table dsx1TotalTable,snmptable -ib,.1.3.6.1.2.1.10.18.9,RFC1406-MIB,dsx1TotalTable
+table dsx1FarEndCurrentTable,snmptable -ib,.1.3.6.1.2.1.10.18.10,RFC1406-MIB,dsx1FarEndCurrentTable
+table dsx1FracTable,snmptable -ib,.1.3.6.1.2.1.10.18.13,RFC1406-MIB,dsx1FracTable
+walk ip,snmpwalk,.1.3.6.1.2.1.4,IP-MIB,ip
+table ipNetToMediaTable,snmptable -ib,.1.3.6.1.2.1.4.22 ,IP-MIB, ipNetToMediaTable
+walk icmp,snmpwalk,.1.3.6.1.2.1.5,RFC1213-MIB,icmp                    
+walk tcp,snmpwalk,.1.3.6.1.2.1.6,TCP-MIB,tcp
+table tcpConnTable,snmptable -ib,.1.3.6.1.2.1.6.13,TCP-MIB,tcpConnTable
+walk udp,snmpwalk,. 1.3.6.1.2.1.7,UDP-MIB,udp
+table udpTable,snmptable -ib,.1.3.6.1.2.1.7.5 ,UDP-MIB,udpTable
+table cQIfTable,snmptable -ib,.1.3.6.1.4.1.9.9.37.1.1,CISCO-QUEUE-MIB,cQIfTable
+table cQStatsTable,snmptable -ib,.1.3.6.1.4.1.9.9.37.1.2,CISCO-QUEUE-MIB,cQStatsTable
+table rs232PortTable,snmptable -ib, .1.3.6.1.2.1.10.33.2,RS-232-MIB,rs232PortTable
+table rs232AsyncPortTable,snmptable -ib, .1.3.6.1.2.1.10.33.3 ,RS-232-MIB,rs232AsyncPortTable
+table rs232SyncPortTable,snmptable -ib, .1.3.6.1.2.1.10.33.4,RS-232-MIB,rs232SyncPortTable
+table rs232InSigTable,snmptable -ib, .1.3.6.1.2.1.10.33.5,RS-232-MIB,rs232InSigTable
+table rs232OutSigTable,snmptable -ib, .1.3.6.1.2.1.10.33.6,RS-232-MIB,rs232OutSigTable
+table ltsLineTable, snmptable -ib, .1.3.6.1.4.1.9.2.9.2, OLD-CISCO-TS-MIB,ltsLineTable
+table cdpInterfaceTable, snmptable -ib,.1.3.6.1.4.1.9.9.23.1.1.1,CISCO-CDP-MIB,cdpInterfaceTable
+table cdpCacheTable, snmptable -ib,.1.3.6.1.4.1.9.9.23.1.2.1,CISCO-CDP-MIB,cdpCacheTable
+table isdnBasicRateTable, snmptable -ib,.1.3.6.1.2.1.10.20.1.1.1, ISDN-MIB,isdnBasicRateTable
+table isdnBearerTable, snmptable -ib, .1.3.6.1.2.1.10.20.1.2.1, ISDN-MIB, isdnBearerTable
+table isdnSignalingTable, snmptable -ib, .1.3.6.1.2.1.10.20.1.3.2, ISDN-MIB, isdnSignalingTable
+table isdnSignalingStatsTable, snmptable -ib, .1.3.6.1.2.1.10.20.1.3.3, ISDN-MIB,isdnSignalingStatsTable
+table isdnLapdTable, snmptable -ib, .1.3.6.1.2.1.10.20.1.3.4, ISDN-MIB,isdnLapdTable
+table isdnEndpointTable, snmptable -ib, .1.3.6.1.2.1.10.20.1.4.2, ISDN-MIB,isdnEndpointTable
+table isdnDirectoryTable, snmptable -ib, .1.3.6.1.2.1.10.20.1.5.1, ISDN-MIB, isdnDirectoryTable
+table ccasDs1IfCfgTable, snmptable -ib,.1.3.6.1.4.1.9.9.85.1.1.1,CISCO-CAS-IF-MIB,ccasDs1IfCfgTable
+table dialCtlPeer,snmptable -ib,1.3.6.1.2.1.10.21.1.2.1,DIAL-CONTROL-MIB,dialCtlPeer
+table demandNbrTable,snmptable -ib,.1.3.6.1.4.1.9.9.26.1.1.1,CISCO-ISDN-MIB,demandNbrTable
+walk ciscoCallResourcePoolMIB,snmpwalk,.1.3.6.1.4.1.9.9.124,CISCO-CALL-RESOURCE-POOL-MIB,ciscoCallResourcePoolMIB
+table cmmFaxGeneralCfg,snmptable -ib,.1.3.6.1.4.1.9.9.102.1.4,CISCO-MMAIL-DIAL-CONTROL-MIB,cmmFaxGeneralCfg
+table ciscoCallHistoryTable,snmptable -ib,.1.3.6.1.4.1.9.9.27.1.1.3,CISCO-CALL-HISTORY-MIB,ciscoCallHistoryTable
+table cpmDS0UsageTable, snmptable -ib, .1.3.6.1.4.1.9.10.19.1.1.1,CISCO-POP-MGMT-MIB, cpmDS0UsageTable
+get ISDNCfgBChanInUseForAnalog, snmpget, .1.3.6.1.4.1.9.10.19.1.1.2.0,CISCO-POP-MGMT-MIB, cpmISDNCfgBChanInUseForAnalog
+get ISDNCfgBChannelsInUse, snmpget, .1.3.6.1.4.1.9.10.19.1.1.3.0,CISCO-POP-MGMT-MIB, cpmISDNCfgBChannelsInUse
+get cpmActiveDS0s, snmpget, .1.3.6.1.4.1.9.10.19.1.1.4.0,CISCO-POP-MGMT-MIB, cpmActiveDS0s
+get cpmPPPCalls, snmpget, .1.3.6.1.4.1.9.10.19.1.1.5.0,CISCO-POP-MGMT-MIB, cpmPPPCalls
+get cpmV120Calls, snmpget, .1.3.6.1.4.1.9.10.19.1.1.6.0,CISCO-POP-MGMT-MIB, cpmV120Calls
+get cpmV110Calls, snmpget, .1.3.6.1.4.1.9.10.19.1.1.7.0,CISCO-POP-MGMT-MIB, cpmV110Calls
+get cpmActiveDS0sHighWaterMark, snmpget, .1.3.6.1.4.1.9.10.19.1.1.8.0,CISCO-POP-MGMT-MIB, cpmActiveDS0sHighWaterMark
+table DS1DS0 Usage Table, snmptable -ib, .1.3.6.1.4.1.9.10.19.1.1.9,CISCO-POP-MGMT-MIB, cpmDS1DS0UsageTable
+get cpmSW56CfgBChannelsInUse, snmpget, .1.3.6.1.4.1.9.10.19.1.1.10.0,CISCO-POP-MGMT-MIB, cpmSW56CfgBChannelsInUse
+walk cpmCallFailure, snmpwalk, .1.3.6.1.4.1.9.10.19.1.2,CISCO-POP-MGMT-MIB, cpmCallFailure
+table cpmActiveCallSummaryTable, snmptable -ib, .1.3.6.1.4.1.9.10.19.1.3.1,CISCO-POP-MGMT-MIB, cpmActiveCallSummaryTable
+get cpmCallHistorySummaryTableMaxLength, snmpget, .1.3.6.1.4.1.9.10.19.1.4.1.0 ,CISCO-POP-MGMT-MIB, cpmCallHistorySummaryTableMaxLength
+get cpmCallHistorySummaryRetainTimer, snmpget, .1.3.6.1.4.1.9.10.19.1.4.2.0 ,CISCO-POP-MGMT-MIB, cpmCallHistorySummaryRetainTimer
+table cpmCallHistorySummaryTable, snmptable -ib, .1.3.6.1.4.1.9.10.19.1.4.3,CISCO-POP-MGMT-MIB, cpmCallHistorySummaryTable
+walk cmSystemInfo, snmpwalk, .1.3.6.1.4.1.9.9.47.1.1,CISCO-MODEM-MGMT-MIB, cmSystemInfo
+table cmGroupTable, snmptable -ib, .1.3.6.1.4.1.9.9.47.1.2.1,CISCO-MODEM-MGMT-MIB, cmGroupTable
+table cmGroupMemberTable, snmptable -ib, .1.3.6.1.4.1.9.9.47.1.2.2,CISCO-MODEM-MGMT-MIB, cmGroupMemberTable
+table cmLineStatusTable, snmptable -ib, .1.3.6.1.4.1.9.9.47.1.3.1,CISCO-MODEM-MGMT-MIB, cmLineStatusTable
+table cmLineConfigTable, snmptable -ib, .1.3.6.1.4.1.9.9.47.1.3.2,CISCO-MODEM-MGMT-MIB, cmLineConfigTable
+table cmLineStatisticsTable, snmptable -ib, .1.3.6.1.4.1.9.9.47.1.3.3,CISCO-MODEM-MGMT-MIB, cmLineStatisticsTable
+table cmLineSpeedStatisticsTable, snmptable -ib, .1.3.6.1.4.1.9.9.47.1.3.4,CISCO-MODEM-MGMT-MIB, cmLineSpeedStatisticsTable
+walk CISCO-AAA-SERVER-MIB,snmpwalk,.1.3.6.1.4.1.9.10.56,CISCO-AAA-SERVER-MIB,ls CISCO-AAA-SERVER-MIB
+walk CISCO-AAA-SESSION-MIB,snmpwalk,.1.3.6.1.4.1.9.9.150,CISCO-AAA-SESSION-MIB,CISCO-AAA-SESSION-MIB
+walk ciscoAAAServerCapability, snmpwalk, .1.3.6.1.4.1.9.7.129,CISCO-AAA-SERVER-CAPABILITY, ciscoAAAServerCapability
+get cvpdnTunnelTotal,snmpget -Os,.1.3.6.1.4.1.9.10.24.1.1.1.0,CISCO-VPDN-MGMT-MIB,cvpdnTunnelTotal
+get cvpdnSessionTotal,snmpget -Os,.1.3.6.1.4.1.9.10.24.1.1.2.0,CISCO-VPDN-MGMT-MIB,cvpdnSessionTotal
+get cvpdnDeniedUsersTotal,snmpget -Os,.1.3.6.1.4.1.9.10.24.1.1.3.0,CISCO-VPDN-MGMT-MIB,cvpdnDeniedUsersTotal
+table cvpdnSystemTable,snmptable -ib,.1.3.6.1.4.1.9.10.24.1.1.4,CISCO-VPDN-MGMT-MIB,cvpdnSystemTable
+table cvpdnTunnelTable,snmptable -ib,.1.3.6.1.4.1.9.10.24.1.2.1,CISCO-VPDN-MGMT-MIB,cvpdnTunnelTable
+table cvpdnTunnelAttrTable,snmptable -ib,.1.3.6.1.4.1.9.10.24.1.2.2,CISCO-VPDN-MGMT-MIB,cvpdnTunnelAttrTable
+table cvpdnTunnelSessionTable,snmptable -ib,.1.3.6.1.4.1.9.10.24.1.3.1,CISCO-VPDN-MGMT-MIB,cvpdnTunnelSessionTable
+table cvpdncvpdnSessionAttrTable,snmptable -ib,.1.3.6.1.4.1.9.10.24.1.3.2,CISCO-VPDN-MGMT-MIB,cvpdnSessionAttrTable
+table cvpdnUserToFailHistInfoTable,snmptable -ib,.1.3.6.1.4.1.9.10.24.1.4.1,CISCO-VPDN-MGMT-MIB,cvpdnUserToFailHistInfoTable
+table rttMonApplSupportedRttTypesTable,snmptable -ib,.1.3.6.1.4.1.9.9.42.1.1.7,CISCO-RTTMON-MIB,rttMonApplSupportedRttTypesTable
+table rttMonApplSupportedProtocolsTable,snmptable -ib,.1.3.6.1.4.1.9.9.42.1.1.8,CISCO-RTTMON-MIB,rttMonApplSupportedProtocolsTable
+walk expressionMIB,snmpwalk,.1.3.6.1.4.1.9.10.22,EXPRESSION-MIB,expressionMIB
+walk snmpFrameworkMIB,snmpwalk ,.1.3.6.1.6.3.10 ,SNMP-FRAMEWORK-MIB,snmpFrameworkMIB
+walk snmp,snmpwalk,.1.3.6.1.2.1.11,SNMPv2-MIB,snmp
+walk rmon,snmpwalk,.1.3.6.1.2.1.16,RMON-MIB,rmon
+table ccmHistoryEventTable,snmptable -ib,.1.3.6.1.4.1.9.9.43.1.1.6,CISCO-CONFIG-MAN,ccmHistoryEventTable
+walk clogBasic,snmpwalk,.1.3.6.1.4.1.9.9.41.1.1,CISCO-SYSLOG-MIB,clogBasic
+table clogHistoryTable,snmptable -ib,.1.3.6.1.4.1.9.9.41.1.2.3,CISCO-SYSLOG-MIB,clogHistoryTable
+walk ciscoFtpClientMIB,snmpwalk,.1.3.6.1.4.1.9.9.80,CISCO-FTP-CLIENT-MIB,ciscoFtpClientMIB
+table ciuIfStaticConfigTable,snmptable -ib,.1.3.6.1.4.1.9.9.18.1.1.1,<a href="ftp://www.cisco.com/pub/mibs/v2/CISCO-ISDNU-IF-MIB.my">CISCO-ISDNU-IF-MIB</a>,ciuIfStaticConfigTable
+
+@
+
+
+1.1.1.1
+log
+@no message
+@
+text
+@@

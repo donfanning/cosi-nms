@@ -1,0 +1,177 @@
+head     1.1;
+branch   1.1.1;
+access   ;
+symbols  arelease:1.1.1.1 avendor:1.1.1;
+locks    ; strict;
+comment  @# @;
+
+
+1.1
+date     2001.08.20.12.52.01;  author robelewi;  state Exp;
+branches 1.1.1.1;
+next     ;
+
+1.1.1.1
+date     2001.08.20.12.52.01;  author robelewi;  state Exp;
+branches ;
+next     ;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@# COSI: Vadim Zakharine, Access Team
+# ver 1.0
+
+BEGIN {
+ state = 0
+}
+
+{
+ print $0
+ if($0 ~ / LCPREQ/) {
+  for(i = 1; (i < NF) && ($i !~ /^LCPREQ/); i++) {}
+  if(i < NF) {
+# If LCPREQ and its contents are in the same line
+   decppp(i+1)
+  }
+  else {
+# If contents of LCPREQ are transferred to the next line
+   state = 1
+  }
+ }
+ else if((state == 1) && ($0 ~ /^[0-9A-Fa-f]+\.*$/)) {
+# If LCPREQ ended the previous line, this must be its contents
+  decppp(0)
+ }
+ else if(state == 1) {
+# If the string after LCPREQ doesn't look like its contents,
+# there's nothing to decode
+  state = 0
+ }
+}
+
+function decppp(strptr)
+{
+ parmnumb=split($strptr, parm, "")
+ i = 1
+ while((i < parmnumb) && (parm[i] ~ /[0-9A-Fa-f]/))
+ {
+  parmtype = hex2asc(sprintf("%s%s", parm[i++], parm[i++]))
+  parmleng = hex2asc(sprintf("%s%s", parm[i++], parm[i++]))
+  printf("[%02X ", parmtype)
+  if(parmtype == 0) {
+   printf("(RESERVED) ")
+  }
+  else if(parmtype == 1) {
+   printf("(Maximum Receive Unit) ")
+  }
+  else if(parmtype == 3) {
+   printf("(Authentication Protocol) ")
+  }
+  else if(parmtype == 4) {
+   printf("(Quality Protocol) ")
+  }
+  else if(parmtype == 5) {
+   printf("(Magic Number) ")
+  }
+  else if(parmtype == 7) {
+   printf("(Protocol Field Compression) ")
+  }
+  else if(parmtype == 8) {
+   printf("(Address and Control Field Compression) ")
+  }
+  printf("%u B:", parmleng)
+  parmleng = (parmleng - 2) * 2
+  for(j = 0; j < parmleng; j+=2) {
+   printf(" %s%s", parm[i+j], parm[i+j+1])
+  }
+  printf("]\n")
+  i += parmleng
+ }
+ printf("\n")
+}
+
+function hex2asc(hex2asc_byte)
+{
+ split(hex2asc_byte, hex2asc_array, "")
+ if(hex2asc_byte == /^0x[0-9A-Fa-f][0-9A-Fa-f]$/) {
+  offset = 3
+ }
+ else if(hex2asc_byte ~ /^[0-9A-Fa-f]$/) {
+  offset = 3
+  hex2asc_array[4] = hex2asc_array[3]
+  hex2asc_array[3] = 0
+ }
+ else if(hex2asc_byte ~ /^[0-9A-Fa-f][0-9A-Fa-f]$/) {
+  offset = 1
+ }
+ else if(hex2asc_byte ~ /^[0-9A-Fa-f]$/) {
+  offset = 1
+  hex2asc_array[2] = hex2asc_array[1]
+  hex2asc_array[1] = 0
+ }
+ else {
+  return 0
+ }
+ if(hex2asc_array[offset] ~ /^[0-9]$/) {
+  hex2asc_return = hex2asc_array[offset] * 16
+ }
+ else if(hex2asc_array[offset] ~ /^[Aa]$/) {
+  hex2asc_return = 160
+ }
+ else if(hex2asc_array[offset] ~ /^[Bb]$/) {
+  hex2asc_return = 176
+ }
+ else if(hex2asc_array[offset] ~ /^[Cc]$/) {
+  hex2asc_return = 192
+ }
+ else if(hex2asc_array[offset] ~ /^[Dd]$/) {
+  hex2asc_return = 208
+ }
+ else if(hex2asc_array[offset] ~ /^[Ee]$/) {
+  hex2asc_return = 224
+ }
+ else if(hex2asc_array[offset] ~ /^[Ff]$/) {
+  hex2asc_return = 240
+ }
+ offset++
+ if(hex2asc_array[offset] ~ /^[0-9]$/) {
+  hex2asc_return += hex2asc_array[offset]
+ }
+ else if(hex2asc_array[offset] ~ /^[Aa]$/) {
+  hex2asc_return += 10
+ }
+ else if(hex2asc_array[offset] ~ /^[Bb]$/) {
+  hex2asc_return += 11
+ }
+ else if(hex2asc_array[offset] ~ /^[Cc]$/) {
+  hex2asc_return += 12
+ }
+ else if(hex2asc_array[offset] ~ /^[Dd]$/) {
+  hex2asc_return += 13
+ }
+ else if(hex2asc_array[offset] ~ /^[Ee]$/) {
+  hex2asc_return += 14
+ }
+ else if(hex2asc_array[offset] ~ /^[Ff]$/) {
+  hex2asc_return += 15
+ }
+ return hex2asc_return
+}
+@
+
+
+1.1.1.1
+log
+@no message
+@
+text
+@@

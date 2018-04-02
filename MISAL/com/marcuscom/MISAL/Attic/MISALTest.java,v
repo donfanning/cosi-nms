@@ -1,0 +1,111 @@
+head	1.2;
+access;
+symbols
+	DEVEL_1_0:1.1.1.1 MarcusCom:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2001.06.14.14.25.22;	author jmarcus;	state dead;
+branches;
+next	1.1;
+
+1.1
+date	2001.06.13.18.44.06;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.06.13.18.44.06;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@This file doesn't belong here.
+@
+text
+@package com.marcuscom.MISAL;
+
+import java.net.*;
+import java.io.*;
+
+public class MISALTest {
+	public static void main(String[] argv) {
+		String prompt = "login: ?$";
+		int state = 1;
+		Socket socket = null;
+		SuperMISAL sm = null;
+		try {
+			socket = new Socket("sushi.marcuscom.com", 23);
+		}
+		catch (UnknownHostException uhe) {
+			System.err.println("Bad host.");
+			System.exit(1);
+		}
+		catch (IOException ioe) {
+			System.err.println("IO Exception.");
+			System.exit(1);
+		}
+
+		try {
+			sm = new SuperMISAL(socket, false);
+		}
+		catch (SocketException se) {
+			System.err.println(se.getMessage());
+			System.exit(1);
+		}
+		catch (IOException ioe1) {
+			System.err.println("IO Exception.");
+			System.exit(1);
+		}
+		sm.addState(state, prompt);
+		sm.addState(2, "Password: ?$");
+		try {
+			sm.send(1, "marcus\r", 2);
+			sm.clearBuffer();
+			sm.send(2, "mortax1\r", "]\\s*$");
+		}
+		catch (IllegalMISALStateException imse) {
+			System.err.println(imse.getMessage());
+		}
+		catch (IOException ioe2) {
+			System.err.println(ioe2.getMessage());
+		}
+		try {
+			Thread.sleep(4000);
+		}
+		catch (InterruptedException ie) {
+		}
+		System.out.println("\n\n\n");
+		System.out.println("buffer = " + sm.getBuffer());
+		sm.closeSocket();
+	}
+}
+
+
+		
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@@
+
+
+1.1.1.1
+log
+@Initial import into the COSI CVS Repository
+@
+text
+@@

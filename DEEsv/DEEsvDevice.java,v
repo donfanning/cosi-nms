@@ -1,0 +1,174 @@
+head	1.1;
+branch	1.1.1;
+access;
+symbols
+	RELEASE_1_1:1.1.1.1
+	RELEASE_1_0:1.1.1.1
+	HEAD:1.1.1.1
+	MARCUSCOM:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2002.09.07.09.40.48;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2002.09.07.09.40.48;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@/*-
+ * Copyright (c) 2002 Joe Marcus Clarke <marcus@@marcuscom.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * $Id$
+ */
+
+package com.marcuscom.deesv;
+
+import java.io.*;
+
+public class DEEsvDevice {
+    protected DEEsvContainer chassis = null;
+    protected DEEsvContainer cardTable = null;
+    protected DEEsvContainer flashFileTable = null;
+    protected DEEsvContainer flashPartitionTable = null;
+    protected DEEsvContainer flashDeviceTable = null;
+    protected DEEsvContainer physicalMemoryTable = null;
+    protected DEEsvContainer networkElement = null;
+    protected DEEsvContainer logicalModuleTable = null;
+    protected DEEsvContainer portTable = null;
+    protected DEEsvContainer ifEntryTable = null;
+    protected DEEsvContainer memoryPoolTable = null;
+    protected DEEsvContainer ipProtoEndpointTable = null;
+    protected DEEsvContainer peHasIfEntryTable = null;
+
+    public DEEsvDevice() {
+        chassis = new DEEsvContainer("Chassis Information");
+        cardTable = new DEEsvContainer("Chassis Cards");
+        flashFileTable = new DEEsvContainer("Flash Files");
+        flashPartitionTable = new DEEsvContainer("Flash Partitions");
+        flashDeviceTable = new DEEsvContainer("Flash Devices");
+        physicalMemoryTable = new DEEsvContainer("Physical Memory Information");
+        networkElement = new DEEsvContainer("Network Element Information");
+        logicalModuleTable = new DEEsvContainer("Module Information");
+        portTable = new DEEsvContainer("Port Information");
+        ifEntryTable = new DEEsvContainer("Interface Information");
+        memoryPoolTable = new DEEsvContainer("Memory Pool");
+        ipProtoEndpointTable = new DEEsvContainer("Protocol Endpoint Information");
+        peHasIfEntryTable = new DEEsvContainer("Protocol Endpoint/Interface Map");
+    }
+
+    public DEEsvContainer getChassis() {
+        return this.chassis;
+    }
+
+    public DEEsvContainer getCardTable() {
+        return this.cardTable;
+    }
+
+    public DEEsvContainer getFlashFileTable() {
+        return this.flashFileTable;
+    }
+
+    public DEEsvContainer getFlashPartitionTable() {
+        return this.flashPartitionTable;
+    }
+
+    public DEEsvContainer getFlashDeviceTable() {
+        return this.flashDeviceTable;
+    }
+
+    public DEEsvContainer getPhysicalMemoryTable() {
+        return this.physicalMemoryTable;
+    }
+
+    public DEEsvContainer getNetworkElement() {
+        return this.networkElement;
+    }
+
+    public DEEsvContainer getLogicalModuleTable() {
+        return this.logicalModuleTable;
+    }
+
+    public DEEsvContainer getPortTable() {
+        return this.portTable;
+    }
+
+    public DEEsvContainer getIfEntryTable() {
+        return this.ifEntryTable;
+    }
+
+    public DEEsvContainer getMemoryPoolTable() {
+        return this.memoryPoolTable;
+    }
+
+    public DEEsvContainer getIPProtoEndpointTable() {
+        return this.ipProtoEndpointTable;
+    }
+
+    public DEEsvContainer getPEHasIfEntryTable() {
+        return this.peHasIfEntryTable;
+    }
+
+    public void print(PrintStream ps, char separator) throws IOException {
+        networkElement.print(ps, separator);
+        chassis.print(ps, separator);
+        cardTable.print(ps, separator);
+        logicalModuleTable.print(ps, separator);
+        portTable.print(ps, separator);
+        ifEntryTable.print(ps, separator);
+        ipProtoEndpointTable.print(ps, separator);
+        peHasIfEntryTable.print(ps, separator);
+        flashDeviceTable.print(ps, separator);
+        flashPartitionTable.print(ps, separator);
+        flashFileTable.print(ps, separator);
+        physicalMemoryTable.print(ps, separator);
+        memoryPoolTable.print(ps, separator);
+    }
+}
+@
+
+
+1.1.1.1
+log
+@Initial import into COSI CVS.
+@
+text
+@@

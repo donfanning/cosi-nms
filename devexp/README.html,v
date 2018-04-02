@@ -1,0 +1,250 @@
+head	1.6;
+access;
+symbols
+	RELEASE_1_4:1.6
+	RELEASE_1_3:1.5
+	RELEASE_1_2:1.4;
+locks; strict;
+comment	@# @;
+
+
+1.6
+date	2003.01.04.20.41.36;	author jmarcus;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2002.05.04.21.18.42;	author jmarcus;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.08.28.20.20.13;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.05.28.21.35.11;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.05.28.21.22.55;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.05.28.21.17.18;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.6
+log
+@Remove all references to CiscoWorks 2000.  CiscoWorks 2000 is now just
+CiscoWorks.
+@
+text
+@<html>
+<head>
+<meta name="Revision" content="$Id: README.html,v 1.5 2002/05/04 21:18:42 jmarcus Exp $">
+<title>DevExp for Resource Manager Essentials</title>
+</head>
+<body bgcolor="#FFFFFF">
+<h1>DevExp for Resource Manager Essentials</h1>
+
+<h3>Introduction</h3>
+<p>This tool is designed for CiscoWorks users running Resource 
+Manager Essentials 3.1 or higher.  It automates the devices export
+functionality in RME.  This tool can be run from <code>cron</code> or <code>at</code> to produce
+regular CSV or XML ``dumps'' of the RME inventory.</p>
+
+<h3>Requirements</h3>
+<ul>
+<li>Cisco Works Resource Manager Essentials 3.1 or higher on Windows NT,
+Windows 2000, Solaris 2.6, Solaris 7, Solaris 8, HP/UX 11.0, or AIX 4.3.3 
+(note, some versions of RME will not run on all listed operating systems)</li>
+<li><b>All</b> of the prerequisites for RME are met</li>
+</ul>
+
+<h3>Installation</h3>
+<ul>Installation under Windows NT or 2000:
+<li>Unzip devexp-win-v13.zip</li>
+<li>Change directory to devexp-win-v13</li>
+<li>Run <code>install.cmd</code></li>
+</ul>
+
+<ul>Installation under UNIX:
+<li>Run <code>uncompress -c devexp-unix-v13.tar.Z | tar -xvf -</code></li>
+<li>Change directory to devexp-unix-v13</li>
+<li>Run <code>./install.sh</code></li>
+</ul>
+
+<h3>Using DevExp</h3>
+<p>DevExp installs most things in <code>$NMSROOT/objects/devexp</code>, with the actual
+script in <code>$NMSROOT/bin</code>.  First, edit the configuration file in 
+<code>$NMSROOT/objects/devexp/devexp.conf</code>.  The options are all commented.  The
+defaults are usually acceptable for most options, but you will want to
+change the host, and specify an output file.</p>
+
+<p>Once the configuration file is to your liking, run 
+<code>$NMSROOT/bin/devexp.pl</code> (on Windows, you will need to run:
+<code>perl.exe %NMSROOT%\bin\devexp.pl</code>).  Then, check the file
+you specified in the <code>OUTPUT_FILE</code> variable in the configuration
+file.  Make sure things look correct.  If not, double-check your config file,
+and, if things still don't look right, please <a href="mailto:marcus@@marcuscom.com">email</a> me.</p>
+
+<p>Once you've verified it can run on-demand, you can set it up to run in <code>cron</code>
+(on UNIX), or <code>at</code> (on Windows).  Below are some examples to do this.
+Please refer to the cron and at documentation for more specific information.</p>
+
+<p>UNIX <code>crontab</code> entry (run once nightly at 1:00 am):</p>
+
+<pre>
+0       1       *       *       *       /opt/CSCOpx/bin/devexp.pl 2&gt;&amp;1 | /usr/lib/sendmail root
+</pre>
+
+<p>Windows <code>at</code> command (run once nightly at 1:00 am):</p>
+
+<pre>
+at 01:00 /every:M,T,W,Th,F,S,Su perl.exe %NMSROOT%\bin\devexp.pl
+</pre>
+
+<h3>Additional Notes</h3>
+<p>While most of this is Open Source, it still relies on components from
+CiscoWorks which is copyright of Cisco Systems, Inc.</p>
+
+<hr>
+
+<small>
+$Id: README.html,v 1.5 2002/05/04 21:18:42 jmarcus Exp $<br>
+CiscoWorks and Resource Manager Essentials are registered trademarks of
+Cisco Systems, Inc.<br>All rights reserved.
+
+</body>
+</html>
+
+@
+
+
+1.5
+log
+@Update to DevExp 1.3.  This adds support for SSL in RME 3.4 and higher.
+@
+text
+@d3 1
+a3 1
+<meta name="Revision" content="$Id: README.html,v 1.4 2001/08/28 20:20:13 jmarcus Exp $">
+d10 1
+a10 1
+<p>This tool is designed for CiscoWorks 2000 users running Resource 
+d17 1
+a17 1
+<li>Cisco Works 2000 Resource Manager Essentials 3.1 or higher on Windows NT,
+d37 3
+a39 3
+<p>DevExp installs most things in <code>{CW2000}/objects/devexp</code>, with the actual
+script in <code>{CW2000}/bin</code>.  First, edit the configuration file in 
+<code>{CW2000}/objects/devexp/devexp.conf</code>.  The options are all commented.  The
+d44 2
+a45 2
+<code>{CW2000}/bin/devexp.pl</code> (on Windows, you will need to run:
+<code>perl.exe {CW2000}\bin\devexp.pl</code>).  Then, check the file
+d63 1
+a63 1
+at 01:00 /every:M,T,W,Th,F,S,Su perl.exe {CW2000}\bin\devexp.pl
+d68 1
+a68 1
+CiscoWorks 2000 which is copyright of Cisco Systems, Inc.</p>
+d73 2
+a74 2
+$Id: README.html,v 1.4 2001/08/28 20:20:13 jmarcus Exp $<br>
+CiscoWorks 2000 and Resource Manager Essentials are registered trademarks of
+@
+
+
+1.4
+log
+@Upped the version number in the tar.Z/zip files to be 12.
+@
+text
+@d3 1
+a3 1
+<meta name="Revision" content="$Id: README.html,v 1.3 2001/05/28 21:35:11 jmarcus Exp $">
+d18 2
+a19 2
+Windows 2000, Solaris 2.6, Solaris 7, HP/UX 11.0, or AIX 4.3.3 (note, some
+versions of RME will not run on all listed operating systems)</li>
+d25 2
+a26 2
+<li>Unzip devexp-win-v12.zip</li>
+<li>Change directory to devexp-win-v12</li>
+d31 2
+a32 2
+<li>Run <code>uncompress -c devexp-unix-v12.tar.Z | tar -xvf -</code></li>
+<li>Change directory to devexp-unix-v12</li>
+d73 1
+a73 1
+$Id: README.html,v 1.3 2001/05/28 21:35:11 jmarcus Exp $<br>
+@
+
+
+1.3
+log
+@Fixed type in the READMEs.
+@
+text
+@d3 1
+a3 1
+<meta name="Revision" content="$Id: README.html,v 1.2 2001/05/28 21:22:55 jmarcus Exp $">
+d25 2
+a26 2
+<li>Unzip devexp-win-v11.zip</li>
+<li>Change directory to devexp-win-v11</li>
+d31 2
+a32 2
+<li>Run <code>uncompress -c devexp-unix-v11.tar.Z | tar -xvf -</code></li>
+<li>Change directory to devexp-unix-v11</li>
+d73 1
+a73 1
+$Id: README.html,v 1.2 2001/05/28 21:22:55 jmarcus Exp $<br>
+@
+
+
+1.2
+log
+@Updated the README.txt, and fixed a typo in README.html.
+@
+text
+@d3 1
+a3 1
+<meta name="Revision" content="$Id: README.html,v 1.1 2001/05/28 21:17:18 jmarcus Exp $">
+d13 1
+a13 1
+regular CSV of XML ``dumps'' of the RME inventory.</p>
+d73 1
+a73 1
+$Id: README.html,v 1.1 2001/05/28 21:17:18 jmarcus Exp $<br>
+@
+
+
+1.1
+log
+@This is the online version of the DevExp README.
+@
+text
+@d3 1
+a3 1
+<meta name="Revision" content="$Id$">
+d19 1
+a19 1
+versions of RME will not run all listed operating systems)</li>
+d73 1
+a73 1
+$Id$<br>
+@
+

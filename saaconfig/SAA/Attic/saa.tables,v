@@ -1,0 +1,44 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2001.08.30.06.23.48;	author nick07;	state dead;
+branches;
+next	1.1;
+
+1.1
+date	2001.08.30.06.17.15;	author nick07;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@Moved to root dir saaconfig
+@
+text
+@create table Sources (Name varchar(30), Address varchar(15), SNMPVer varchar(30), SAAVer varchar(30), IOSVer varchar(30), Status varchar(30), readCommunity varchar(50), writeCommunity varchar(50));
+
+create table Targets (Name varchar(30), Address varchar(15), Status varchar(30));
+
+create table Operations (Name varchar(30), Protocal varchar(30), Type varchar(30), Threshold varchar(30), Frequency varchar(30), Timeout varchar(30), Interval varchar(30), targetPort varchar(5), pktDataRequest varchar(30), controlEnabled varchar(30));
+
+create table Collectors (sourceName varchar(30), targetName varchar(30), operationName varchar(30), Description longtext, startTime varchar(30), NVRam varchar(30), RowAge varchar(30), Owner varchar(30), Status varchar(30), Life varchar(30));
+@
+
+
+1.1
+log
+@Mysql table for testing
+@
+text
+@@
+

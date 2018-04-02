@@ -1,0 +1,74 @@
+head	1.3;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.3
+date	2002.02.14.03.33.26;	author knail1;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.12.05.19.19.41;	author jmarcus;	state dead;
+branches;
+next	1.1;
+
+1.1
+date	2001.09.09.06.08.23;	author nick07;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.3
+log
+@Adding TODO back to keep track of things..
+@
+text
+@#
+#knail1 2.13.2002 - file created to keep track of things to do
+
+1. fix collector bug which fails on the last snmpset
+
+2. Source.pm & then DB.pm:
+(a) add methods for handling/ returning SrcDescription and SrcHostName (dns name of the SrcIpAddresss
+(d) Ingest above vars in the SAA_SOURCES table by modifying add_source in DB.pm
+
+3. Target.pm & then DB.pm:
+(a) add methods for handling/returning the following
+. ReadCommunity string
+. WriteCommunity string
+. TargetDescription
+. Target DNS name
+. Target SAA version
+. Target IOS version
+(b) Ingest above info into SAA_TARGETS by modifying add_target() in DB.pm
+
+4. Add more functionality to DB.pm
+
+5. Possibly change design structure of Operation class
+@
+
+
+1.2
+log
+@This file isn't used.
+@
+text
+@d1 22
+@
+
+
+1.1
+log
+@added TODO for future use
+lastest mods to DB.pm, and saatable
+@
+text
+@@
+

@@ -1,0 +1,2613 @@
+head	1.25;
+access;
+symbols
+	RELEASE_1_1_1:1.25
+	RELEASE_1_1:1.22
+	RELEASE_1_0_1:1.16
+	RELEASE_1_0:1.16
+	DEVEL_1_0:1.1.1.1
+	MarcusCom:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.25
+date	2004.07.06.04.24.37;	author jmarcus;	state Exp;
+branches;
+next	1.24;
+
+1.24
+date	2004.07.02.04.36.37;	author jmarcus;	state Exp;
+branches;
+next	1.23;
+
+1.23
+date	2004.07.02.04.27.49;	author jmarcus;	state Exp;
+branches;
+next	1.22;
+
+1.22
+date	2004.07.01.16.30.53;	author jmarcus;	state Exp;
+branches;
+next	1.21;
+
+1.21
+date	2004.07.01.05.32.23;	author jmarcus;	state Exp;
+branches;
+next	1.20;
+
+1.20
+date	2004.07.01.04.01.04;	author jmarcus;	state Exp;
+branches;
+next	1.19;
+
+1.19
+date	2004.07.01.03.58.56;	author jmarcus;	state Exp;
+branches;
+next	1.18;
+
+1.18
+date	2004.07.01.03.57.58;	author jmarcus;	state Exp;
+branches;
+next	1.17;
+
+1.17
+date	2004.06.29.22.21.26;	author jmarcus;	state Exp;
+branches;
+next	1.16;
+
+1.16
+date	2001.11.06.04.21.57;	author jmarcus;	state Exp;
+branches;
+next	1.15;
+
+1.15
+date	2001.11.06.01.05.03;	author jmarcus;	state Exp;
+branches;
+next	1.14;
+
+1.14
+date	2001.10.21.02.39.09;	author jmarcus;	state Exp;
+branches;
+next	1.13;
+
+1.13
+date	2001.09.06.05.40.16;	author jmarcus;	state Exp;
+branches;
+next	1.12;
+
+1.12
+date	2001.06.17.07.17.30;	author jmarcus;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2001.06.15.17.06.28;	author jmarcus;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2001.06.15.16.46.19;	author jmarcus;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2001.06.15.05.16.25;	author jmarcus;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2001.06.14.20.43.12;	author jmarcus;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2001.06.14.20.25.41;	author jmarcus;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2001.06.14.19.31.10;	author jmarcus;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2001.06.14.18.32.39;	author jmarcus;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.06.14.16.34.34;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.06.14.15.28.24;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.06.14.14.25.22;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.06.13.18.44.05;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.06.13.18.44.05;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.25
+log
+@Fix a bug that popped up when switching to Jakarta-ORO.  The buffer was no
+longer being evaluated as multiple-line input.  Therefore, '^' anchors were
+not matching.  This restores the older MISAL behavior.  Now '^' and '$'
+anchors should work as expected.
+@
+text
+@package com.marcuscom.MISAL;
+/*-
+ * Copyright (c) 2001-2004 Joe Clarke <marcus@@marcuscom.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ * $Id: MISAL.java,v 1.24 2004/07/02 04:36:37 jmarcus Exp $
+ */
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import org.apache.oro.text.regex.*;
+
+/**
+* <p>MISAL is the MarcusCom Intelligent Socket Abstraction Library.
+* It is designed to make interacting with TCP sockets (such as telnet)
+* much easier.  It uses a separate thread to check the socket's state,
+* and make sure data is sent at the right time.</p>
+*
+* @@author	Joe Clarke &lt;marcus@@marcuscom.com&gt;
+* @@version	1.1.1, $Id: MISAL.java,v 1.24 2004/07/02 04:36:37 jmarcus Exp $
+* @@since	MISAL1.0
+*/
+public class MISAL implements Runnable {
+    /**
+     * The state of the socket when no other state matches.
+     */
+    public final static int MISAL_STATE_UNKNOWN = -1;
+
+    /**
+     * The state of the socket after it is closed.
+     */
+    public final static int MISAL_STATE_CLOSED = 0;
+
+    /**
+     * The default state checking thread interval
+     * (1 millisecond).
+     */
+    protected final static int MISAL_DEFAULT_SLEEP_INTERVAL = 1;
+
+    /**
+     * The default time to wait between state checking attempts
+     * (100 milliseconds).
+     */
+    protected final static int MISAL_THREAD_SLEEP_INTERVAL = 100;
+    /**
+     * Number of milliseconds to wait with fast timers
+     * (10 milliseconds).
+     */
+    protected final static int MISAL_SHORT_THREAD_SLEEP_INTERVAL = 10;
+
+    /**
+     * The default number of retries before failing when a state match
+     * is not found (1000).  This number is multiplied by the
+     * MISAL_THREAD_SLEEP_INTERVAL.
+     */
+    protected final static int DEFAULT_RETRIES = 1000;
+
+    /**
+     * The default size for the main accumulator buffer
+     * (1 MB).  All data read from the socket is stored in this buffer.
+     */
+    protected final static int DEFAULT_BUFFER_SIZE = 1*1024*1024;
+
+    private Hashtable stateTable = null;
+    private Socket _socket = null;
+    private String _buffer = null;
+    private String _lastBuffer = null;
+    private boolean _debug = false;
+    private Thread _stateChecker = null;
+    private boolean _stateCheckerRunning = false;
+    private BufferedInputStream _bis = null;
+    private BufferedOutputStream _bos = null;
+    private int _bufferSize = this.DEFAULT_BUFFER_SIZE;
+    private int _currentState = this.MISAL_STATE_UNKNOWN;
+    private int _sleepInterval = this.MISAL_DEFAULT_SLEEP_INTERVAL;
+
+    /**
+     * Creates a new MISAL socket.
+     *
+     * @@param socket	the <em>open</em> java.net.Socket to be
+     * 			abstracted
+     * @@throws SocketException
+     * if Socket is not initialized and connected
+     * @@throws IOException if there is a problem reading or writing Socket
+     * @@since MISAL1.0
+     */
+    public MISAL(Socket socket) throws SocketException,IOException {
+        if (socket == null) {
+            throw new SocketException("Socket passed to MISAL cannot be null.");
+        }
+        this._socket = socket;
+        _bis = new BufferedInputStream(this._socket.getInputStream(), DEFAULT_BUFFER_SIZE);
+        _bos = new BufferedOutputStream(this._socket.getOutputStream());
+        stateTable = new Hashtable();
+    }
+
+    /**
+     * Returns the MISAL socket's output stream as a
+     * java.io.BufferedOutputStream.
+     *
+     * @@see #getOutputStream()
+     * @@since MISAL1.0
+     * @@return BufferedInputStream used by MISAL
+     */
+    protected BufferedInputStream getInputStream() {
+        return this._bis;
+    }
+
+    /**
+     * Returns the MISAL socket's input stream as a
+     * java.io.BufferedInputStream.
+     *
+     * @@see #getInputStream()
+     * @@since MISAL1.0
+     * @@return BufferedOutputStream used by MISAL
+     */
+    protected BufferedOutputStream getOutputStream() {
+        return this._bos;
+    }
+
+    /**
+     * Adds a new MISAL state to the state table.  MISAL states are used
+     * by the state reading/setting thread to indicate where the socket
+     * is.  For example, a state can be identified by the regular
+     * expression <code>/login: ?$/</code> and a constant
+     * STATE_LOGIN_PROMPT.
+     *
+     * @@see #removeState(int)
+     * @@since MISAL1.0
+     * @@param state an integer (usually defined as a constant)
+     * 			that uniquely identifies this state.  Classes
+     * 			extending MISAL can start their state numbering
+     * 			at 1.
+     * @@param prompt a Perl regular expression, in the form of a
+     * 			String.  When this expression is matched, the
+     * 			MISAL state will be set to the value of the
+     * 			<code>state</code> argument
+     * @@throws MalformedMISALStateException if the prompt is not a valid Perl regular expression.
+     */
+    public synchronized void addState(int state, String prompt) throws MalformedMISALStateException {
+        Perl5Compiler compiler = new Perl5Compiler();
+        Pattern pattern = null;
+        try {
+            pattern = compiler.compile(prompt);
+        }
+        catch (MalformedPatternException mfpe) {
+            throw new MalformedMISALStateException(mfpe.getMessage());
+        }
+        stateTable.put(new Integer(state), pattern);
+        startCheckingState();
+    }
+
+    /**
+     * Removes a MISAL state from the state machine.
+     *
+     * @@param state		integer representing the state to remove
+     * @@see			#addState(int,String)
+     * @@since		MISAL1.0
+     */
+    public synchronized void removeState(int state) {
+        this.stateTable.remove(new Integer(state));
+    }
+
+    /**
+     * Starts the state checking thread.
+     *
+     * @@see		#stopCheckingState()
+     * @@since	MISAL1.0
+     */
+    protected void startCheckingState() {
+        if (_stateChecker == null) {
+            _stateChecker = new Thread(this);
+            _stateCheckerRunning = true;
+            _stateChecker.start();
+        }
+    }
+
+    /**
+     * Stops the state checking thread.
+     *
+     * @@see		#startCheckingState()
+     * @@since	MISAL1.0
+     */
+    protected void stopCheckingState() {
+        if (_stateChecker != null) {
+            _stateCheckerRunning = false;
+            _stateChecker = null;
+        }
+    }
+
+    /**
+     * Runs the state checking thread.  This method should not
+     * be called directly.  Instead, use the
+     * <code>stopCheckingState()</code> and
+     * <code>startCheckingState()</code> methods.
+     *
+     * @@see		#startCheckingState()
+     * @@see		#stopCheckingState()
+     * @@since	MISAL1.0
+     */
+    public void run() {
+        while(_stateCheckerRunning) {
+            if (stateTable.isEmpty()) {
+                /* We don't want to hit a null pointer if
+                   someone empties the state table on us */
+                this.stopCheckingState();
+                return;
+            }
+
+            if (_socket == null) {
+                this.setState(this.MISAL_STATE_CLOSED);
+                this.stopCheckingState();
+                return;
+            }
+
+            String buffer = this._readAll();
+            if (buffer != null) {
+                Enumeration keys = stateTable.keys();
+                Perl5Matcher p5m = new Perl5Matcher();
+                Pattern pattern = null;
+                /* We preserve a separate buffer to hold the
+                   last read data.  This will be useful for
+                   error checking. */
+                this.setBuffer(this.getLastBuffer());
+                this.setLastBuffer(buffer);
+                while(keys.hasMoreElements()) {
+                    int state = ((Integer)keys.nextElement()).intValue();
+		    p5m.setMultiline(true);
+                    pattern = (Pattern)stateTable.get(new Integer(state));
+                    if (p5m.contains(buffer, pattern)) {
+                        this.setState(state);
+                    }
+                }
+            }
+            try {
+                Thread.sleep(this.getSleepInterval());
+            }
+            catch (InterruptedException ie) {
+            }
+        }
+    }
+
+    /**
+     * Sets the MISAL state checking thread's sleep interval.  The thread
+     * will wait <code>interval</code> milliseconds before checking
+     * the state of the socket.
+     *
+     * @@param interval	integer sleep interval
+     * @@see			#getSleepInterval()
+     * @@since		MISAL1.0
+     */
+    protected void setSleepInterval(int interval) {
+        this.debug("Setting sleep interval to " + interval);
+        this._sleepInterval = interval;
+    }
+
+    /**
+     * Returns the MISAL state checking thread's sleep interval.  This
+     * method returns the sleep interval as an integer representing the
+     * number of milliseconds the state checking thread will wait before
+     * checking the socket state again.
+     *
+     * @@see #setSleepInterval(int)
+     * @@since MISAL1.0
+     * @@return the sleep interval in number of milliseconds.
+     */
+    protected int getSleepInterval() {
+        return this._sleepInterval;
+    }
+
+    /**
+     * Sets the current MISAL state.
+     *
+     * @@param state		the state ID of a state already in the state
+     *			machine
+     * @@see			#getState()
+     * @@see			#addState(int,String)
+     * @@see			#removeState(int)
+     * @@since		MISAL1.0
+     */
+    protected synchronized void setState(int state) {
+        this.debug("Setting state to " + state);
+        this._currentState = state;
+    }
+
+    /**
+     * Returns the current MISAL state.
+     *
+     * @@see #getState()
+     * @@see #addState(int,String)
+     * @@see #removeState(int)
+     * @@since MISAL1.0
+     * @@return the current state id.
+     */
+    public synchronized int getState() {
+        return this._currentState;
+    }
+
+    /**
+     * Returns the maximum allowed size of the main accumulator buffer.
+     *
+     * @@see #setBufferSize(int)
+     * @@see #getBuffer()
+     * @@see #clearBuffer()
+     * @@since MISAL1.0
+     * @@return the buffer size in bytes.
+     */
+    public synchronized int getBufferSize() {
+        return this._bufferSize;
+    }
+
+    /**
+     * Sets the maximum allowed size of the main accumulator buffer.
+     *
+     * @@param size	size of the buffer in bytes
+     * @@see		#getBufferSize()
+     * @@see		#getBuffer()
+     * @@see		#clearBuffer()
+     */
+    public synchronized void setBufferSize(int size) {
+        this._bufferSize = size;
+    }
+
+    /**
+     * Clears the main accumulator buffer.  Usually, this method is called
+     * right before running a command for which you wish to save output.
+     *
+     * @@see		#getBufferSize()
+     * @@see		#getBuffer()
+     * @@since	MISAL1.0
+     */
+    public synchronized void clearBuffer() {
+        this.setBuffer(null);
+    }
+
+    private synchronized void setBuffer(String buffer) {
+        if (buffer == null || this._buffer == null || this._buffer.length() >= this.getBufferSize()) {
+            this.debug("Setting buffer to \"" + buffer + "\"");
+            this._buffer = buffer;
+        }
+        else {
+            this.debug("Appending \"" + buffer + "\" to buffer");
+            this._buffer = this._buffer.concat(buffer);
+        }
+    }
+
+    private synchronized void setLastBuffer(String buffer) {
+        this.debug("Setting last read buffer to \"" + buffer + "\"");
+        this._lastBuffer = buffer;
+    }
+
+    /**
+     * Returns the output of the temporary buffer.  This buffer usually
+     * stores the output from the last run command.  It is useful for
+     * doing error checking.
+     *
+     * @@see #getBuffer()
+     * @@since MISAL1.0
+     * @@return the contents of the last read from the MISAL socket as a string.
+     */
+    public synchronized String getLastBuffer() {
+        return this._lastBuffer;
+    }
+
+    /**
+     * Returns the contents of the main accumulator buffer.  This buffer
+     * contains all the data from the sockets output stream since the last
+     * call to <code>clearBuffer</code>.  The output will include the
+     * contents of the current temporary buffer as well.
+     *
+     * @@see #clearBuffer()
+     * @@see #getLastBuffer()
+     * @@since MISAL1.0
+     * @@return the accumulated MISAL buffer as a string.
+     */
+    public synchronized String getBuffer() {
+        if (this._buffer == null) return this.getLastBuffer();
+        if (this.getLastBuffer() == null) return this._buffer;
+        return this._buffer.concat(this.getLastBuffer());
+    }
+
+    /**
+     * Tells whether or not debugging is enabled.
+     *
+     * @@see #toggleDebug()
+     * @@since MISAL1.0
+     * @@return true if debugging is enabled, false otherwise.
+     */
+    public boolean getDebug() {
+        return this._debug;
+    }
+
+    /**
+     * Toggle the debugging state.
+     *
+     * @@return	The debugging state after being toggled
+     * @@see		#getDebug()
+     * @@since	MISAL1.0
+     */
+    public boolean toggleDebug() {
+        this._debug = !this._debug;
+        this.debug("Debugging set to " + this._debug);
+        return this._debug;
+    }
+
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @@since MISAL 1.0
+            * @@param data the data to send on the socket
+            * @@param expect a string indicating what to expect back from the host
+            * @@throws IllegalMISALStateException if the state, <CODE>expect</CODE>, is not reached.
+            * @@throws IOException if any miscellaneous IO error occurs.
+            */
+    public void send(String data, String expect) throws IllegalMISALStateException, IOException {
+        this.send(MISAL_STATE_UNKNOWN, data, expect, 0, 0);
+    }
+
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @@since MISAL 1.0
+            * @@param data the data to send on the socket
+            * @@param expectState an integer indicating what to expect back from the
+            * host
+            * @@throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
+            * @@throws IOException if any miscellaneous IO error occurs.
+            */
+    public void send(String data, int expectState) throws IllegalMISALStateException, IOException {
+        this.send(MISAL_STATE_UNKNOWN, data, null, expectState, 0);
+    }
+
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @@since MISAL 1.0
+            * @@param state the initial state to require before sending data on the
+            * socket
+            * @@param data the data to send on the socket
+            * @@param expect a String indicating what to expect back from the host
+            * @@throws IllegalMISALStateException if the state, <CODE>expect</CODE> is not reached
+            * @@throws IOException if any miscellaneous IO error occurs.
+            */
+    public void send(int state, String data, String expect) throws IllegalMISALStateException, IOException {
+        this.send(state, data, expect, 0, 0);
+    }
+
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @@since MISAL 1.0
+            * @@param state the initial state to require before sending data on the
+            * socket
+            * @@param data the data to send on the socket
+            * @@param expectState an integer indicating what to expect back from the
+            * host
+            * @@throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
+            * @@throws IOException if any miscellaneous IO error occurs.
+            */
+    public void send(int state, String data, int expectState) throws IllegalMISALStateException, IOException {
+        this.send(state, data, null, expectState, 0);
+    }
+
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @@since MISAL 1.0
+            * @@param state the initial state to require before sending data on the
+            * socket
+            * @@param data the data to send on the socket
+            * @@param expect a string indicating what to expect back from the host
+            * @@param wait number of retries before timing out if expect state
+            * is not met
+            * @@throws IllegalMISALStateException if the state, <CODE>expect</CODE>, is not reached.
+            * @@throws IOException if any miscellaneous IO exception occurs.
+            */
+    public void send(int state, String data, String expect, int wait) throws IllegalMISALStateException, IOException {
+        this.send(state, data, expect, 0, wait);
+    }
+
+    /**
+            * Send data on the MISAL socket.
+            *
+            * @@since MISAL 1.0
+            * @@param state the initial state to require before sending data on the
+            * socket
+            * @@param data the data to send on the socket
+            * @@param expectState an integer indicating what to expect back from the
+            * host
+            * @@param wait number of retries before timing out if expect state
+            * is not met
+            * @@throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
+            * @@throws IOException if any miscellaneous IO error occurs.
+            */
+    public void send(int state, String data, int expectState, int wait) throws IllegalMISALStateException, IOException {
+        this.send(state, data, null, expectState, wait);
+    }
+
+    /**
+            * Send data on the MISAL socket.  This overloaded version of send() should
+            * not be normally used.  Instead, use one of the other send() methods.
+            *
+            * @@see #expect(int,int)
+            * @@since MISAL 1.0
+            * @@param state the initial state to require before sending data on the
+            * socket
+            * @@param data the data to send on the socket
+            * @@param expect a string indicating what to expect back from the host
+            * @@param expectState an integer indicating what to expect back from the
+            * host
+            * @@param wait number of retries before timing out if expect state
+            * is not met
+            * @@throws IllegalMISALStateException if the state,<CODE>expectState</CODE>, or the state <CODE>expect</CODE>
+            * are not reached.
+            * @@throws IOException if any miscellaneous IO error occurs.
+            */
+    protected void send(int state, String data, String expect, int expectState, int wait) throws IllegalMISALStateException, IOException {
+        this.debug("Entering send(int, String, String, int, int) method.");
+        boolean result = false;
+        int currState = this.MISAL_STATE_UNKNOWN;
+        byte b[] = null;
+        if (wait == 0) wait = this.DEFAULT_RETRIES;
+        for(int i = 1; i <= wait; i++) {
+            currState = this.getState();
+            this.debug("i = " + i + " and currState = " + currState);
+            if (currState == state) break;
+            try {
+                Thread.sleep(this.MISAL_THREAD_SLEEP_INTERVAL);
+            }
+            catch (InterruptedException ie) {}
+        }
+        if (currState != state) {
+            throw new IllegalMISALStateException("Needed state " + state + ", but found state " + currState);
+        }
+        b = new byte[data.length()];
+        b = data.getBytes();
+        this.debug("Sending data: " + data);
+        this._bos.write(b, 0, b.length);
+        this._bos.flush();
+        /* Set the state to be unknown while we wait to find out
+           what the resultant state will be. */
+        this.setState(this.MISAL_STATE_UNKNOWN);
+        if (expect != null) {
+            this.debug("Expecting text: \"" + expect + "\"");
+            result = this.expect(expect, wait);
+        }
+        else {
+            this.debug("Expecting state: " + expectState);
+            result = this.expect(expectState, wait);
+        }
+
+        if (!result) {
+            throw new IllegalMISALStateException("Invalid expect state");
+        }
+    }
+
+    /**
+            * Wait for a certain state before proceeding.
+            *
+            * @@see #send(int,String,String,int,int)
+            * @@since MISAL 1.0
+            * @@param state an integer indicating the state to wait for
+            * @@return true if state is reached, fales otherwise
+            */
+    protected boolean expect(int state) {
+        return this.expect(state, this.DEFAULT_RETRIES);
+    }
+
+    /**
+            * Wait for a certain string of data from the remote host before
+            * proceeding.  For example, wait for an enable prompt before doing
+            * a <code>show run</code>.
+            *
+            * @@see #send(int,String,String,int,int)
+            * @@since MISAL 1.0
+            * @@param prompt string to expect from remote host
+            * @@return true if <CODE>prompt</CODE> is reached, false otherwise.
+            */
+    protected boolean expect(String prompt) {
+        return this.expect(prompt, this.DEFAULT_RETRIES);
+    }
+
+    /**
+            * Wait for a certain state before proceeding.
+            *
+            * @@see #send(int,String,String,int,int)
+            * @@since MISAL 1.0
+            * @@param state an integer indicating the state to wait for
+            * @@param tries number of tries before giving up on the expected state
+            * @@return true is <CODE>prompt</CODE> is reached, false otherwise.
+            */
+    protected boolean expect(int state, int tries) {
+        this.debug("Entering method expect(int, int)");
+        for(int i = 1; i <= tries; i++) {
+            this.debug("i = " + i + " and state = " + this.getState());
+            if (this.getState() == state) {
+                return true;
+            }
+            try {
+                Thread.sleep(this.MISAL_THREAD_SLEEP_INTERVAL);
+            }
+            catch (InterruptedException ie) {}
+        }
+        return false;
+    }
+
+    /**
+            * Wait for a certain string of data from the remote host before
+            * proceeding.  For example, wait for an enable prompt before doing
+            * a <code>show run</code>.
+            *
+            * @@see #send(int,String,String,int,int)
+            * @@since MISAL 1.0
+            * @@param prompt string to expect from remote host
+            * @@param tries number of tries before giving up on the expected state
+            * @@return true if <CODE>prompt</CODE> is seen, false otherwise.
+            */
+    protected boolean expect(String prompt, int tries) {
+        this.debug("Entering method expect(String, int)");
+        Perl5Compiler compiler = new Perl5Compiler();
+        Perl5Matcher matcher = new Perl5Matcher();
+        Pattern pattern = null;
+        for(int i = 1; i <= tries; i++) {
+            String buffer = this.getLastBuffer();
+            if (buffer == null) continue;
+            this.debug("Try number " + i + ", buffer = \"" + buffer + "\"");
+            try {
+		matcher.setMultiline(true);
+                pattern = compiler.compile(prompt);
+            }
+            catch (MalformedPatternException mpe) {
+                return false;
+            }
+            if (matcher.contains(buffer, pattern)) {
+                this.debug("Found a buffer match!");
+                return true;
+            }
+            try {
+                Thread.sleep(this.MISAL_THREAD_SLEEP_INTERVAL);
+            }
+            catch (InterruptedException ie) {}
+        }
+        return false;
+    }
+
+    /**
+     * Prints a debugging message.  The message will only be printed
+     * if debugging is enabled.
+     *
+     * @@param msg	The message to be printed
+     * @@see		#getDebug()
+     * @@see		#toggleDebug()
+     * @@since	MISAL1.0
+     */
+    public void debug(String msg) {
+        if (this.getDebug()) {
+            System.err.println("DEBUG: " + msg);
+        }
+    }
+
+    private String _readAll() {
+        byte b[] = null;
+        int i = 0;
+        String retBuf = null;
+
+        try {
+            int numBytes = 0;
+            int t;
+            int y = 0;
+            byte[] obuf = new byte[4];
+
+            numBytes = _bis.available();
+            if (numBytes == 0) {
+                return null;
+            }
+            b = new byte[numBytes];
+            while (numBytes > 0) {
+                t = _bis.read();
+                numBytes--;
+                if (t == '\n' || t == '\r' || t == '\t' ||
+                        (t >= 32 && t < 127)) {
+                    /* If not a negotiation character,
+                       it needs to be read as data. */
+                    b[i++] = (byte)t;
+                    continue;
+                }
+                obuf[0] = (byte)255;
+                t = _bis.read();
+                numBytes--;
+                if (t == 251 || t == 252) {
+                    y = 254;
+                }
+                if (t == 253 || t == 254) {
+                    y = 252;
+                }
+                if (y > 0) {
+                    obuf[1] = (byte)y;
+                    obuf[2] = (byte)_bis.read();
+                    numBytes--;
+                    _bos.write(obuf, 0, 3);
+                    _bos.flush();
+                    y = 0;
+                }
+            }
+
+        }
+        catch (IOException ioe) {
+            return null;
+        }
+
+        if (i == 0) return null;
+
+        retBuf = new String(b, 0, i);
+        this.debug("Read \"" + retBuf + "\" from socket input stream");
+        return retBuf;
+    }
+
+    /**
+     * Closes the MISAL socket.  Once you are done with the socket, you
+     * can have MISAL close it.  This will stop the state checking thread.
+     *
+     * @@since	MISAL1.0
+     */
+    public void closeSocket() {
+        this.debug("Closing socket ...");
+        if (this._socket != null) {
+            try {
+                this._socket.close();
+            }
+            catch (IOException ioe) {
+            }
+            this._socket = null;
+        }
+    }
+}
+@
+
+
+1.24
+log
+@Use getLastBuffer() instead of getBuffer() for pattern matching.
+@
+text
+@d27 1
+a27 1
+ * $Id: MISAL.java,v 1.23 2004/07/02 04:27:49 jmarcus Exp $
+d41 1
+a41 1
+* @@version	1.1.1, $Id: MISAL.java,v 1.23 2004/07/02 04:27:49 jmarcus Exp $
+d249 1
+d649 1
+@
+
+
+1.23
+log
+@* Fix some typos in the JavaDoc comments
+* Correct a race condition resulting from clearBuffer()
+* Do not try to do pattern matching if the buffer is null
+* Tidy up the code with astyle -j
+* Bump the version to 1.1.1
+@
+text
+@d27 1
+a27 1
+ * $Id: MISAL.java,v 1.22 2004/07/01 16:30:53 jmarcus Exp $
+d41 1
+a41 1
+* @@version	1.1.1, $Id: MISAL.java,v 1.22 2004/07/01 16:30:53 jmarcus Exp $
+d644 1
+a644 1
+            String buffer = this.getBuffer();
+@
+
+
+1.22
+log
+@Clean up the way bytes are read from the socket.  Returned strings should be
+much cleaner now.
+@
+text
+@d27 1
+a27 1
+ * $Id: MISAL.java,v 1.21 2004/07/01 05:32:23 jmarcus Exp $
+d41 1
+a41 1
+* @@version	1.0, $Id: MISAL.java,v 1.21 2004/07/01 05:32:23 jmarcus Exp $
+d239 3
+a246 3
+                Enumeration keys = stateTable.keys();
+                Perl5Matcher p5m = new Perl5Matcher();
+                Pattern pattern = null;
+d387 1
+a387 1
+     * contains all the data fro the sockets output stream since the last
+d397 2
+d421 1
+a421 1
+        this._debug = this._debug ? false : true;
+d578 1
+a578 1
+            * Wait for a certain state for proceeding.
+d604 1
+a604 1
+            * Wait for a certain state for proceeding.
+d645 2
+a646 1
+            this.debug("i = " + i + " buffer = \"" + buffer + "\"");
+d653 3
+a655 11
+            if (buffer == null) {
+                if (matcher.contains(this.getBuffer(), pattern)) {
+                    this.debug("Found a buffer match!");
+                    return true;
+                }
+            }
+            else {
+                if (matcher.contains(buffer, pattern)) {
+                    this.debug("Found a buffer match!");
+                    return true;
+                }
+d683 1
+a683 1
+	String retBuf = null;
+d698 1
+a698 1
+		numBytes--;
+d700 1
+a700 1
+			(t >= 32 && t < 127)) {
+d708 1
+a708 1
+		numBytes--;
+d718 1
+a718 1
+		    numBytes--;
+d730 1
+a730 1
+	if (i == 0) return null;
+@
+
+
+1.21
+log
+@* Remove deprecated use of Thread.stop()
+* Fix _readAll method to be more resilient and less prone to race conditions
+@
+text
+@d27 1
+a27 1
+ * $Id: MISAL.java,v 1.20 2004/07/01 04:01:04 jmarcus Exp $
+d41 1
+a41 1
+* @@version	1.0, $Id: MISAL.java,v 1.20 2004/07/01 04:01:04 jmarcus Exp $
+a686 2
+        String retBuf = null;
+        int numBytes = 0;
+d688 2
+d691 5
+d701 1
+a701 5
+            retBuf = new String();
+            int t;
+            int y = 0;
+            byte[] obuf = new byte[4];
+            while (_bis.available() > 0) {
+d703 3
+a705 1
+                if (t == '\n' || t == '\r' || (t >= 32 && t < 127)) {
+a707 4
+                    if (i == numBytes) {
+                        retBuf = retBuf.concat(new String(b, 0, i));
+                        i = 0;
+                    }
+d713 1
+d723 1
+d735 3
+a737 1
+        retBuf = retBuf.concat(new String(b, 0, i));
+@
+
+
+1.20
+log
+@Add 2004 to the copyrights.
+@
+text
+@d27 1
+a27 1
+ * $Id: MISAL.java,v 1.19 2004/07/01 03:58:56 jmarcus Exp $
+d41 1
+a41 1
+* @@version	1.0, $Id: MISAL.java,v 1.19 2004/07/01 03:58:56 jmarcus Exp $
+d91 1
+d194 1
+d207 1
+a207 1
+            _stateChecker.stop();
+d223 1
+a223 1
+        while(true) {
+d687 3
+d691 2
+a692 1
+            if (_bis.available() == 0) {
+d695 2
+a696 1
+            b = new byte[_bis.available()];
+a698 1
+            int i = 0;
+d705 4
+d733 4
+a736 2
+        this.debug("Read \"" + new String(b) + "\" from socket input stream");
+        return new String(b);
+@
+
+
+1.19
+log
+@Cleanup trainling whitespace, and reformat using astyle -j.
+@
+text
+@d3 1
+a3 1
+ * Copyright (c) 2001 Joe Clarke <marcus@@marcuscom.com>
+d27 1
+a27 1
+ * $Id: MISAL.java,v 1.18 2004/07/01 03:57:58 jmarcus Exp $
+d41 1
+a41 1
+* @@version	1.0, $Id: MISAL.java,v 1.18 2004/07/01 03:57:58 jmarcus Exp $
+@
+
+
+1.18
+log
+@Replace the old PerlTools imports with the new Jakarta ORO imports.
+@
+text
+@d27 1
+a27 1
+ * $Id: MISAL.java,v 1.17 2004/06/29 22:21:26 jmarcus Exp $
+d41 1
+a41 1
+* @@version	1.0, $Id: MISAL.java,v 1.17 2004/06/29 22:21:26 jmarcus Exp $
+d56 1
+a56 1
+     * The default state checking thread interval 
+d67 1
+a67 1
+     * Number of milliseconds to wait with fast timers 
+d74 1
+a74 1
+     * is not found (1000).  This number is multiplied by the 
+d80 1
+a80 1
+     * The default size for the main accumulator buffer 
+d212 2
+a213 2
+     * be called directly.  Instead, use the 
+     * <code>stopCheckingState()</code> and 
+d422 9
+a430 9
+	/**
+         * Send data on the MISAL socket.
+         *
+         * @@since MISAL 1.0
+         * @@param data the data to send on the socket
+         * @@param expect a string indicating what to expect back from the host
+         * @@throws IllegalMISALStateException if the state, <CODE>expect</CODE>, is not reached.
+         * @@throws IOException if any miscellaneous IO error occurs.
+         */
+d435 10
+a444 10
+	/**
+         * Send data on the MISAL socket.
+         *
+         * @@since MISAL 1.0
+         * @@param data the data to send on the socket
+         * @@param expectState an integer indicating what to expect back from the
+         * host
+         * @@throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
+         * @@throws IOException if any miscellaneous IO error occurs.
+         */
+d449 11
+a459 11
+	/**
+         * Send data on the MISAL socket.
+         *
+         * @@since MISAL 1.0
+         * @@param state the initial state to require before sending data on the
+         * socket
+         * @@param data the data to send on the socket
+         * @@param expect a String indicating what to expect back from the host
+         * @@throws IllegalMISALStateException if the state, <CODE>expect</CODE> is not reached
+         * @@throws IOException if any miscellaneous IO error occurs.
+         */
+d464 12
+a475 12
+	/**
+         * Send data on the MISAL socket.
+         *
+         * @@since MISAL 1.0
+         * @@param state the initial state to require before sending data on the
+         * socket
+         * @@param data the data to send on the socket
+         * @@param expectState an integer indicating what to expect back from the
+         * host
+         * @@throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
+         * @@throws IOException if any miscellaneous IO error occurs.
+         */
+d480 13
+a492 13
+	/**
+         * Send data on the MISAL socket.
+         *
+         * @@since MISAL 1.0
+         * @@param state the initial state to require before sending data on the
+         * socket
+         * @@param data the data to send on the socket
+         * @@param expect a string indicating what to expect back from the host
+         * @@param wait number of retries before timing out if expect state
+         * is not met
+         * @@throws IllegalMISALStateException if the state, <CODE>expect</CODE>, is not reached.
+         * @@throws IOException if any miscellaneous IO exception occurs.
+         */
+d497 14
+a510 14
+	/**
+         * Send data on the MISAL socket.
+         *
+         * @@since MISAL 1.0
+         * @@param state the initial state to require before sending data on the
+         * socket
+         * @@param data the data to send on the socket
+         * @@param expectState an integer indicating what to expect back from the
+         * host
+         * @@param wait number of retries before timing out if expect state
+         * is not met
+         * @@throws IllegalMISALStateException if the state, <CODE>expectState</CODE>, is not reached.
+         * @@throws IOException if any miscellaneous IO error occurs.
+         */
+d515 18
+a532 18
+	/**
+         * Send data on the MISAL socket.  This overloaded version of send() should
+         * not be normally used.  Instead, use one of the other send() methods.
+         *
+         * @@see #expect(int,int)
+         * @@since MISAL 1.0
+         * @@param state the initial state to require before sending data on the
+         * socket
+         * @@param data the data to send on the socket
+         * @@param expect a string indicating what to expect back from the host
+         * @@param expectState an integer indicating what to expect back from the
+         * host
+         * @@param wait number of retries before timing out if expect state
+         * is not met
+         * @@throws IllegalMISALStateException if the state,<CODE>expectState</CODE>, or the state <CODE>expect</CODE>
+         * are not reached.
+         * @@throws IOException if any miscellaneous IO error occurs.
+         */
+d573 8
+a580 8
+	/**
+         * Wait for a certain state for proceeding.
+         *
+         * @@see #send(int,String,String,int,int)
+         * @@since MISAL 1.0
+         * @@param state an integer indicating the state to wait for
+         * @@return true if state is reached, fales otherwise
+         */
+d585 10
+a594 10
+	/**
+         * Wait for a certain string of data from the remote host before
+         * proceeding.  For example, wait for an enable prompt before doing
+         * a <code>show run</code>.
+         *
+         * @@see #send(int,String,String,int,int)
+         * @@since MISAL 1.0
+         * @@param prompt string to expect from remote host
+         * @@return true if <CODE>prompt</CODE> is reached, false otherwise.
+         */
+d599 9
+a607 9
+	/**
+         * Wait for a certain state for proceeding.
+         *
+         * @@see #send(int,String,String,int,int)
+         * @@since MISAL 1.0
+         * @@param state an integer indicating the state to wait for
+         * @@param tries number of tries before giving up on the expected state
+         * @@return true is <CODE>prompt</CODE> is reached, false otherwise.
+         */
+d623 11
+a633 11
+	/**
+         * Wait for a certain string of data from the remote host before
+         * proceeding.  For example, wait for an enable prompt before doing
+         * a <code>show run</code>.
+         *
+         * @@see #send(int,String,String,int,int)
+         * @@since MISAL 1.0
+         * @@param prompt string to expect from remote host
+         * @@param tries number of tries before giving up on the expected state
+         * @@return true if <CODE>prompt</CODE> is seen, false otherwise.
+         */
+d655 4
+a658 4
+               if (matcher.contains(buffer, pattern)) {
+                   this.debug("Found a buffer match!");
+                   return true;
+               }
+@
+
+
+1.17
+log
+@Fix bug with newer versions of IOS.  Now we're a little smarter when it comes
+to reading in the telnet data.
+@
+text
+@d27 1
+a27 1
+ * $Id: MISAL.java,v 1.16 2001/11/06 04:21:57 jmarcus Exp $
+d32 1
+a32 1
+import com.oroinc.text.regex.*;
+d41 1
+a41 1
+* @@version	1.0, $Id: MISAL.java,v 1.16 2001/11/06 04:21:57 jmarcus Exp $
+@
+
+
+1.16
+log
+@Some more doc cleanup.
+@
+text
+@d27 1
+a27 1
+ * $Id: MISAL.java,v 1.15 2001/11/06 01:05:03 jmarcus Exp $
+d41 1
+a41 1
+* @@version	1.0, $Id: MISAL.java,v 1.15 2001/11/06 01:05:03 jmarcus Exp $
+d648 1
+a648 1
+            if (buffer != null) {
+d654 6
+d692 1
+d696 1
+a696 1
+                if (t != 255) {
+d699 2
+a700 2
+                    b[0] = (byte)t;
+                    break;
+a718 9
+            if (_bis.available() == 0) {
+                return null;
+            }
+            /* This starts at 1 now because we load the first
+               character in during the negotiation code. */
+            int result = _bis.read(b, 1, _bis.available());
+            if (result == 0) {
+                return null;
+            }
+@
+
+
+1.15
+log
+@Update documentation and Makefile to prepare for 1.0 release.
+@
+text
+@d27 1
+a27 1
+ * $Id: MISAL.java,v 1.14 2001/10/21 02:39:09 jmarcus Exp $
+d41 1
+a41 1
+* @@version	1.0, $Id: MISAL.java,v 1.14 2001/10/21 02:39:09 jmarcus Exp $
+a148 1
+     * @@see Pattern
+@
+
+
+1.14
+log
+@More JavaDoc stuff (now with Forte!).
+@
+text
+@d27 1
+a27 1
+ * $Id: MISAL.java,v 1.13 2001/09/06 05:40:16 jmarcus Exp $
+d41 1
+a41 1
+* @@version	1.0, $Id: MISAL.java,v 1.13 2001/09/06 05:40:16 jmarcus Exp $
+a104 1
+     * @@see java.net.Socket
+d121 1
+a121 2
+     * @@see Socket#getOutputStream
+     * @@see BufferedOutputStream#
+d133 1
+a133 2
+     * @@see Socket#getInputStream
+     * @@see BufferedInputStream#
+d148 2
+a149 2
+     * @@see #removeState
+     * @@see com.oroinc.text.regex.Pattern#
+d178 1
+a178 1
+     * @@see			#addState
+d188 1
+a188 1
+     * @@see		#stopCheckingState
+d201 1
+a201 1
+     * @@see		#startCheckingState
+d217 2
+a218 2
+     * @@see		#startCheckingState
+     * @@see		#stopCheckingState
+d268 1
+a268 1
+     * @@see			#getSleepInterval
+d282 1
+a282 1
+     * @@see #setSleepInterval
+d295 3
+a297 3
+     * @@see			#getState
+     * @@see			#addState
+     * @@see			#removeState
+d308 3
+a310 3
+     * @@see #getState
+     * @@see #addState
+     * @@see #removeState
+d321 3
+a323 3
+     * @@see #setBufferSize
+     * @@see #getBuffer
+     * @@see #clearBuffer
+d335 3
+a337 3
+     * @@see		#getBufferSize
+     * @@see		#getBuffer
+     * @@see		#clearBuffer
+d347 2
+a348 2
+     * @@see		#getBufferSize
+     * @@see		#getBuffer
+d376 1
+a376 1
+     * @@see #getBuffer
+d390 2
+a391 2
+     * @@see #clearBuffer
+     * @@see #getLastBuffer
+d402 1
+a402 1
+     * @@see #toggleDebug
+d414 1
+a414 1
+     * @@see		#getDebug
+d520 1
+a520 1
+         * @@see #expect
+d577 1
+a577 1
+         * @@see #send
+d591 1
+a591 1
+         * @@see #send
+d603 1
+a603 1
+         * @@see #send
+d629 1
+a629 1
+         * @@see #send
+d668 2
+a669 2
+     * @@see		#getDebug
+     * @@see		#toggleDebug
+@
+
+
+1.13
+log
+@More documentation additions.
+@
+text
+@d1 1
+d27 1
+a27 1
+ * $Id: MISAL.java,v 1.12 2001/06/17 07:17:30 jmarcus Exp $
+a28 2
+package com.marcuscom.MISAL;
+
+d41 1
+a41 1
+* @@version	1.0, $Id: MISAL.java,v 1.12 2001/06/17 07:17:30 jmarcus Exp $
+d100 2
+a101 2
+     * @@param socket	the <em>open</em> java.net.Socket to be 
+     *			abstracted
+d103 4
+a106 4
+                if Socket is not initialized and connected
+     * @@throws IOException
+     * @@see			java.net.Socket
+     * @@since		MISAL1.0
+d122 4
+a125 3
+     * @@see		Socket#getOutputStream
+     * @@see		BufferedOutputStream
+     * @@since	MISAL1.0
+d135 4
+a138 3
+     * @@see		Socket#getInputStream
+     * @@see		BufferedInputStream
+     * @@since	MISAL1.0
+d148 1
+a148 1
+     * expression <code>/login: ?$/</code> and a constant 
+d151 12
+a162 14
+     * @@param state		an integer (usually defined as a constant)
+     *			that uniquely identifies this state.  Classes
+     *			extending MISAL can start their state numbering
+     *			at 1.
+     * @@param prompt	a Perl regular expression, in the form of a
+     *			String.  When this expression is matched, the
+     *			MISAL state will be set to the value of the
+     *			<code>state</code> argument
+     * @@throws MalformedMISALStateException
+     * @@exception MalformedMISALStateException
+     *             if the prompt is not a valid Perl regular expression.
+     * @@see			#removeState
+     * @@see			com.oroinc.text.regex.Pattern
+     * @@since		MISAL1.0
+d280 3
+a282 3
+     * Returns the MISAL state checking thread's sleep interval.  This 
+     * method returns the sleep interval as an integer representing the 
+     * number of milliseconds the state checking thread will wait before 
+d285 3
+a287 2
+     * @@see		#setSleepInterval
+     * @@since	MISAL1.0
+d311 5
+a315 4
+     * @@see			#getState
+     * @@see			#addState
+     * @@see			#removeState
+     * @@since		MISAL1.0
+d324 5
+a328 4
+     * @@see		#setBufferSize
+     * @@see		#getBuffer
+     * @@see		#clearBuffer
+     * @@since	MISAL1.0
+d379 3
+a381 2
+     * @@see		#getBuffer
+     * @@since	MISAL1.0
+d393 4
+a396 3
+     * @@see		#clearBuffer
+     * @@see		#getLastBuffer
+     * @@since	MISAL1.0
+d405 3
+a407 2
+     * @@see		#toggleDebug
+     * @@since	MISAL1.0
+d427 8
+a434 6
+	 * Send data on the MISAL socket.
+	 *
+	 * @@param data  the data to send on the socket
+	 * @@param expect a string indicating what to expect back from the host
+	 * @@since MISAL 1.0
+	 */
+d440 9
+a448 7
+	 * Send data on the MISAL socket.
+	 *
+	 * @@param data  the data to send on the socket
+	 * @@param expectState an integer indicating what to expect back from the 
+	 * host
+	 * @@since MISAL 1.0
+	 */
+d454 10
+a463 8
+	 * Send data on the MISAL socket.
+	 *
+	 * @@param state the initial state to require before sending data on the
+	 * socket
+	 * @@param data  the data to send on the socket
+	 * @@param expect a String indicating what to expect back from the host
+	 * @@since MISAL 1.0
+	 */
+d469 11
+a479 9
+	 * Send data on the MISAL socket.
+	 *
+	 * @@param state the initial state to require before sending data on the
+	 * socket
+	 * @@param data  the data to send on the socket
+	 * @@param expectState an integer indicating what to expect back from the 
+	 * host
+	 * @@since MISAL 1.0
+	 */
+d485 12
+a496 10
+	 * Send data on the MISAL socket.
+	 *
+	 * @@param state the initial state to require before sending data on the
+	 * socket
+	 * @@param data  the data to send on the socket
+	 * @@param expect a string indicating what to expect back from the host
+	 * @@param wait  number of retries before timing out if expect state
+	 * is not met
+	 * @@since MISAL 1.0
+	 */
+d502 13
+a514 11
+	 * Send data on the MISAL socket.
+	 *
+	 * @@param state the initial state to require before sending data on the
+	 * socket
+	 * @@param data  the data to send on the socket
+	 * @@param expectState an integer indicating what to expect back from the 
+	 * host
+	 * @@param wait  number of retries before timing out if expect state
+	 * is not met
+	 * @@since MISAL 1.0
+	 */
+d520 17
+a536 14
+	 * Send data on the MISAL socket.  This overloaded version of send() should
+	 * not be normally used.  Instead, use one of the other send() methods.
+	 *
+	 * @@param state the initial state to require before sending data on the
+	 * socket
+	 * @@param data  the data to send on the socket
+	 * @@param expect a string indicating what to expect back from the host
+	 * @@param expectState an integer indicating what to expect back from the 
+	 * host
+	 * @@param wait  number of retries before timing out if expect state
+	 * is not met
+	 * @@see #expect
+	 * @@since MISAL 1.0
+	 */
+d578 7
+a584 6
+	 * Wait for a certain state for proceeding.
+	 *
+	 * @@param state an integer indicating the state to wait for
+	 * @@see #send
+	 * @@since MISAL 1.0
+	 */
+d590 9
+a598 8
+	 * Wait for a certain string of data from the remote host before
+	 * proceeding.  For example, wait for an enable prompt before doing
+	 * a <code>show run</code>.
+	 *
+	 * @@param prompt string to expect from remote host
+	 * @@see #send
+	 * @@since MISAL 1.0
+	 */
+d604 8
+a611 7
+	 * Wait for a certain state for proceeding.
+	 *
+	 * @@param state an integer indicating the state to wait for
+	 * @@param tries number of tries before giving up on the expected state
+	 * @@see #send
+	 * @@since MISAL 1.0
+	 */
+d628 10
+a637 9
+	 * Wait for a certain string of data from the remote host before
+	 * proceeding.  For example, wait for an enable prompt before doing
+	 * a <code>show run</code>.
+	 *
+	 * @@param prompt string to expect from remote host
+	 * @@param tries number of tries before giving up on the expected state 
+	 * @@see #send
+	 * @@since MISAL 1.0
+	 */
+@
+
+
+1.12
+log
+@Removed synchronization from getDebug() and toggleDebug().
+
+Added more documentation, and fixed some broken "See Also" links.
+@
+text
+@d26 1
+a26 1
+ * $Id: MISAL.java,v 1.11 2001/06/15 17:06:28 jmarcus Exp $
+d35 10
+a44 10
+ /**
+ * <p>MISAL is the MarcusCom Intelligent Socket Abstraction Library.
+ * It is designed to make interacting with TCP sockets (such as telnet)
+ * much easier.  It uses a separate thread to check the socket's state,
+ * and make sure data is sent at the right time.</p>
+ *
+ * @@author	Joe Clarke &lt;marcus@@marcuscom.com&gt;
+ * @@version	1.0, $Id: MISAL.java,v 1.11 2001/06/15 17:06:28 jmarcus Exp $
+ * @@since	MISAL1.0
+ */
+d46 511
+d558 5
+a562 1
+	 * The state of the socket when no other state matches.
+d564 3
+a566 1
+	public final static int MISAL_STATE_UNKNOWN = -1;
+d569 7
+a575 1
+	 * The state of the socket after it is closed.
+d577 3
+a579 1
+	public final static int MISAL_STATE_CLOSED = 0;
+d582 144
+a725 565
+	 * The default state checking thread interval 
+	 * (1 millisecond).
+	 */
+	protected final static int MISAL_DEFAULT_SLEEP_INTERVAL = 1;
+
+	/**
+	 * The default time to wait between state checking attempts
+	 * (100 milliseconds).
+	 */
+	protected final static int MISAL_THREAD_SLEEP_INTERVAL = 100;
+	/**
+	 * Number of milliseconds to wait with fast timers 
+	 * (10 milliseconds).
+	 */
+	protected final static int MISAL_SHORT_THREAD_SLEEP_INTERVAL = 10;
+
+	/**
+	 * The default number of retries before failing when a state match
+	 * is not found (1000).  This number is multiplied by the 
+	 * MISAL_THREAD_SLEEP_INTERVAL.
+	 */
+	protected final static int DEFAULT_RETRIES = 1000;
+
+	/**
+	 * The default size for the main accumulator buffer 
+	 * (1 MB).  All data read from the socket is stored in this buffer.
+	 */
+	protected final static int DEFAULT_BUFFER_SIZE = 1*1024*1024;
+
+	private Hashtable stateTable = null;
+	private Socket _socket = null;
+	private String _buffer = null;
+	private String _lastBuffer = null;
+	private boolean _debug = false;
+	private Thread _stateChecker = null;
+	private BufferedInputStream _bis = null;
+	private BufferedOutputStream _bos = null;
+	private int _bufferSize = this.DEFAULT_BUFFER_SIZE;
+	private int _currentState = this.MISAL_STATE_UNKNOWN;
+	private int _sleepInterval = this.MISAL_DEFAULT_SLEEP_INTERVAL;
+
+	/**
+	 * Creates a new MISAL socket.
+	 *
+	 * @@param socket	the <em>open</em> java.net.Socket to be 
+	 *			abstracted
+	 * @@throws SocketException
+	            if Socket is not initialized and connected
+	 * @@throws IOException
+	 * @@see			java.net.Socket
+	 * @@since		MISAL1.0
+	 */
+	public MISAL(Socket socket) throws SocketException,IOException {
+		if (socket == null) {
+			throw new SocketException("Socket passed to MISAL cannot be null.");
+		}
+		this._socket = socket;
+		_bis = new BufferedInputStream(this._socket.getInputStream(), DEFAULT_BUFFER_SIZE);
+		_bos = new BufferedOutputStream(this._socket.getOutputStream());
+		stateTable = new Hashtable();
+	}
+
+	/**
+	 * Returns the MISAL socket's output stream as a
+	 * java.io.BufferedOutputStream.
+	 *
+	 * @@see		Socket#getOutputStream
+	 * @@see		BufferedOutputStream
+	 * @@since	MISAL1.0
+	 */
+	protected BufferedInputStream getInputStream() {
+		return this._bis;
+	}
+
+	/**
+	 * Returns the MISAL socket's input stream as a
+	 * java.io.BufferedInputStream.
+	 *
+	 * @@see		Socket#getInputStream
+	 * @@see		BufferedInputStream
+	 * @@since	MISAL1.0
+	 */
+	protected BufferedOutputStream getOutputStream() {
+		return this._bos;
+	}
+
+	/**
+	 * Adds a new MISAL state to the state table.  MISAL states are used
+	 * by the state reading/setting thread to indicate where the socket
+	 * is.  For example, a state can be identified by the regular
+	 * expression <code>/login: ?$/</code> and a constant 
+	 * STATE_LOGIN_PROMPT.
+	 *
+	 * @@param state		an integer (usually defined as a constant)
+	 *			that uniquely identifies this state.  Classes
+	 *			extending MISAL can start their state numbering
+	 *			at 1.
+	 * @@param prompt	a Perl regular expression, in the form of a
+	 *			String.  When this expression is matched, the
+	 *			MISAL state will be set to the value of the
+	 *			<code>state</code> argument
+	 * @@throws MalformedMISALStateException
+	 * @@exception MalformedMISALStateException
+	 *             if the prompt is not a valid Perl regular expression.
+	 * @@see			#removeState
+	 * @@see			com.oroinc.text.regex.Pattern
+	 * @@since		MISAL1.0
+	 */
+	public synchronized void addState(int state, String prompt) throws MalformedMISALStateException {
+		Perl5Compiler compiler = new Perl5Compiler();
+		Pattern pattern = null;
+		try {
+			pattern = compiler.compile(prompt);
+		}
+		catch (MalformedPatternException mfpe) {
+			throw new MalformedMISALStateException(mfpe.getMessage());
+		}
+		stateTable.put(new Integer(state), pattern);
+		startCheckingState();
+	}
+
+	/** 
+	 * Removes a MISAL state from the state machine.
+	 *
+	 * @@param state		integer representing the state to remove
+	 * @@see			#addState
+	 * @@since		MISAL1.0
+	 */
+	public synchronized void removeState(int state) {
+		this.stateTable.remove(new Integer(state));
+	}
+
+	/**
+	 * Starts the state checking thread.
+	 *
+	 * @@see		#stopCheckingState
+	 * @@since	MISAL1.0
+	 */
+	protected void startCheckingState() {
+		if (_stateChecker == null) {
+			_stateChecker = new Thread(this);
+			_stateChecker.start();
+		}
+	}
+
+	/**
+	 * Stops the state checking thread.
+	 *
+	 * @@see		#startCheckingState
+	 * @@since	MISAL1.0
+	 */
+	protected void stopCheckingState() {
+		if (_stateChecker != null) {
+			_stateChecker.stop();
+			_stateChecker = null;
+		}
+	}
+
+	/**
+	 * Runs the state checking thread.  This method should not
+	 * be called directly.  Instead, use the 
+	 * <code>stopCheckingState()</code> and 
+	 * <code>startCheckingState()</code> methods.
+	 *
+	 * @@see		#startCheckingState
+	 * @@see		#stopCheckingState
+	 * @@since	MISAL1.0
+	 */
+	public void run() {
+		while(true) {
+			if (stateTable.isEmpty()) {
+				/* We don't want to hit a null pointer if
+				   someone empties the state table on us */
+				this.stopCheckingState();
+				return;
+			}
+
+			if (_socket == null) {
+				this.setState(this.MISAL_STATE_CLOSED);
+				this.stopCheckingState();
+				return;
+			}
+		
+			String buffer = this._readAll();
+			if (buffer != null) {
+				/* We preserve a separate buffer to hold the
+				   last read data.  This will be useful for
+				   error checking. */
+				this.setBuffer(this.getLastBuffer());
+				this.setLastBuffer(buffer);
+				Enumeration keys = stateTable.keys();
+				Perl5Matcher p5m = new Perl5Matcher();
+				Pattern pattern = null;
+				while(keys.hasMoreElements()) {
+					int state = ((Integer)keys.nextElement()).intValue();
+					pattern = (Pattern)stateTable.get(new Integer(state));
+					if (p5m.contains(buffer, pattern)) {
+						this.setState(state);
+					}
+				}
+			}
+			try {
+				Thread.sleep(this.getSleepInterval());
+			}
+			catch (InterruptedException ie) {
+			}
+		}
+	}
+
+	/**
+	 * Sets the MISAL state checking thread's sleep interval.  The thread
+	 * will wait <code>interval</code> milliseconds before checking
+	 * the state of the socket.
+	 *
+	 * @@param interval	integer sleep interval
+	 * @@see			#getSleepInterval
+	 * @@since		MISAL1.0
+	 */
+	protected void setSleepInterval(int interval) {
+		this.debug("Setting sleep interval to " + interval);
+		this._sleepInterval = interval;
+	}
+
+	/**
+	 * Returns the MISAL state checking thread's sleep interval.  This 
+	 * method returns the sleep interval as an integer representing the 
+	 * number of milliseconds the state checking thread will wait before 
+	 * checking the socket state again.
+	 *
+	 * @@see		#setSleepInterval
+	 * @@since	MISAL1.0
+	 */
+	protected int getSleepInterval() {
+		return this._sleepInterval;
+	}
+
+	/**
+	 * Sets the current MISAL state.
+	 *
+	 * @@param state		the state ID of a state already in the state
+	 *			machine
+	 * @@see			#getState
+	 * @@see			#addState
+	 * @@see			#removeState
+	 * @@since		MISAL1.0
+	 */
+	protected synchronized void setState(int state) {
+		this.debug("Setting state to " + state);
+		this._currentState = state;
+	}
+
+	/**
+	 * Returns the current MISAL state.
+	 *
+	 * @@see			#getState
+	 * @@see			#addState
+	 * @@see			#removeState
+	 * @@since		MISAL1.0
+	 */
+	public synchronized int getState() {
+		return this._currentState;
+	}
+
+	/**
+	 * Returns the maximum allowed size of the main accumulator buffer.
+	 *
+	 * @@see		#setBufferSize
+	 * @@see		#getBuffer
+	 * @@see		#clearBuffer
+	 * @@since	MISAL1.0
+	 */
+	public synchronized int getBufferSize() {
+		return this._bufferSize;
+	}
+
+	/**
+	 * Sets the maximum allowed size of the main accumulator buffer.
+	 *
+	 * @@param size	size of the buffer in bytes
+	 * @@see		#getBufferSize
+	 * @@see		#getBuffer
+	 * @@see		#clearBuffer
+	 */
+	public synchronized void setBufferSize(int size) {
+		this._bufferSize = size;
+	}
+
+	/**
+	 * Clears the main accumulator buffer.  Usually, this method is called
+	 * right before running a command for which you wish to save output.
+	 *
+	 * @@see		#getBufferSize
+	 * @@see		#getBuffer
+	 * @@since	MISAL1.0
+	 */
+	public synchronized void clearBuffer() {
+		this.setBuffer(null);
+	}
+
+	private synchronized void setBuffer(String buffer) {
+		if (buffer == null || this._buffer == null || this._buffer.length() >= this.getBufferSize()) {
+			this.debug("Setting buffer to \"" + buffer + "\"");
+			this._buffer = buffer;
+		}
+		else {
+			this.debug("Appending \"" + buffer + "\" to buffer");
+			this._buffer = this._buffer.concat(buffer);
+		}
+	}
+
+	private synchronized void setLastBuffer(String buffer) {
+		this.debug("Setting last read buffer to \"" + buffer + "\"");
+		this._lastBuffer = buffer;
+	}
+
+	/**
+	 * Returns the output of the temporary buffer.  This buffer usually
+	 * stores the output from the last run command.  It is useful for
+	 * doing error checking.
+	 *
+	 * @@see		#getBuffer
+	 * @@since	MISAL1.0
+	 */
+	public synchronized String getLastBuffer() {
+		return this._lastBuffer;
+	}
+
+	/**
+	 * Returns the contents of the main accumulator buffer.  This buffer
+	 * contains all the data fro the sockets output stream since the last
+	 * call to <code>clearBuffer</code>.  The output will include the
+	 * contents of the current temporary buffer as well.
+	 *
+	 * @@see		#clearBuffer
+	 * @@see		#getLastBuffer
+	 * @@since	MISAL1.0
+	 */
+	public synchronized String getBuffer() {
+		return this._buffer.concat(this.getLastBuffer());
+	}
+
+	/**
+	 * Tells whether or not debugging is enabled.
+	 *
+	 * @@see		#toggleDebug
+	 * @@see		#debug
+	 * @@since	MISAL1.0
+	 */
+	public boolean getDebug() {
+		return this._debug;
+	}
+
+	/**
+	 * Toggle the debugging state.
+	 *
+	 * @@return	The debugging state after being toggled
+	 * @@see		#getDebug
+	 * @@see		#debug
+	 * @@since	MISAL1.0
+	 */
+	public boolean toggleDebug() {
+		this._debug = this._debug ? false : true;
+		this.debug("Debugging set to " + this._debug);
+		return this._debug;
+	}
+
+        public void send(String data, String expect) throws IllegalMISALStateException, IOException {
+                this.send(MISAL_STATE_UNKNOWN, data, expect, 0, 0);
+        }
+
+        public void send(String data, int expectState) throws IllegalMISALStateException, IOException {
+                this.send(MISAL_STATE_UNKNOWN, data, null, expectState, 0);
+        }
+
+	public void send(int state, String data, String expect) throws IllegalMISALStateException, IOException {
+		this.send(state, data, expect, 0, 0);
+	}
+
+	public void send(int state, String data, int expectState) throws IllegalMISALStateException, IOException {
+		this.send(state, data, null, expectState, 0);
+	}
+
+	public void send(int state, String data, String expect, int wait) throws IllegalMISALStateException, IOException {
+		this.send(state, data, expect, 0, wait);
+	}
+
+	public void send(int state, String data, int expectState, int wait) throws IllegalMISALStateException, IOException {
+		this.send(state, data, null, expectState, wait);
+	}
+
+	protected void send(int state, String data, String expect, int expectState, int wait) throws IllegalMISALStateException, IOException {
+		this.debug("Entering send(int, String, String, int, int) method.");
+		boolean result = false;
+		int currState = this.MISAL_STATE_UNKNOWN;
+		byte b[] = null;
+		if (wait == 0) wait = this.DEFAULT_RETRIES;
+		for(int i = 1; i <= wait; i++) {
+			currState = this.getState();
+			this.debug("i = " + i + " and currState = " + currState);
+			if (currState == state) break;
+			try {
+				Thread.sleep(this.MISAL_THREAD_SLEEP_INTERVAL);
+			}
+			catch (InterruptedException ie) {}
+		}
+		if (currState != state) {
+			throw new IllegalMISALStateException("Needed state " + state + ", but found state " + currState);
+		}
+		b = new byte[data.length()];
+		b = data.getBytes();
+		this.debug("Sending data: " + data);
+		this._bos.write(b, 0, b.length);
+		this._bos.flush();
+		/* Set the state to be unknown while we wait to find out
+		   what the resultant state will be. */
+		this.setState(this.MISAL_STATE_UNKNOWN);
+		if (expect != null) {
+			this.debug("Expecting text: \"" + expect + "\"");
+			result = this.expect(expect, wait);
+		}
+		else {
+			this.debug("Expecting state: " + expectState);
+			result = this.expect(expectState, wait);
+		}
+
+		if (!result) {
+			throw new IllegalMISALStateException("Invalid expect state");
+		}
+	}
+
+	protected boolean expect(int state) {
+		return this.expect(state, this.DEFAULT_RETRIES);
+	}
+
+	protected boolean expect(String prompt) {
+		return this.expect(prompt, this.DEFAULT_RETRIES);
+	}
+
+	protected boolean expect(int state, int tries) {
+		this.debug("Entering method expect(int, int)");
+		for(int i = 1; i <= tries; i++) {
+			this.debug("i = " + i + " and state = " + this.getState());
+			if (this.getState() == state) {
+				return true;
+			}
+			try {
+				Thread.sleep(this.MISAL_THREAD_SLEEP_INTERVAL);
+			}
+			catch (InterruptedException ie) {}
+		}
+		return false;
+	}
+
+	protected boolean expect(String prompt, int tries) {
+		this.debug("Entering method expect(String, int)");
+		Perl5Compiler compiler = new Perl5Compiler();
+		Perl5Matcher matcher = new Perl5Matcher();
+		Pattern pattern = null;
+		for(int i = 1; i <= tries; i++) {
+			String buffer = this.getBuffer();
+			this.debug("i = " + i + " buffer = \"" + buffer + "\"");
+			try {
+				pattern = compiler.compile(prompt);
+			}
+			catch (MalformedPatternException mpe) {
+				return false;
+			}
+			if (buffer != null) {
+				if (matcher.contains(this.getBuffer(), pattern)) {
+					this.debug("Found a buffer match!");
+					return true;
+				}
+			}
+			try {
+				Thread.sleep(this.MISAL_THREAD_SLEEP_INTERVAL);
+			}
+			catch (InterruptedException ie) {}
+		}
+		return false;
+	}
+
+	/**
+	 * Prints a debugging message.  The message will only be printed
+	 * if debugging is enabled.
+	 *
+	 * @@param msg	The message to be printed
+	 * @@see		#getDebug
+	 * @@see		#toggleDebug
+	 * @@since	MISAL1.0
+	 */
+	public void debug(String msg) {
+		if (this.getDebug()) {
+			System.err.println("DEBUG: " + msg);
+		}
+	}
+
+	private String _readAll() {
+		byte b[] = null;
+		try {
+			if (_bis.available() == 0) {
+				return null;
+			}
+			b = new byte[_bis.available()];
+			int t;
+			int y = 0;
+			byte[] obuf = new byte[4];
+			while (_bis.available() > 0) {
+				t = _bis.read();
+				if (t != 255) {
+					/* If not a negotiation character,
+					   it needs to be read as data. */
+					b[0] = (byte)t;
+					break;
+				}
+				obuf[0] = (byte)255;
+				t = _bis.read();
+				if (t == 251 || t == 252) {
+					y = 254;
+				}
+				if (t == 253 || t == 254) {
+					y = 252;
+				}
+				if (y > 0) {
+					obuf[1] = (byte)y;
+					obuf[2] = (byte)_bis.read();
+					_bos.write(obuf, 0, 3);
+					_bos.flush();
+					y = 0;
+				}
+			}
+
+			if (_bis.available() == 0) {
+				return null;
+			}
+			/* This starts at 1 now because we load the first
+			   character in during the negotiation code. */
+			int result = _bis.read(b, 1, _bis.available());
+			if (result == 0) {
+				return null;
+			}
+		}
+		catch (IOException ioe) {
+			return null;
+		}
+		this.debug("Read \"" + new String(b) + "\" from socket input stream");
+		return new String(b);
+	}
+
+	/**
+	 * Closes the MISAL socket.  Once you are done with the socket, you
+	 * can have MISAL close it.  This will stop the state checking thread.
+	 *
+	 * @@since	MISAL1.0
+	 */
+	public void closeSocket() {
+		this.debug("Closing socket ...");
+		if (this._socket != null) {
+			try {
+				this._socket.close();
+			}
+			catch (IOException ioe) {
+			}
+			this._socket = null;
+		}
+	}
+@
+
+
+1.11
+log
+@Fix and add more documentation.
+@
+text
+@d26 1
+a26 1
+ * $Id$
+d42 1
+a42 1
+ * @@version	1.0, $Id$
+a348 1
+	 * @@see		#setBufferSize
+d372 8
+d384 10
+d398 8
+a405 1
+	public synchronized boolean getDebug() {
+d409 9
+a417 1
+	public synchronized boolean toggleDebug() {
+d538 9
+d605 6
+@
+
+
+1.10
+log
+@Updated MISALCiscoIOS to remove methods that were already present in MISAL
+that didn't need to be overridden.
+
+Removed the MalformedPatternException from addState().  This way, casual
+classes that make use of MISAL do not need to require
+com.oroinc.text.regex.MalformedPatternException.
+@
+text
+@d1 4
+a4 11
+package com.marcuscom.MISAL;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import com.oroinc.text.regex.*;
+
+/**
+ * Copyright &copy; 2001 Joe Clarke &lt;marcus@@marcuscom.com&gt;<br>
+ * All rights reserved.<br>
+ * <p>
+d8 3
+a10 4
+ * <ol>
+ * <li>Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.</li>
+ * <li>Redistributions in binary form must reproduce the above copyright
+d12 2
+a13 3
+ *    documentation and/or other materials provided with the distribution.</li>
+ * </ul>
+ * <p>
+d25 12
+a36 4
+ * </p>
+ * $Id: MISAL.java,v 1.9 2001/06/15 05:16:25 jmarcus Exp $
+ * <p>
+ * MISAL is the MarcusCom Intelligent Socket Abstraction Library.<br>
+d38 2
+a39 1
+ * much easier.</p>
+d42 2
+a43 2
+ * @@version	1.0
+ * @@since	JDK1.1
+@
+
+
+1.9
+log
+@Massive documentation updates.
+@
+text
+@d35 1
+a35 1
+ * $Id: MISAL.java,v 1.8 2001/06/14 20:43:12 jmarcus Exp $
+d158 2
+a159 2
+	 * @@throws MalformedPatternException
+	 * @@exception MalformedPatternException
+d165 1
+a165 1
+	public synchronized void addState(int state, String prompt) throws MalformedPatternException {
+d167 7
+a173 1
+		Pattern pattern = compiler.compile(prompt);
+d390 8
+@
+
+
+1.8
+log
+@Fixed a problem where retrieving the main buffer missed retrieval of the
+last buffer.
+@
+text
+@d8 4
+a11 4
+/**-
+ * Copyright &copy; 2001 Joe Clarke &lt;marcus@@marcuscom.com&gt;
+ * All rights reserved.
+ *
+d21 1
+d35 1
+a35 1
+ * $Id: MISAL.java,v 1.7 2001/06/14 20:25:41 jmarcus Exp $
+d42 1
+a42 1
+ * @@version	%I%, %G%
+d46 3
+d50 4
+d56 4
+d61 5
+d67 4
+d72 6
+d79 5
+d99 1
+a99 1
+	 * Create a new MISAL socket.
+d106 2
+a107 2
+	 * @@see			Socket
+	 * @@since		JDK1.1
+d120 1
+a120 1
+	 * Get the MISAL socket's output stream as a
+a122 1
+	 * @@return	java.io.BufferedOutputStream
+d125 1
+a125 1
+	 * @@since	JDK1.1
+d132 1
+a132 1
+	 * Get the MISAL socket's input stream as a
+a134 1
+	 * @@return	java.io.BufferedInputStream
+d137 1
+a137 1
+	 * @@since	JDK1.1
+d144 1
+a144 1
+	 * Add a new MISAL state to the state table.  MISAL states are used
+d162 2
+a163 2
+	 * @@see			Pattern
+	 * @@since		JDK1.1
+d173 1
+a173 1
+	 * Remove a MISAL state from the state machine.
+d177 1
+a177 1
+	 * @@since		JDK1.1
+d184 1
+a184 1
+	 * Start the state checking thread.
+d187 1
+a187 1
+	 * @@since	JDK1.1
+d196 6
+d209 10
+d260 9
+d274 9
+d287 10
+d302 8
+d314 8
+d326 8
+d338 9
+@
+
+
+1.7
+log
+@Improved the error checking code.  Also improved sending commands that
+do not change the current state.
+@
+text
+@d34 1
+a34 1
+ * $Id: MISAL.java,v 1.6 2001/06/14 19:31:10 jmarcus Exp $
+d265 1
+a265 1
+		return this._buffer;
+@
+
+
+1.6
+log
+@Added support for a last command buffer.  This new buffer will store the
+last read data before appending it to the main buffer.  This way, error
+checking can be done in subclasses.
+@
+text
+@d34 1
+a34 1
+ * $Id: MISAL.java,v 1.5 2001/06/14 18:32:39 jmarcus Exp $
+d193 1
+a194 1
+				this.setBuffer(this.getLastBuffer());
+d223 1
+a223 1
+	private synchronized void setState(int state) {
+d317 3
+@
+
+
+1.5
+log
+@Updated the code to make adding and removing states more intuitive.  This
+also fixes a bug where removeState() requires a String, but the actual
+state prompt is stored as a Pattern.
+@
+text
+@d34 1
+a34 1
+ * $Id: MISAL.java,v 1.4 2001/06/14 16:34:34 jmarcus Exp $
+d57 1
+d190 5
+a194 1
+				this.setBuffer(buffer);
+d253 9
+@
+
+
+1.4
+log
+@Updated the API to make things simpler.  Also, add some JavaDoc fixes.
+@
+text
+@d34 1
+a34 1
+ * $Id: MISAL.java,v 1.3 2001/06/14 15:28:24 jmarcus Exp $
+d134 1
+a134 1
+	public synchronized void addState(int stateId, String prompt) throws MalformedPatternException {
+d137 1
+a137 1
+		stateTable.put(pattern, new Integer(stateId));
+d141 9
+a149 2
+	public synchronized void removeState(String prompt) {
+		this.stateTable.remove(prompt);
+d152 6
+d194 2
+a195 1
+					pattern = (Pattern)keys.nextElement();
+a196 1
+						int state = ((Integer)stateTable.get(pattern)).intValue();
+@
+
+
+1.3
+log
+@Start to add some JavaDoc comments to the code.  I'm getting closer to
+being able to release this.
+@
+text
+@d34 1
+a34 1
+ * $Id$
+d70 3
+a72 2
+	 * @@throws		SocketException
+	 * @@throws		IOException
+d81 1
+a81 1
+		_bis = new BufferedInputStream(this._socket.getInputStream(), bufSize);
+@
+
+
+1.2
+log
+@This file doesn't belong here.
+@
+text
+@d8 36
+d65 11
+a75 13
+	public MISAL(Socket socket, boolean debug) throws SocketException,IOException {
+		this(socket, debug, DEFAULT_BUFFER_SIZE);
+	}
+
+	public MISAL(Socket socket) throws SocketException, IOException {
+		this(socket, false, DEFAULT_BUFFER_SIZE);
+	}
+
+	public MISAL(Socket socket, int bufSize) throws SocketException, IOException {
+		this(socket, false, bufSize);
+	}
+
+	public MISAL(Socket socket, boolean debug, int bufSize) throws SocketException,IOException {
+a79 2
+		this._debug = debug;
+		this._bufferSize = bufSize;
+d85 9
+d98 9
+d111 22
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d9 1
+a9 2
+	public final static int MISAL_STATE_UNKNOWN = -2;
+	public final static int MISAL_STATE_INITIAL = -1;
+d132 1
+a132 1
+	public synchronized void setState(int state) {
+d153 1
+a153 1
+	public synchronized void setBuffer(String buffer) {
+@
+
+
+1.1.1.1
+log
+@Initial import into the COSI CVS Repository
+@
+text
+@@

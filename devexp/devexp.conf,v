@@ -1,0 +1,117 @@
+head	1.3;
+access;
+symbols
+	RELEASE_1_4:1.3
+	RELEASE_1_3:1.3
+	RELEASE_1_2:1.2
+	HEAD:1.1.1.1
+	MAIN:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.3
+date	2002.05.04.21.18.42;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.08.29.15.41.13;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.05.28.20.51.52;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.05.28.20.51.52;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.3
+log
+@Update to DevExp 1.3.  This adds support for SSL in RME 3.4 and higher.
+@
+text
+@# This is the configuration file for DevExp, a program that can automatically
+# export the RME inventory in either CSV or XML format.
+# This file is in the format variable=value.  Lines beginning with a '#' are
+# treated as comments.
+
+# Format for the output of the device export.  Possible values are "csv" or
+# "xml" (without the quotes).
+OUTPUT_FORMAT=csv
+
+# The protocol the RME server is running.  As of RME 3.4, this can be
+# either http or https (if the server is running in SSL mode).  Prior to
+# RME 3.4, the only allowed value is http.
+RME_PROTOCOL=http
+
+# The hostname of the machine running Resource Manager Essentials 3.1 or
+# higher.  This can also be an IP address.
+RME_SERVER=rtp-bladdernut
+
+# The TCP port on which the RME webserver is listening.  This is 1741 by 
+# default.
+RME_PORT=1741
+
+# The URL for the DTD file.  This file is needed in order for the servlet
+# DevExp relies on to return a valid response.  Leave this blank if the
+# DTD is in the default location on the RME server.
+DTD_PATH=
+
+# This is the password for the user "admin" in RME.  Because this password is
+# stored in cleartext in this file, it is IMPERATIVE that this file only
+# be readable by trusted users.  You have been warned.
+ADMIN_PASSWD=admin
+
+# This option specifies which devices to export.  Possible values are "all"
+# which will export managed and unmanaged devices, or "managed" which will
+# only export managed devices (remember to omit the quotes!).
+DEVICES=managed
+
+# This option specifies whether to output device credentials (SNMP communities)
+# in the output.  By default, only device names are output.  Possible values
+# are "yes" or "no" (without quotes).
+OUTPUT_DEVICE_CREDENTIALS=no
+
+# This option specifies the file to which the exported data will be written.
+# This should be a fully qualified path with filename.  On Windows, you MUST
+# use double '\' when listing out the path.
+# e.g. C:\\CSCOpx\\temp\\outfile.txt
+OUTPUT_FILE=outfile
+@
+
+
+1.2
+log
+@Added support for configuring a remote public DTD.
+@
+text
+@d10 5
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d18 5
+@
+
+
+1.1.1.1
+log
+@Initial import into CVS
+@
+text
+@@

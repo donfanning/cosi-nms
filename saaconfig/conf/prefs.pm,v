@@ -1,0 +1,186 @@
+head	1.6;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.6
+date	2003.08.31.23.58.48;	author knail1;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2001.12.04.05.54.35;	author jmarcus;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.12.03.23.05.05;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.12.03.06.41.38;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.12.03.05.49.52;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.12.03.05.42.37;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.6
+log
+@making changes to connect remotely
+@
+text
+@package conf::prefs;
+
+use strict;
+use vars qw(@@ISA @@EXPORT_OK);
+use Exporter;
+
+@@ISA = qw(Exporter);
+## DO NOT REMOVE NEXT LINE ##
+@@EXPORT_OK = qw(
+  $DB_DRIVER
+  $DB_HOST
+  $DB_PORT
+  $DB_NAME
+  $DB_USER
+  $DB_PASS
+  $KEY
+  $TEMP_DIR
+  $MAX_SESSIONS
+);
+
+## DO NOT REMOVE NEXT LINE ##
+use vars qw(
+  $DB_DRIVER
+  $DB_HOST
+  $DB_PORT
+  $DB_NAME
+  $DB_USER
+  $DB_PASS
+  $KEY
+  $TEMP_DIR
+  $MAX_SESSIONS
+);
+
+## DO NOT REMOVE NEXT LINE ##
+## BEGIN PREFERENCES
+$DB_DRIVER = 'mysql';
+$DB_HOST = 'nm-tac.cisco.com';
+$DB_PORT = '3306';
+$DB_NAME = 'saaconf';
+$DB_USER = 'saa';
+$DB_PASS = 's44';
+# Random key used in Blowfish ciphering.
+# XXX This key should not be statically defined here.  In the release, this
+# should be configurable by the end user so that all keys will be different.
+$KEY = pack( "H16", 'aIC9e8!Cmtdyu4GV' );
+
+$TEMP_DIR = '/tmp/SAA';
+$MAX_SESSIONS = 10;
+
+## END PREFERENCES
+
+1;
+@
+
+
+1.5
+log
+@Contiue building out the CGI framework.  Add an API for creating and
+maintaining persisten user sessions.
+@
+text
+@d10 1
+d12 1
+d23 1
+d25 1
+d36 3
+a38 1
+$DB_HOST = 'localhost';
+@
+
+
+1.4
+log
+@Make KEY a variable rather than a constant.
+@
+text
+@d15 2
+d26 2
+d41 2
+@
+
+
+1.3
+log
+@Fix the exporter.
+@
+text
+@d14 1
+a14 1
+  KEY
+d23 1
+d35 1
+a35 1
+use constant KEY => pack( "H16", 'aIC9e8!Cmtdyu4GV' );
+@
+
+
+1.2
+log
+@Change the export list from a default export to an export by request list.
+@
+text
+@d4 2
+a5 1
+require 5.002;
+d7 1
+d9 6
+a14 5
+use vars qw(
+$DB_HOST
+$DB_NAME
+$DB_USER
+$DB_PASS
+a16 3
+use Exporter;
+
+my @@ISA = qw(Exporter);
+d18 5
+a22 5
+my @@EXPORT_OK = qw(
+$DB_HOST
+$DB_NAME
+$DB_USER
+$DB_PASS
+d31 5
+d38 2
+@
+
+
+1.1
+log
+@Initial import into CVS.
+@
+text
+@d18 1
+a18 1
+my @@EXPORT = qw(
+@
+

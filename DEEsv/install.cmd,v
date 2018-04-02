@@ -1,0 +1,71 @@
+head	1.2;
+access;
+symbols
+	RELEASE_1_1:1.2
+	RELEASE_1_0:1.2;
+locks; strict;
+comment	@:: @;
+
+
+1.2
+date	2002.09.07.19.19.35;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.09.07.10.02.55;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@Add two pauses after the install completes so users can see any messages
+that may have popped up.
+
+Requested by:	Omer Ansari <oansari@@cisco.com>
+@
+text
+@@@echo off
+
+set rcsid = $Id: install.cmd,v 1.1 2002/09/07 10:02:55 jmarcus Exp $
+
+echo ***************************************************************
+
+echo This will install DEEsv for Resource Manager Essentials 3.4.
+echo This adds the capability to convert XML produced by DEEv2 to
+echo xSV format (for example, CSV).
+echo.
+echo If you do not want to install this package, press CTRL+C and
+echo then press Y to exit.
+echo.
+echo If you want to install this package, press Enter to continue.
+echo.
+pause
+"perl.exe" _install.pl
+pause
+pause
+goto exit
+
+:exit
+echo.
+echo ****************************************************************
+
+@
+
+
+1.1
+log
+@Add the install scripts.
+@
+text
+@d3 1
+a3 1
+set rcsid = $Id$
+d18 2
+@
+

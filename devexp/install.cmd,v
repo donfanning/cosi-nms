@@ -1,0 +1,65 @@
+head	1.1;
+branch	1.1.1;
+access;
+symbols
+	RELEASE_1_4:1.1.1.1
+	RELEASE_1_3:1.1.1.1
+	RELEASE_1_2:1.1.1.1
+	HEAD:1.1.1.1
+	MAIN:1.1.1;
+locks; strict;
+comment	@:: @;
+
+
+1.1
+date	2001.05.28.20.51.53;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.05.28.20.51.53;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@@@echo off
+
+set rcsid = $Id: install.cmd,v 1.1 2000/11/03 06:22:41 marcus Exp $
+
+echo ***************************************************************
+
+echo This script can ONLY be used with RME 3.1 and higher.
+echo.
+echo If you do not want to install this patch, press CTRL+C and
+echo then press Y to exit.
+echo.
+echo If you want to install this patch, press Enter to continue
+echo.
+pause
+"perl.exe" _install.pl
+goto exit
+
+:exit
+echo.
+echo ****************************************************************
+
+@
+
+
+1.1.1.1
+log
+@Initial import into CVS
+@
+text
+@@

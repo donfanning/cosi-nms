@@ -1,0 +1,181 @@
+head	1.2;
+access;
+symbols
+	start:1.1.1.1 vendor:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2002.10.03.20.44.53;	author jpolache;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.04.25.20.24.50;	author jleonard;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2002.04.25.20.24.50;	author jleonard;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@*** empty log message ***
+@
+text
+@            (Last Edited 1/9/01 9:21:40 AM  )
+
+              README file for mcr_viewer.pl
+                      September 5, 2000
+
+                     MCR Viewer  ver 1.5.3
+               Copyright (C) 1998-2000
+        All Rights Reserved  coe-iae@@cisco.com
+
+	Altered by Jon -- cvs test
+
+CONTENTS
+
+  Overview
+    - Introduction
+     - System Requirements
+    - Program Restrictions
+      - Release Notes
+    - Known Bugs
+  Installation and Configuration
+    - Package Content
+     - Installation Steps
+    - Configuration
+  Uninstalling mcr_viewer.pl
+  About COE-IAE
+
+
+=======================================================================
+                               OVERVIEW
+=======================================================================
+
+-----------------------------------------------------------------------
+INTRODUCTION
+-----------------------------------------------------------------------
+The MCR Viewer is a Perl script that enables the user to execute and use the mcr_viewer tool.
+This tool provides a mechanism to view modem call records....
+
+-----------------------------------------------------------------------
+SYSTEM REQUIREMENTS
+-----------------------------------------------------------------------
+The MCR Viewer Perl script has been tested successfully on SunOS ver 5.6 and Perl ver  5.005_03 built for sun4-solaris.
+ To use MCR Viewer, the following requirements must be met:
+*
+*
+*
+-----------------------------------------------------------------------
+PROGRAM RESTRICTIONS
+-----------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------
+RELEASE NOTES
+-----------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------
+KNOWN BUGS (as of this version)
+-----------------------------------------------------------------------
+
+
+=======================================================================
+                        INSTALLATION AND CONFIGURATION
+=======================================================================
+
+-----------------------------------------------------------------------
+PACKAGE CONTENT
+-----------------------------------------------------------------------
+MCR Viewer is supplied, as a Perl (.pl) script as part of a tar gzip archive, and consists of the following files:
+
+File                            Description
+----                            -----------
+devlist.dat                                  - device list
+lwt-start.lbi                       - html (start) template
+lwt-end.lbi                                  - html (end) template
+mcr_viewer.pl                       - Perl script
+mcrv_bn.gif                                  - graphic
+Readme.txt                      - this file
+supportal_spot.gif              - graphic
+
+
+
+-----------------------------------------------------------------------
+INSTALLATION NOTES
+-----------------------------------------------------------------------
+Follow this procedure to install MCR Viewer:
+
+1. Un tar/gzip the archive to the default directory:
+        /opt/CSCOlwt
+
+2.  Edit $LWTCONF to point to the config folder
+        (for example:$LWTCONF = "/opt/CSCOlwt/conf")
+
+3. Create the file /opt/CSCOlwt/conf/lwt.cfg
+
+4. Create the file /opt/CSCOlwt/conf/devlist.dat
+
+
+-----------------------------------------------------------------------
+CONFIGURING PRODUCTNAME
+-----------------------------------------------------------------------
+
+
+=======================================================================
+                        UNINSTALLING PRODUCTNAME
+=======================================================================
+To uninstall ........
+
+=======================================================================
+                        ABOUT COE-IAE
+=======================================================================
+ The Center of Excellence for Internet Access Engineering (COE-IAE)  is a growing team of professionals dedicated to the s
+upport of Internet Access Engineering (IAE) through the development of knowledge based tools and procedures that enable ra
+pid delivery of high quality, integrated solutions to the user community.
+
+The COE-IAE strives to:
+                *  Create partnerships between Cisco, academia, industry, and the local technical
+                 community to enable rapid IAE tools and techniques development.
+
+         * Foster the rapid transfer of generated knowledge to all who can use it.
+
+         *  Develop "real world, best practice" IAE tools and techniques that successfully
+          scale to both Internet Service Providers (ISP) and enterprise computing
+           environments and enable greater product absorption.
+
+          *  Develop standards and practices for future IAE certification programs.
+
+        >>---->          website: http://mccain.ots.utexas.edu
+                >>---->                          email to : lwt@@external.cisco.com
+
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d10 2
+@
+
+
+1.1.1.1
+log
+@Initial import of mcrt reposit
+@
+text
+@@

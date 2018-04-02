@@ -1,0 +1,61 @@
+head	1.1;
+branch	1.1.1;
+access;
+symbols
+	RELEASE_1_4:1.1.1.1
+	RELEASE_1_3:1.1.1.1
+	RELEASE_1_2:1.1.1.1
+	HEAD:1.1.1.1
+	MAIN:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2001.05.28.20.51.53;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.05.28.20.51.53;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/bin/sh
+
+rcsid='$Id: install.sh,v 1.1 2000/11/03 06:22:41 marcus Exp $'
+
+echo '***************************************************************'
+
+echo This script can only be used with RME 3.1 and higher.
+echo
+echo If you do not want to install this patch, press CTRL+C.
+echo
+echo If you want to install this patch, press Enter or Return
+echo to continue.
+
+echo '****************************************************************'
+read reply
+
+exec ./.install.pl
+@
+
+
+1.1.1.1
+log
+@Initial import into CVS
+@
+text
+@@

@@ -1,0 +1,1122 @@
+head	1.19;
+access;
+symbols
+	devel:1.1.1.1 COSI:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.19
+date	2003.09.01.11.58.10;	author knail1;	state Exp;
+branches;
+next	1.18;
+
+1.18
+date	2003.08.31.22.19.34;	author jmarcus;	state Exp;
+branches;
+next	1.17;
+
+1.17
+date	2001.12.17.05.47.40;	author knail1;	state Exp;
+branches;
+next	1.16;
+
+1.16
+date	2001.12.03.06.25.01;	author jmarcus;	state Exp;
+branches;
+next	1.15;
+
+1.15
+date	2001.10.04.20.21.46;	author jmarcus;	state Exp;
+branches;
+next	1.14;
+
+1.14
+date	2001.10.04.05.42.14;	author jmarcus;	state Exp;
+branches;
+next	1.13;
+
+1.13
+date	2001.09.26.16.57.41;	author jmarcus;	state Exp;
+branches;
+next	1.12;
+
+1.12
+date	2001.09.26.06.23.19;	author jmarcus;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2001.09.25.22.47.35;	author jmarcus;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2001.09.25.21.54.10;	author jmarcus;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2001.09.25.16.50.38;	author jmarcus;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2001.09.25.06.09.50;	author jmarcus;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2001.09.18.08.02.04;	author jmarcus;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2001.09.17.05.48.23;	author jmarcus;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2001.09.16.21.17.02;	author jmarcus;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.09.03.23.46.09;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.08.28.05.31.15;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.08.28.05.25.06;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.08.07.01.59.17;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.08.07.01.59.17;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.19
+log
+@SAA_MIB.pm syntax problems
+@
+text
+@#
+# $Id: SAA_MIB.pm,v 1.18 2003/08/31 22:19:34 jmarcus Exp $
+#
+package SAA::SAA_MIB;
+
+use strict;
+require 5.002;
+
+use vars qw(
+  $ciscoRttMonMIB
+  $ciscoRttMonObjects
+  $rttMonAppl
+  $rttMonApplVersion
+  $rttMonCtrl
+  $rttMonCtrlAdminTable
+  $rttMonCtrlAdminEntry
+  $rttMonCtrlAdminTag
+  $rttMonCtrlAdminStatus
+  $rttMonApplSupportedRttTypesTable
+  $rttMonApplSupportedProtocolsTable
+  $rttMonApplSupportedProtocolsEntry
+  $rttMonApplSupportedRttTypesEntry
+  $rttMonApplSupportedProtocolsValid
+  $rttMonApplSupportedRttTypesValid
+  $rttMonEchoAdminTOS
+  $rttMonEchoAdminTable
+  $rttMonEchoAdminEntry
+  $rttMonEchoAdminTargetAddress
+  $rttMonEchoAdminTargetPort
+  $rttMonEchoAdminSourceAddress
+  $rttMonEchoAdminSourcePort
+  $rttMonEchoAdminNameServer
+  $rttMonEchoAdminControlEnable
+  $rttMonEchoAdminProtocol
+  $rttMonCtrlAdminRttType
+  $rttMonEchoAdminOperation
+  $rttMonEchoAdminString1
+  $rttMonEchoAdminString2
+  $rttMonEchoAdminString3
+  $rttMonEchoAdminString4
+  $rttMonEchoAdminString5
+  $rttMonEchoAdminURL
+  $rttMonCtrlAdminNvgen
+  $rttMonHistoryAdminTable
+  $rttMonHistoryAdminEntry
+  $rttMonHistoryAdminFilter
+  $rttMonScheduleAdminRttStartTime
+  $rttMonScheduleAdminTable
+  $rttMonScheduleAdminEntry
+  $rttMonScheduleAdminRttLife
+  $rttMonEchoAdminCache
+  $historyFilterEnum
+  $rowStatusEnum
+  $adminOperationEnum
+  $operationProtocolEnum
+  $operationTypeEnum
+);
+
+use vars qw(@@ISA @@EXPORT);
+use Exporter;
+use Carp;
+
+@@ISA    = qw(Exporter);
+@@EXPORT =
+  qw(
+  $ciscoRttMonMIB
+  $ciscoRttMonObjects
+  $rttMonAppl
+  $rttMonApplVersion
+  $rttMonCtrl
+  $rttMonCtrlAdminTable
+  $rttMonCtrlAdminEntry
+  $rttMonCtrlAdminStatus
+  $rttMonCtrlAdminTag
+  $rttMonApplSupportedRttTypesTable
+  $rttMonApplSupportedProtocolsTable
+  $rttMonApplSupportedProtocolsEntry
+  $rttMonApplSupportedRttTypesEntry
+  $rttMonApplSupportedProtocolsValid
+  $rttMonApplSupportedRttTypesValid
+  $rttMonEchoAdminTOS
+  $rttMonEchoAdminTable
+  $rttMonEchoAdminEntry
+  $rttMonEchoAdminTargetAddress
+  $rttMonEchoAdminTargetPort
+  $rttMonEchoAdminSourceAddress
+  $rttMonEchoAdminSourcePort
+  $rttMonEchoAdminNameServer
+  $rttMonEchoAdminControlEnable
+  $rttMonEchoAdminProtocol
+  $rttMonCtrlAdminRttType
+  $rttMonEchoAdminOperation
+  $rttMonEchoAdminString1
+  $rttMonEchoAdminString2
+  $rttMonEchoAdminString3
+  $rttMonEchoAdminString4
+  $rttMonEchoAdminString5
+  $rttMonEchoAdminURL
+  $rttMonCtrlAdminNvgen
+  $rttMonHistoryAdminTable
+  $rttMonHistoryAdminEntry
+  $rttMonHistoryAdminFilter
+  $rttMonScheduleAdminTable
+  $rttMonScheduleAdminEntry
+  $rttMonScheduleAdminRttLife
+  $rttMonScheduleAdminRttStartTime
+  $rttMonEchoAdminCache
+  $historyFilterEnum
+  FALSE
+  TRUE
+  $rowStatusEnum
+  $adminOperationEnum
+  $operationProtocolEnum
+  $operationTypeEnum
+  DEFAULT_THRESHOLD
+  DEFAULT_FREQUENCY
+  DEFAULT_TIMEOUT
+  DEFAULT_VERIFY
+  DEFAULT_TOS
+  DEFAULT_CONTROL_ENABLE
+  DEFAULT_SPORT
+  DEFAULT_TPORT
+  DEFAULT_ADMIN_CACHE
+  MIN_THRESHOLD
+  MIN_TIMEOUT
+  MIN_SPORT
+  MIN_TPORT
+  MIN_FREQUENCY
+  MAX_FREQUENCY
+  MIN_TOS
+  MAX_TOS
+  MAX_TIMEOUT
+  MAX_THRESHOLD
+  CONTROL
+  MAX_SPORT
+  MAX_TPORT
+  MIN_LIFE
+  MAX_LIFE
+  MAX_ADMIN_STRINGS
+  MAX_ADMIN_STRING_LEN
+  MAX_URL_LEN
+  DEFAULT_START_TIME
+  DEFAULT_LIFE
+  LIVE_FOREVER
+  START_TIME_NOW
+);
+
+$ciscoRttMonMIB                    = '.1.3.6.1.4.1.9.9.42';
+$ciscoRttMonObjects                = $ciscoRttMonMIB . '.1';
+$rttMonAppl                        = $ciscoRttMonObjects . '.1';
+$rttMonApplVersion                 = $rttMonAppl . '.1';
+$rttMonCtrl                        = $ciscoRttMonObjects . '.2';
+$rttMonCtrlAdminTable              = $rttMonCtrl . '.1';
+$rttMonCtrlAdminEntry              = $rttMonCtrlAdminTable . '.1';
+$rttMonCtrlAdminTag                = $rttMonCtrlAdminEntry . '.3';
+$rttMonCtrlAdminRttType            = $rttMonCtrlAdminEntry . '.4';
+$rttMonCtrlAdminStatus             = $rttMonCtrlAdminEntry . '.9';
+$rttMonCtrlAdminNvgen              = $rttMonCtrlAdminEntry . '.10';
+$rttMonApplSupportedRttTypesTable  = $rttMonAppl . '.7';
+$rttMonApplSupportedProtocolsTable = $rttMonAppl . '.8';
+$rttMonApplSupportedProtocolsEntry = $rttMonApplSupportedProtocolsTable . '.1';
+$rttMonApplSupportedRttTypesEntry  = $rttMonApplSupportedRttTypesTable . '.1';
+$rttMonApplSupportedProtocolsValid = $rttMonApplSupportedProtocolsEntry . '.2';
+$rttMonApplSupportedRttTypesValid  = $rttMonApplSupportedRttTypesEntry . '.2';
+$rttMonEchoAdminTable              = $rttMonCtrl . '.2';
+$rttMonEchoAdminEntry              = $rttMonEchoAdminTable . '.1';
+$rttMonEchoAdminProtocol           = $rttMonEchoAdminEntry . '.1';
+$rttMonEchoAdminTargetAddress      = $rttMonEchoAdminEntry . '.2';
+$rttMonEchoAdminTargetPort         = $rttMonEchoAdminEntry . '.5';
+$rttMonEchoAdminSourceAddress      = $rttMonEchoAdminEntry . '.6';
+$rttMonEchoAdminSourcePort         = $rttMonEchoAdminEntry . '.7';
+$rttMonEchoAdminControlEnable      = $rttMonEchoAdminEntry . '.8';
+$rttMonEchoAdminTOS                = $rttMonEchoAdminEntry . '.9';
+$rttMonEchoAdminNameServer         = $rttMonEchoAdminEntry . '.12';
+$rttMonEchoAdminOperation          = $rttMonEchoAdminEntry . '.13';
+$rttMonEchoAdminURL                = $rttMonEchoAdminEntry . '.15';
+$rttMonEchoAdminCache              = $rttMonEchoAdminEntry . '.17';
+$rttMonEchoAdminString1            = $rttMonEchoAdminEntry . '.20';
+$rttMonEchoAdminString2            = $rttMonEchoAdminEntry . '.21';
+$rttMonEchoAdminString3            = $rttMonEchoAdminEntry . '.22';
+$rttMonEchoAdminString4            = $rttMonEchoAdminEntry . '.23';
+$rttMonEchoAdminString5            = $rttMonEchoAdminEntry . '.24';
+$rttMonScheduleAdminTable          = $rttMonCtrl . '.5';
+$rttMonScheduleAdminEntry          = $rttMonScheduleAdminTable . '.1';
+$rttMonScheduleAdminRttLife        = $rttMonScheduleAdminEntry . '.1';
+$rttMonScheduleAdminRttStartTime   = $rttMonScheduleAdminEntry . '.2';
+$rttMonHistoryAdminTable           = $rttMonCtrl . '.8';
+$rttMonHistoryAdminEntry           = $rttMonHistoryAdminTable . '.1';
+$rttMonHistoryAdminFilter          = $rttMonHistoryAdminEntry . '.4';
+
+# These are taken from the SNMPv2-TC definitions.  true is 1 and false is 2.
+use constant TRUE  => 1;
+use constant FALSE => 2;
+
+# Row status enum
+$rowStatusEnum = {
+        active        => 1,
+        notInService  => 2,
+        notReady      => 3,
+        createAndGo   => 4,
+        createAndWait => 5,
+        destroy       => 6,
+};
+
+# Ref to hash indicating the values for rttMonHistoryAdminFilter.
+$historyFilterEnum = {
+        none          => 1,
+        all           => 2,
+        overThreshold => 3,
+        failures      => 4,
+};
+
+$adminOperationEnum = {
+        httpGet    => 1,
+        httpRaw    => 2,
+        ftpGet     => 3,
+        ftpPassive => 4,
+        ftpActive  => 5,
+};
+
+# Define global protocols
+$operationProtocolEnum = {
+        na                => 1,
+        icmpEcho          => 2,
+        udpEcho           => 3,
+        snaRUEcho         => 4,
+        snaLU0EchoAppl    => 5,
+        snaLU2EchoAppl    => 6,
+        snaLU62Echo       => 7,
+        snaLU62EchoAppl   => 8,
+        appleTalkEcho     => 9,
+        appleTalkEchoAppl => 10,
+        decNetEcho        => 11,
+        decNetEchoAppl    => 12,
+        ipxEcho           => 13,
+        ipxEchoAppl       => 14,
+        isoClnsEcho       => 15,
+        isoClnsEchoAppl   => 16,
+        vinesEcho         => 17,
+        vinesEchoAppl     => 18,
+        xnsEcho           => 19,
+        xnsEchoAppl       => 20,
+        apolloEcho        => 21,
+        apolloEchoAppl    => 22,
+        netbiosEchoAppl   => 23,
+        ipTcpConn         => 24,
+        httpAppl          => 25,
+        dnsAppl           => 26,
+        jitterAppl        => 27,
+        dlswAppl          => 28,
+        dhcpAppl          => 29,
+        ftpAppl           => 30,
+    },
+
+    # End protocol definitions
+
+    # Define global operation types
+    $operationTypeEnum = {
+        na         => 0,    # Note: this is not defined in the MIB
+        echo       => 1,
+        pathEcho   => 2,
+        fileIO     => 3,    # NOT SUPPORTED
+        script     => 4,    # NOT SUPPORTED
+        udpEcho    => 5,
+        tcpConnect => 6,
+        http       => 7,
+        dns        => 8,
+        jitter     => 9,
+        dlsw       => 10,
+        dhcp       => 11,
+        ftp        => 12,
+    };
+
+# End type definitions
+
+# Define global defaults
+use constant DEFAULT_THRESHOLD      => 5000;
+use constant DEFAULT_FREQUENCY      => 60;
+use constant DEFAULT_TIMEOUT        => 5000;
+use constant DEFAULT_VERIFY         => FALSE;
+use constant DEFAULT_TOS            => 0;
+use constant DEFAULT_CONTROL_ENABLE => FALSE; #for echo/dns/http probes
+use constant DEFAULT_SPORT          => 0;
+use constant DEFAULT_TPORT          => 0;
+use constant DEFAULT_START_TIME     => 0; #invalid start time purposefully line221 Collector.pm
+use constant DEFAULT_LIFE           => 3600; # 1 hour
+use constant DEFAULT_ADMIN_CACHE    => FALSE; #http, dont dl from cache ever
+
+# Define global limits
+use constant MIN_THRESHOLD        => 0;
+use constant MIN_TIMEOUT          => 0;
+use constant MIN_SPORT            => 0;
+use constant MIN_TPORT            => 0;
+use constant MIN_FREQUENCY        => 0;
+use constant MAX_FREQUENCY        => 604800;
+use constant MIN_TOS              => 0;
+use constant MAX_TOS              => 255;
+use constant MAX_TIMEOUT          => 604800000;
+use constant MAX_THRESHOLD        => 2147483647;
+use constant CONTROL              => 0;
+use constant MAX_SPORT            => 65536;
+use constant MAX_TPORT            => 65536;
+use constant MIN_LIFE             => 0;
+use constant MAX_LIFE             => 2147483647;
+use constant MAX_ADMIN_STRINGS    => 5;
+use constant MAX_ADMIN_STRING_LEN => 255;
+use constant MAX_URL_LEN          => 255;
+
+# End limit definitions
+
+# Collector globals
+use constant START_TIME_NOW => 1;
+use constant LIVE_FOREVER   => MAX_LIFE;
+
+# End globals
+
+1;
+__END__
+@
+
+
+1.18
+log
+@Clean up all the source with a nice call to:
+
+perltidy -i=8 -t -pt=2 -bt=2 -sbt=2 -ci=4 -noll -sfs -nasc -ce
+@
+text
+@d2 1
+a2 1
+# $Id: SAA_MIB.pm,v 1.17 2001/12/17 05:47:40 knail1 Exp $
+d10 47
+a56 46
+    $ciscoRttMonMIB
+    $ciscoRttMonObjects
+    $rttMonAppl
+    $rttMonApplVersion
+    $rttMonCtrl
+    $rttMonCtrlAdminTable
+    $rttMonCtrlAdminEntry
+    $rttMonCtrlAdminStatus
+    $rttMonApplSupportedRttTypesTable
+    $rttMonApplSupportedProtocolsTable
+    $rttMonApplSupportedProtocolsEntry
+    $rttMonApplSupportedRttTypesEntry
+    $rttMonApplSupportedProtocolsValid
+    $rttMonApplSupportedRttTypesValid
+    $rttMonEchoAdminTOS
+    $rttMonEchoAdminTable
+    $rttMonEchoAdminEntry
+    $rttMonEchoAdminTargetAddress
+    $rttMonEchoAdminTargetPort
+    $rttMonEchoAdminSourceAddress
+    $rttMonEchoAdminSourcePort
+    $rttMonEchoAdminNameServer
+    $rttMonEchoAdminControlEnable
+    $rttMonEchoAdminProtocol
+    $rttMonCtrlAdminRttType
+    $rttMonEchoAdminOperation
+    $rttMonEchoAdminString1
+    $rttMonEchoAdminString2
+    $rttMonEchoAdminString3
+    $rttMonEchoAdminString4
+    $rttMonEchoAdminString5
+    $rttMonEchoAdminURL
+    $rttMonCtrlAdminNvgen
+    $rttMonHistoryAdminTable
+    $rttMonHistoryAdminEntry
+    $rttMonHistoryAdminFilter
+    $rttMonScheduleAdminRttStartTime
+    $rttMonScheduleAdminTable
+    $rttMonScheduleAdminEntry
+    $rttMonScheduleAdminRttLife
+    $rttMonEchoAdminCache
+    $historyFilterEnum
+    $rowStatusEnum
+    $adminOperationEnum
+    $operationProtocolEnum
+    $operationTypeEnum
+d65 81
+a145 80
+    qw(
+    $ciscoRttMonMIB
+    $ciscoRttMonObjects
+    $rttMonAppl
+    $rttMonApplVersion
+    $rttMonCtrl
+    $rttMonCtrlAdminTable
+    $rttMonCtrlAdminEntry
+    $rttMonCtrlAdminStatus
+    $rttMonApplSupportedRttTypesTable
+    $rttMonApplSupportedProtocolsTable
+    $rttMonApplSupportedProtocolsEntry
+    $rttMonApplSupportedRttTypesEntry
+    $rttMonApplSupportedProtocolsValid
+    $rttMonApplSupportedRttTypesValid
+    $rttMonEchoAdminTOS
+    $rttMonEchoAdminTable
+    $rttMonEchoAdminEntry
+    $rttMonEchoAdminTargetAddress
+    $rttMonEchoAdminTargetPort
+    $rttMonEchoAdminSourceAddress
+    $rttMonEchoAdminSourcePort
+    $rttMonEchoAdminNameServer
+    $rttMonEchoAdminControlEnable
+    $rttMonEchoAdminProtocol
+    $rttMonCtrlAdminRttType
+    $rttMonEchoAdminOperation
+    $rttMonEchoAdminString1
+    $rttMonEchoAdminString2
+    $rttMonEchoAdminString3
+    $rttMonEchoAdminString4
+    $rttMonEchoAdminString5
+    $rttMonEchoAdminURL
+    $rttMonCtrlAdminNvgen
+    $rttMonHistoryAdminTable
+    $rttMonHistoryAdminEntry
+    $rttMonHistoryAdminFilter
+    $rttMonScheduleAdminTable
+    $rttMonScheduleAdminEntry
+    $rttMonScheduleAdminRttLife
+    $rttMonScheduleAdminRttStartTime
+    $rttMonEchoAdminCache
+    $historyFilterEnum
+    FALSE
+    TRUE
+    $rowStatusEnum
+    $adminOperationEnum
+    $operationProtocolEnum
+    $operationTypeEnum
+    DEFAULT_THRESHOLD
+    DEFAULT_FREQUENCY
+    DEFAULT_TIMEOUT
+    DEFAULT_VERIFY
+    DEFAULT_TOS
+    DEFAULT_CONTROL_ENABLE
+    DEFAULT_SPORT
+    DEFAULT_TPORT
+    DEFAULT_ADMIN_CACHE
+    MIN_THRESHOLD
+    MIN_TIMEOUT
+    MIN_SPORT
+    MIN_TPORT
+    MIN_FREQUENCY
+    MAX_FREQUENCY
+    MIN_TOS
+    MAX_TOS
+    MAX_TIMEOUT
+    MAX_THRESHOLD
+    CONTROL
+    MAX_SPORT
+    MAX_TPORT
+    MIN_LIFE
+    MAX_LIFE
+    MAX_ADMIN_STRINGS
+    MAX_ADMIN_STRING_LEN
+    MAX_URL_LEN
+    DEFAULT_START_TIME
+    DEFAULT_LIFE
+    LIVE_FOREVER
+    START_TIME_NOW
+d155 1
+d282 1
+a282 1
+use constant DEFAULT_CONTROL_ENABLE => TRUE;
+d285 3
+a287 3
+use constant DEFAULT_START_TIME     => 0;
+use constant DEFAULT_LIFE           => 3600;
+use constant DEFAULT_ADMIN_CACHE    => TRUE;
+@
+
+
+1.17
+log
+@fixed typo
+@
+text
+@d2 1
+a2 1
+# $Id: SAA_MIB.pm,v 1.16 2001/12/03 06:25:01 jmarcus Exp $
+d10 46
+a55 46
+  $ciscoRttMonMIB
+  $ciscoRttMonObjects
+  $rttMonAppl
+  $rttMonApplVersion
+  $rttMonCtrl
+  $rttMonCtrlAdminTable
+  $rttMonCtrlAdminEntry
+  $rttMonCtrlAdminStatus
+  $rttMonApplSupportedRttTypesTable
+  $rttMonApplSupportedProtocolsTable
+  $rttMonApplSupportedProtocolsEntry
+  $rttMonApplSupportedRttTypesEntry
+  $rttMonApplSupportedProtocolsValid
+  $rttMonApplSupportedRttTypesValid
+  $rttMonEchoAdminTOS
+  $rttMonEchoAdminTable
+  $rttMonEchoAdminEntry
+  $rttMonEchoAdminTargetAddress
+  $rttMonEchoAdminTargetPort
+  $rttMonEchoAdminSourceAddress
+  $rttMonEchoAdminSourcePort
+  $rttMonEchoAdminNameServer
+  $rttMonEchoAdminControlEnable
+  $rttMonEchoAdminProtocol
+  $rttMonCtrlAdminRttType
+  $rttMonEchoAdminOperation
+  $rttMonEchoAdminString1
+  $rttMonEchoAdminString2
+  $rttMonEchoAdminString3
+  $rttMonEchoAdminString4
+  $rttMonEchoAdminString5
+  $rttMonEchoAdminURL
+  $rttMonCtrlAdminNvgen
+  $rttMonHistoryAdminTable
+  $rttMonHistoryAdminEntry
+  $rttMonHistoryAdminFilter
+  $rttMonScheduleAdminRttStartTime
+  $rttMonScheduleAdminTable
+  $rttMonScheduleAdminEntry
+  $rttMonScheduleAdminRttLife
+  $rttMonEchoAdminCache
+  $historyFilterEnum
+  $rowStatusEnum
+  $adminOperationEnum
+  $operationProtocolEnum
+  $operationTypeEnum
+d64 80
+a143 80
+  qw(
+  $ciscoRttMonMIB
+  $ciscoRttMonObjects
+  $rttMonAppl
+  $rttMonApplVersion
+  $rttMonCtrl
+  $rttMonCtrlAdminTable
+  $rttMonCtrlAdminEntry
+  $rttMonCtrlAdminStatus
+  $rttMonApplSupportedRttTypesTable
+  $rttMonApplSupportedProtocolsTable
+  $rttMonApplSupportedProtocolsEntry
+  $rttMonApplSupportedRttTypesEntry
+  $rttMonApplSupportedProtocolsValid
+  $rttMonApplSupportedRttTypesValid
+  $rttMonEchoAdminTOS
+  $rttMonEchoAdminTable
+  $rttMonEchoAdminEntry
+  $rttMonEchoAdminTargetAddress
+  $rttMonEchoAdminTargetPort
+  $rttMonEchoAdminSourceAddress
+  $rttMonEchoAdminSourcePort
+  $rttMonEchoAdminNameServer
+  $rttMonEchoAdminControlEnable
+  $rttMonEchoAdminProtocol
+  $rttMonCtrlAdminRttType
+  $rttMonEchoAdminOperation
+  $rttMonEchoAdminString1
+  $rttMonEchoAdminString2
+  $rttMonEchoAdminString3
+  $rttMonEchoAdminString4
+  $rttMonEchoAdminString5
+  $rttMonEchoAdminURL
+  $rttMonCtrlAdminNvgen
+  $rttMonHistoryAdminTable
+  $rttMonHistoryAdminEntry
+  $rttMonHistoryAdminFilter
+  $rttMonScheduleAdminTable
+  $rttMonScheduleAdminEntry
+  $rttMonScheduleAdminRttLife
+  $rttMonScheduleAdminRttStartTime
+  $rttMonEchoAdminCache
+  $historyFilterEnum
+  FALSE
+  TRUE
+  $rowStatusEnum
+  $adminOperationEnum
+  $operationProtocolEnum
+  $operationTypeEnum
+  DEFAULT_THRESHOLD
+  DEFAULT_FREQUENCY
+  DEFAULT_TIMEOUT
+  DEFAULT_VERIFY
+  DEFAULT_TOS
+  DEFAULT_CONTROL_ENABLE
+  DEFAULT_SPORT
+  DEFAULT_TPORT
+  DEFAULT_ADMIN_CACHE
+  MIN_THRESHOLD
+  MIN_TIMEOUT
+  MIN_SPORT
+  MIN_TPORT
+  MIN_FREQUENCY
+  MAX_FREQUENCY
+  MIN_TOS
+  MAX_TOS
+  MAX_TIMEOUT
+  MAX_THRESHOLD
+  CONTROL
+  MAX_SPORT
+  MAX_TPORT
+  MIN_LIFE
+  MAX_LIFE
+  MAX_ADMIN_STRINGS
+  MAX_ADMIN_STRING_LEN
+  MAX_URL_LEN
+  DEFAULT_START_TIME
+  DEFAULT_LIFE
+  LIVE_FOREVER
+  START_TIME_NOW
+d194 6
+a199 6
+    active        => 1,
+    notInService  => 2,
+    notReady      => 3,
+    createAndGo   => 4,
+    createAndWait => 5,
+    destroy       => 6,
+d204 4
+a207 4
+    none          => 1,
+    all           => 2,
+    overThreshold => 3,
+    failures      => 4,
+d211 5
+a215 5
+    httpGet    => 1,
+    httpRaw    => 2,
+    ftpGet     => 3,
+    ftpPassive => 4,
+    ftpActive  => 5,
+d220 50
+a269 50
+    na                => 1,
+    icmpEcho          => 2,
+    udpEcho           => 3,
+    snaRUEcho         => 4,
+    snaLU0EchoAppl    => 5,
+    snaLU2EchoAppl    => 6,
+    snaLU62Echo       => 7,
+    snaLU62EchoAppl   => 8,
+    appleTalkEcho     => 9,
+    appleTalkEchoAppl => 10,
+    decNetEcho        => 11,
+    decNetEchoAppl    => 12,
+    ipxEcho           => 13,
+    ipxEchoAppl       => 14,
+    isoClnsEcho       => 15,
+    isoClnsEchoAppl   => 16,
+    vinesEcho         => 17,
+    vinesEchoAppl     => 18,
+    xnsEcho           => 19,
+    xnsEchoAppl       => 20,
+    apolloEcho        => 21,
+    apolloEchoAppl    => 22,
+    netbiosEchoAppl   => 23,
+    ipTcpConn         => 24,
+    httpAppl          => 25,
+    dnsAppl           => 26,
+    jitterAppl        => 27,
+    dlswAppl          => 28,
+    dhcpAppl          => 29,
+    ftpAppl           => 30,
+  },
+
+  # End protocol definitions
+
+  # Define global operation types
+  $operationTypeEnum = {
+    na         => 0,    # Note: this is not defined in the MIB
+    echo       => 1,
+    pathEcho   => 2,
+    fileIO     => 3,    # NOT SUPPORTED
+    script     => 4,    # NOT SUPPORTED
+    udpEcho    => 5,
+    tcpConnect => 6,
+    http       => 7,
+    dns        => 8,
+    jitter     => 9,
+    dlsw       => 10,
+    dhcp       => 11,
+    ftp        => 12,
+};
+@
+
+
+1.16
+log
+@Fix bug in exporter.
+@
+text
+@d2 1
+a2 1
+# $Id: SAA_MIB.pm,v 1.15 2001/10/04 20:21:46 jmarcus Exp $
+d135 1
+a135 1
+  MIX_LIFE
+@
+
+
+1.15
+log
+@Add $Id$ CVS tags.
+@
+text
+@d2 1
+a2 1
+# $Id$
+d58 1
+d62 2
+a63 2
+my @@ISA    = qw(Exporter);
+my @@EXPORT =
+@
+
+
+1.14
+log
+@Add support for the rttMonEchoAdminCache object.
+@
+text
+@d1 3
+@
+
+
+1.13
+log
+@Coding, coding coding....
+@
+text
+@d47 1
+d101 1
+d117 1
+d170 1
+d280 1
+@
+
+
+1.12
+log
+@More Collector code.
+@
+text
+@d39 8
+d49 1
+a49 1
+  $httpOperationEnum
+d92 8
+d104 1
+a104 1
+  $httpOperationEnum
+d130 2
+a131 2
+  MAX_HTTP_STRINGS
+  MAX_HTTP_STRING_LEN
+d148 1
+d172 7
+d202 1
+a202 1
+$httpOperationEnum = {
+d207 1
+d278 18
+a295 18
+use constant MIN_THRESHOLD       => 0;
+use constant MIN_TIMEOUT         => 0;
+use constant MIN_SPORT           => 0;
+use constant MIN_TPORT           => 0;
+use constant MIN_FREQUENCY       => 0;
+use constant MAX_FREQUENCY       => 604800;
+use constant MIN_TOS             => 0;
+use constant MAX_TOS             => 255;
+use constant MAX_TIMEOUT         => 604800000;
+use constant MAX_THRESHOLD       => 2147483647;
+use constant CONTROL             => 0;
+use constant MAX_SPORT           => 65536;
+use constant MAX_TPORT           => 65536;
+use constant MIN_LIFE            => 0;
+use constant MAX_LIFE            => 2147483647;
+use constant MAX_HTTP_STRINGS    => 5;
+use constant MAX_HTTP_STRING_LEN => 255;
+use constant MAX_URL_LEN         => 255;
+@
+
+
+1.11
+log
+@More Operation fields and code cleanup.
+@
+text
+@d33 6
+d78 6
+d116 1
+d149 6
+d270 1
+@
+
+
+1.10
+log
+@More Collector code.
+@
+text
+@d102 2
+d234 17
+a250 15
+use constant MIN_THRESHOLD => 0;
+use constant MIN_TIMEOUT   => 0;
+use constant MIN_SPORT     => 0;
+use constant MIN_TPORT     => 0;
+use constant MIN_FREQUENCY => 0;
+use constant MAX_FREQUENCY => 604800;
+use constant MIN_TOS       => 0;
+use constant MAX_TOS       => 255;
+use constant MAX_TIMEOUT   => 604800000;
+use constant MAX_THRESHOLD => 2147483647;
+use constant CONTROL       => 0;
+use constant MAX_SPORT     => 65536;
+use constant MAX_TPORT     => 65536;
+use constant MIN_LIFE      => 0;
+use constant MAX_LIFE      => 2147483647;
+@
+
+
+1.9
+log
+@rttMonApplSupportedProtocolsValid is rttMonApplSupportedProtocolsEntry.2 not
+.1.
+@
+text
+@d32 1
+d71 1
+d133 1
+@
+
+
+1.8
+log
+@More RTTMON-MIB additions and code cleanup.
+@
+text
+@d119 1
+a119 1
+$rttMonApplSupportedProtocolsValid = $rttMonApplSupportedProtocolsEntry . '.1';
+@
+
+
+1.7
+log
+@Massive OOP style changes.
+@
+text
+@d15 17
+d53 17
+d106 25
+a130 8
+$ciscoRttMonMIB        = '.1.3.6.1.4.1.9.9.42';
+$ciscoRttMonObjects    = $ciscoRttMonMIB . '.1';
+$rttMonAppl            = $ciscoRttMonObjects . '.1';
+$rttMonApplVersion     = $rttMonAppl . '.1';
+$rttMonCtrl            = $ciscoRttMonObjects . '.2';
+$rttMonCtrlAdminTable  = $rttMonCtrl . '.1';
+$rttMonCtrlAdminEntry  = $rttMonCtrlAdminTable . '.1';
+$rttMonCtrlAdminStatus = $rttMonCtrlAdminEntry . '.9';
+@
+
+
+1.6
+log
+@Added more Collector code, and cleaned up Operation some.
+@
+text
+@a5 1
+use vars qw(@@EXPORT_OK);
+a15 2
+  $FALSE
+  $TRUE
+d18 2
+a19 3
+  $SNMP_ERR_NOSUCHNAME
+  $SNMP_ERR_V2_IN_V1
+  $SNMP_ERR_BAD_VERSION
+d25 2
+a26 2
+*import    = \&Exporter::import;
+@@EXPORT_OK =
+d37 2
+a38 2
+  $FALSE
+  $TRUE
+d41 29
+a69 3
+  $SNMP_ERR_NOSUCHNAME
+  $SNMP_ERR_V2_IN_V1
+  $SNMP_ERR_BAD_VERSION
+d82 2
+a83 2
+$TRUE  = 1;
+$FALSE = 2;
+d110 91
+a200 4
+# Define some common ucd-snmp return codes.
+$SNMP_ERR_NOSUCHNAME  = 2;
+$SNMP_ERR_V2_IN_V1    = -7;
+$SNMP_ERR_BAD_VERSION = -14;
+@
+
+
+1.5
+log
+@Added createAndWait and other SAA objects.
+@
+text
+@d16 1
+d19 2
+a20 1
+  $createAndWait
+d40 1
+d43 2
+a44 1
+  $createAndWait
+d60 27
+a86 3
+$TRUE          = 1;
+$FALSE         = 2;
+$createAndWait = 5;
+@
+
+
+1.4
+log
+@Add new SNMP error values.
+@
+text
+@d12 4
+d18 1
+d34 4
+d40 1
+d46 8
+a53 4
+$ciscoRttMonMIB     = '.1.3.6.1.4.1.9.9.42';
+$ciscoRttMonObjects = $ciscoRttMonMIB . '.1';
+$rttMonAppl         = $ciscoRttMonObjects . '.1';
+$rttMonApplVersion  = $rttMonAppl . '.1';
+d56 3
+a58 2
+$TRUE  = 1;
+$FALSE = 2;
+@
+
+
+1.3
+log
+@Cleaned up the code some.
+@
+text
+@d14 3
+d31 3
+d44 5
+@
+
+
+1.2
+log
+@Added support for TruthValue
+@
+text
+@d7 8
+a14 1
+use vars qw($ciscoRttMonMIB $ciscoRttMonObjects $rttMonAppl $rttMonApplVersion $FALSE $TRUE);
+d19 1
+a19 1
+*import = \&Exporter::import;
+d21 8
+a28 1
+  qw($ciscoRttMonMIB $ciscoRttMonObjects $rttMonAppl $rttMonApplVersion $FALSE $TRUE);
+d36 1
+a36 1
+$TRUE = 1;
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d7 1
+a7 1
+use vars qw($ciscoRttMonMIB $ciscoRttMonObjects $rttMonAppl $rttMonApplVersion);
+d14 1
+a14 1
+  qw($ciscoRttMonMIB $ciscoRttMonObjects $rttMonAppl $rttMonApplVersion);
+d20 4
+@
+
+
+1.1.1.1
+log
+@Initial import into the COSI CVS respository
+@
+text
+@@

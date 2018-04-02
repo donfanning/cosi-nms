@@ -1,0 +1,86 @@
+head	1.3;
+access;
+symbols
+	RELEASE_1_2_1:1.3
+	RELEASE:1.1.1.1
+	MarcusCom:1.1.1;
+locks; strict;
+comment	@:: @;
+
+
+1.3
+date	2001.05.24.20.22.44;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.05.24.19.58.10;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.05.24.05.58.05;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.05.24.05.58.05;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.3
+log
+@Cleaned up some residual cruft.  Now I have to respin the releases.  Doh!
+@
+text
+@@@echo off
+REM
+REM Copyright (c)2000 by MarcusCom, Inc. All rights reserved.
+REM $Id: confregdecode.bat,v 1.2 2001/05/24 19:58:10 jmarcus Exp $
+REM
+
+set CLASSPATH=cd.jar;%CLASSPATH%
+
+jre.exe -cp %CLASSPATH% com.marcuscom.confregdecode.ConfregDecode
+@
+
+
+1.2
+log
+@Cleaning up the code and getting ready for a release.
+@
+text
+@d4 1
+a4 1
+REM $Id: confregdecode.bat,v 1.1.1.1 2001/05/24 05:58:05 jmarcus Exp $
+d9 1
+a9 1
+jre.exe -cp %CLASSPATH% com.cisco.confregdecode.ConfregDecode
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d3 2
+a4 2
+REM Copyright (c)2000 by cisco Systems, Inc. All rights reserved.
+REM $Id: confregdecode.bat,v 1.1 2000/12/12 20:05:09 marcus Exp $
+@
+
+
+1.1.1.1
+log
+@This is the initial import of the Cisco Systems IOS(tm) Configuration
+Register Decoder.
+@
+text
+@@

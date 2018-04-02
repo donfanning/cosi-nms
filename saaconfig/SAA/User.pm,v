@@ -1,0 +1,387 @@
+head	1.8;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.8
+date	2003.09.01.02.41.36;	author knail1;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2003.08.31.22.19.34;	author jmarcus;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2001.12.06.20.01.08;	author jmarcus;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2001.12.03.23.05.05;	author jmarcus;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.12.03.22.35.18;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.12.03.06.42.08;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.12.03.06.25.01;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.12.01.22.15.42;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.8
+log
+@testCommit
+@
+text
+@package SAA::User;
+
+
+use strict;
+require 5.002;
+use Carp;
+use vars qw(@@ISA @@EXPORT_OK %EXPORT_TAGS);
+use Exporter;
+use Carp;
+use Digest::MD5 qw(md5_hex);
+use lib qw(..);
+
+@@ISA       = qw(Exporter);
+@@EXPORT_OK = qw(
+    PERMS_GUEST
+    PERMS_USER
+    PERMS_ADMIN
+);
+%EXPORT_TAGS = (Perms => [qw(PERMS_GUEST PERMS_USER PERMS_ADMIN)],);
+
+use constant PERMS_GUEST => 0x00;
+use constant PERMS_USER  => 0x80;
+use constant PERMS_ADMIN => 0xFF;
+
+sub new {
+        my ($that, @@args) = @@_;
+        my $class = ref($that) || $that;
+
+        if (scalar(@@args) != 1) {
+                croak "SAA::User: Insufficient arguments passed to constructor";
+        }
+
+        my $self = {
+                username  => $args[0],
+                password  => undef,
+                firstname => undef,
+                lastname  => undef,
+                perms     => PERMS_GUEST,
+        };
+
+        bless($self, $class);
+        $self;
+}
+
+sub username {
+        my $self = shift;
+        return $self->{username};
+}
+
+sub password {
+        my $self = shift;
+
+        if (@@_) {
+
+                # Store the password as a MD5 hash in memory
+                # and in the database
+                my $pass = shift;
+                $self->{password} = md5_hex($pass);
+        }
+
+        return $self->{password};
+}
+
+sub firstname {
+        my $self = shift;
+        if (@@_) { $self->{firstname} = shift; }
+        return $self->{firstname};
+}
+
+sub lastname {
+        my $self = shift;
+        if (@@_) { $self->{lastname} = shift; }
+        return $self->{lastname};
+}
+
+sub perms {
+        my $self = shift;
+        if (@@_) {
+                my $perms = shift;
+                if ($perms < PERMS_GUEST || $perms > PERMS_ADMIN) {
+                        croak
+                            "SAA::User::perms: Invalid user permissions: $perms";
+                }
+                $self->{perms} = $perms;
+        }
+        return $self->{perms};
+}
+
+sub validate_passwd {
+        my $self = shift;
+
+        if (@@_) {
+                my $check_pass = shift;
+                if (md5_hex($check_pass) ne $self->password()) {
+                        return;
+                }
+        } else {
+                if ($self->password()) {
+                        return;
+                }
+        }
+
+        1;
+}
+
+1;
+@
+
+
+1.7
+log
+@Clean up all the source with a nice call to:
+
+perltidy -i=8 -t -pt=2 -bt=2 -sbt=2 -ci=4 -noll -sfs -nasc -ce
+@
+text
+@d3 1
+@
+
+
+1.6
+log
+@Use an export tag to wrap all the PERMS_* constants.
+@
+text
+@d14 3
+a16 6
+  PERMS_GUEST
+  PERMS_USER
+  PERMS_ADMIN
+);
+%EXPORT_TAGS = (
+    Perms => [qw(PERMS_GUEST PERMS_USER PERMS_ADMIN)],
+d18 1
+d25 6
+a30 2
+    my ( $that, @@args ) = @@_;
+    my $class = ref($that) || $that;
+d32 7
+a38 11
+    if ( scalar(@@args) != 1 ) {
+        croak "SAA::User: Insufficient arguments passed to constructor";
+    }
+
+    my $self = {
+        username  => $args[0],
+        password  => undef,
+        firstname => undef,
+        lastname  => undef,
+        perms     => PERMS_GUEST,
+    };
+d40 2
+a41 2
+    bless( $self, $class );
+    $self;
+d45 2
+a46 2
+    my $self = shift;
+    return $self->{username};
+d50 1
+a50 1
+    my $self = shift;
+d52 1
+a52 1
+    if (@@_) {
+d54 5
+a58 5
+        # Store the password as a MD5 hash in memory
+        # and in the database
+        my $pass = shift;
+        $self->{password} = md5_hex($pass);
+    }
+d60 1
+a60 1
+    return $self->{password};
+d64 3
+a66 3
+    my $self = shift;
+    if (@@_) { $self->{firstname} = shift; }
+    return $self->{firstname};
+d70 3
+a72 3
+    my $self = shift;
+    if (@@_) { $self->{lastname} = shift; }
+    return $self->{lastname};
+d76 8
+a83 5
+    my $self = shift;
+    if (@@_) {
+        my $perms = shift;
+        if ( $perms < PERMS_GUEST || $perms > PERMS_ADMIN ) {
+            croak "SAA::User::perms: Invalid user permissions: $perms";
+d85 1
+a85 3
+        $self->{perms} = $perms;
+    }
+    return $self->{perms};
+d89 1
+a89 1
+    my $self = shift;
+d91 9
+a99 9
+    if (@@_) {
+        my $check_pass = shift;
+        if ( md5_hex($check_pass) ne $self->password() ) {
+            return;
+        }
+    }
+    else {
+        if ( $self->password() ) {
+            return;
+a100 1
+    }
+d102 1
+a102 1
+    1;
+@
+
+
+1.5
+log
+@Make KEY a variable rather than a constant.
+@
+text
+@d6 1
+a6 1
+use vars qw(@@ISA @@EXPORT_OK);
+d17 3
+@
+
+
+1.4
+log
+@Add method to handle validating user passwords.
+@
+text
+@a10 1
+use conf::prefs qw(KEY);
+@
+
+
+1.3
+log
+@Only export the PERMS_ constants if asked.
+@
+text
+@d6 1
+a6 1
+use vars qw(@@ISA @@EXPORT);
+d9 1
+a9 1
+use Crypt::CBC;
+d13 1
+a13 1
+@@ISA    = qw(Exporter);
+d50 1
+a50 3
+    my $self      = shift;
+    my $encrypted = 0;
+    $encrypted = shift if (@@_);
+d54 1
+a54 1
+        # Store the password in a Blowfish cipher in memory
+d57 1
+a57 11
+        if ($encrypted) {
+            $self->{password} = $pass;
+            return $self->{password};
+        }
+        my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
+
+        $self->{password} = $cipher->encrypt_hex($pass);
+    }
+
+    if ($encrypted) {
+        return $self->{password};
+a58 2
+    my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
+    my $pass = $cipher->decrypt_hex( $self->{password} );
+d60 1
+a60 1
+    return $pass;
+d79 1
+a79 3
+        if ( $perms < PERMS_GUEST
+            || $perms > PERMS_ADMIN )
+        {
+d85 18
+@
+
+
+1.2
+log
+@Fix bug in exporter.
+@
+text
+@d14 1
+a14 1
+@@EXPORT = qw(
+@
+
+
+1.1
+log
+@Initial import into CVS.
+@
+text
+@d6 1
+a7 1
+use SAA::Globals;
+d10 2
+d13 2
+a14 2
+my @@ISA    = qw(Exporter);
+my @@EXPORT = qw(
+d37 1
+a37 1
+        perms     => SAA::User::PERMS_GUEST,
+d63 1
+a63 1
+        my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
+d71 1
+a71 1
+    my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
+d93 2
+a94 2
+        if ( $perms < SAA::User::PERMS_GUEST
+            || $perms > SAA::User::PERMS_ADMIN )
+@
+

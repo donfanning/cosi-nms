@@ -1,0 +1,1901 @@
+head	1.17;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.17
+date	2003.09.01.03.09.39;	author knail1;	state Exp;
+branches;
+next	1.16;
+
+1.16
+date	2003.08.31.22.19.34;	author jmarcus;	state Exp;
+branches;
+next	1.15;
+
+1.15
+date	2002.02.14.02.48.35;	author knail1;	state Exp;
+branches;
+next	1.14;
+
+1.14
+date	2002.02.13.04.00.24;	author knail1;	state Exp;
+branches;
+next	1.13;
+
+1.13
+date	2002.02.11.04.47.34;	author knail1;	state Exp;
+branches;
+next	1.12;
+
+1.12
+date	2001.12.03.05.38.15;	author jmarcus;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2001.12.03.05.30.55;	author jmarcus;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2001.12.03.05.30.10;	author jmarcus;	state dead;
+branches;
+next	1.9;
+
+1.9
+date	2001.10.04.20.21.46;	author jmarcus;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2001.09.25.04.34.21;	author nick07;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2001.09.10.22.11.52;	author jmarcus;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2001.09.10.03.45.52;	author jmarcus;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2001.09.09.23.34.39;	author nick07;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.09.09.23.11.23;	author nick07;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.09.09.06.08.23;	author nick07;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.09.09.03.25.30;	author nick07;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.09.07.06.56.33;	author nick07;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.17
+log
+@modifs to connect to remote db
+@
+text
+@package SAA::DB;
+
+# oansari 2.11.2002: adding required methods: add_source
+# oansari 2.12.2002: added add_user, modified add_source to take object handle
+#					 instead of vars, and populated $self->error and returning,
+#					 instead of croaking.
+
+use strict;
+require 5.002;
+use lib qw(..);
+use conf::prefs qw($DB_DRIVER $DB_HOST $DB_PORT $DB_USER $DB_PASS $DB_NAME);
+use DBI;
+use Carp;
+
+use vars qw(
+    $TBL_SOURCE
+    $TBL_TARGET
+    $TBL_OPERATION
+    $TBL_COLLECTOR
+    $TBL_USER
+    %objectToGetMethod
+);
+
+$TBL_SOURCE    = 'SAA_SOURCES';
+$TBL_TARGET    = 'SAA_TARGETS';
+$TBL_OPERATION = 'SAA_OPERATIONS';
+$TBL_COLLECTOR = 'SAA_COLLECTOR';
+$TBL_USER      = 'SAA_USERS';
+
+%objectToGetMethod = (
+        'SAA::Source'    => \&_get_source,
+        'SAA::Target'    => \&_get_target,
+        'SAA::Operation' => \&_get_operation,
+        'SAA::Collector' => \&_get_collector,
+        'SAA::User'      => \&_get_user,
+);
+
+sub new {
+
+        #creating a new object of this class merely connects to the saaconf db,
+        #and returns the dbh handle.
+        my ($that, @@args) = @@_;
+        my $class = ref($that) || $that;
+
+        my $self = {
+                dbh   => undef,
+                error => undef,
+        };
+
+	my $data_source = "dbi:".$DB_DRIVER.":database=".$DB_NAME.";host=".$DB_HOST.";port=".$DB_PORT;
+
+        $self->{dbh} = DBI->connect($data_source, $DB_USER, $DB_PASS)
+            or croak "SAA::DB: Unable to connect to database " . $DB_NAME;
+
+        bless($self, $class);
+        $self;
+}
+
+sub dbh {
+
+        # Allow external callers access to the raw database handle.  If they want
+        # to run raw queries, they're welcome to.
+        #doing nothing but returning the dbh handle created after the object has been
+        #instantiated.
+        my $self = shift;
+        return $self->{dbh};
+}
+
+sub add_source {
+
+        #This public method would let callers enter a source in the table SAA_SOURCES
+        #Note: this does NOT make changes to already defined source (see &modify_source)
+        #Takes in the handle for the source object, and pulls data out from it.
+
+        use vars qw ($src @@ary @@IDs @@Vals $sth @@protocols @@types);
+
+        #note: see conf::tables.pm for hints on schema. do note: if some of the vars
+        #above are not specified by user during configuration, the calling party needs
+        #to still pass _undef_ instead of that var
+
+        #also note that SrcSupportedProtocols is an array not a scalar.
+        my $self = shift;
+        my $src  = shift;
+        my $dbhx = $self->{dbh};
+
+        my %SrcValHash = (
+                SrcId       => undef,
+                SrcAlias    => $src->name(),
+                SrcIpAddr   => $src->addr(),
+                SrcStatus   => $src->status(),
+                SrcDescr    => undef,           #method not present in Source.pm
+                SrcHostname => undef,           # ""
+                SrcReadComm       => $src->read_community(),
+                SrcWriteComm      => $src->write_community(),
+                SrcSnmpVersion    => $src->snmp_version(),
+                SrcIosVersion     => $src->ios_version(),
+                SrcRttAppVersion  => $src->saa_version(),
+                SrcSupportedTypes => $src->type_supported(),    #a ref to a hash
+                SrcSupportedProtocols =>
+                    $src->protocol_supported()                  #a ref to a hash
+        );
+
+        #some rudimentary checks to ensure we populate the "NOT NULL" fields in the tables.
+        if (!($SrcValHash{SrcAlias})) {
+                $self->error("SrcAlias needs to be defined");
+                return;
+        }
+        if (!($SrcValHash{SrcIpAddr})) {
+                $self->error("SrcIpAddr needs to be defined");
+                return;
+        }
+
+        #check to see if src already exists and if it does, then balk out.
+        my $selector =
+            "select \* from SAA_SOURCES where SrcIpAddr=\"$SrcValHash{SrcIpAddr}\" or SrcAlias=\"$SrcValHash{SrcAlias}\"";
+        if (scalar(@@ary = $dbhx->selectrow_array($selector)) != 0) {
+                $self->error(
+                        "DB.pm : SrcIpAddr and.or SrcAlias of this source is already present: $SrcValHash{SrcIpAddr} and.or $SrcValHash{SrcAlias}"
+                );
+                return;
+        }
+
+        undef @@ary;
+
+        #everything looks good, so let's insert this source into database:
+
+        #first, lets churn up the next available SrcId
+        my $srcidchecker = "select \* from  SAA_SOURCES order by SrcId DESC";
+        if (scalar(@@ary = $dbhx->selectrow_array($srcidchecker)) == 0) {
+                $SrcValHash{SrcId} = "1";
+        } else {
+                $SrcValHash{SrcId} = ++$ary[0];
+        }
+
+        my $key;
+        foreach $key (keys %SrcValHash) {
+
+                #put a special catch for the hash refs for supported types
+                if ($key eq "SrcSupportedTypes") {
+                        foreach (keys %{($SrcValHash{SrcSupportedTypes})}) {
+                                push (@@types, $_);
+                        }
+                        push (@@Vals, "\"@@types\"");
+                        push (@@IDs,  $key);
+                        next;
+                }
+
+                #also for hash ref for protocols:
+                if ($key eq "SrcSupportedProtocols") {
+                        foreach (keys %{($SrcValHash{SrcSupportedProtocols})}) {
+                                push (@@protocols, $_);
+                        }
+                        push (@@Vals, "\"@@protocols\"");
+                        push (@@IDs,  $key);
+                        next;
+                }
+
+                #as for the rest, treat them as regular values..
+                if ($SrcValHash{$key}) {
+
+                        #this is to get rid of all the vars not defined by user,
+                        #so we dont bother inserting them into the table
+                        push (@@IDs,  $key);
+                        push (@@Vals, "\"$SrcValHash{$key}\"");
+
+                }
+        }
+
+        my $IDs  = join (',', @@IDs);
+        my $Vals = join (',', @@Vals);
+        my $inserter = "insert into SAA_SOURCES \($IDs\) VALUES \($Vals\)";
+
+        if (!($sth = $dbhx->prepare($inserter))) {
+                $self->error("Failed to prepare query: " . $dbhx->errstr());
+                return;
+        }
+
+        if (!($sth->execute())) {
+                $self->error("Failed to execute query: " . $dbhx->errstr());
+                return;
+        }
+
+        1;
+}
+
+sub add_target {
+
+        #adds target to SAA_TARGETS table in saaconf database
+        #alls you have to do is pass it the target handle
+        my $self   = shift;
+        my $target = shift;
+        my $dbhx   = $self->{dbh};
+        use vars qw ($key @@ary @@IDs @@Vals $sth);
+
+        my %TargetHash = (
+                TgtId     => undef,
+                TgtAlias  => $target->name(),
+                TgtIpAddr => $target->addr(),
+                TgtStatus => $target->status(),
+                TgtDescr  => undef,             #not defined in Target.pm as yet
+                TgtHostName      => undef,      # ""
+                TgtReadComm      => undef,      # ""
+                TgtWriteComm     => undef,      # ""
+                TgtIosVersion    => undef,      #""
+                TgtRttAppVersion => undef       #""
+        );
+
+        #first, lets churn up the next available TargetId
+        my $tgtidchecker = "select \* from  SAA_TARGETS order by TgtId DESC";
+        if (scalar(@@ary = $dbhx->selectrow_array($tgtidchecker)) == 0) {
+                $TargetHash{TgtId} = "1";
+        } else {
+                $TargetHash{TgtId} = ++$ary[0];
+        }
+
+        #now to pull IDs and values from the %TargetHash for the eventual query
+        foreach $key (keys %TargetHash) {
+
+                if ($TargetHash{$key}) {
+
+                        #this is to get rid of all the vars not defined by user,
+                        #so we dont bother inserting them into the table
+                        push (@@IDs,  $key);
+                        push (@@Vals, "\"$TargetHash{$key}\"");
+                }
+        }
+        my $IDs  = join (',', @@IDs);
+        my $Vals = join (',', @@Vals);
+        my $inserter = "insert into SAA_TARGETS \($IDs\) VALUES \($Vals\)";
+
+        if (!($sth = $dbhx->prepare($inserter))) {
+                $self->error("Failed to prepare query: " . $dbhx->errstr());
+                return;
+        }
+
+        if (!($sth->execute())) {
+                $self->error("Failed to execute query: " . $dbhx->errstr());
+                return;
+        }
+}
+
+sub add_user {
+
+        #this as the name suggests, lets callers add NEW users to the SAA_USERS table.
+        #to modify userfields use &modify_user
+        #simply pass it the handle for the user object and it will pull requsite data itself
+
+        my $self = shift;
+        my $user = shift;
+        my $dbhx = $self->{dbh};
+
+        use vars qw ($key @@IDs @@Vals @@ary);
+
+        my %UserHash = (
+                UserId      => undef,
+                UserName    => $user->username(),
+                FirstName   => $user->firstname(),
+                LastName    => $user->lastname(),
+                Password    => $user->password(),
+                Permissions => $user->perms()
+        );
+
+        #first, lets churn up the next available UserId
+        my $useridchecker = "select \* from  SAA_USERS order by UserId DESC";
+        if (scalar(@@ary = $dbhx->selectrow_array($useridchecker)) == 0) {
+                $UserHash{UserId} = "1";
+        } else {
+                $UserHash{UserId} = ++$ary[0];
+        }
+
+        #now to pull IDs and values from the %UserHash for the eventual query
+        foreach $key (keys %UserHash) {
+
+                if ($UserHash{$key}) {
+
+                        #this is to get rid of all the vars not defined by user,
+                        #so we dont bother inserting them into the table
+                        push (@@IDs,  $key);
+                        push (@@Vals, "\"$UserHash{$key}\"");
+                }
+        }
+        my $IDs  = join (',', @@IDs);
+        my $Vals = join (',', @@Vals);
+        my $inserter = "insert into SAA_USERS \($IDs\) VALUES \($Vals\)";
+
+        if (!($sth = $dbhx->prepare($inserter))) {
+                $self->error("Failed to prepare query: " . $dbhx->errstr());
+                return;
+        }
+
+        if (!($sth->execute())) {
+                $self->error("Failed to execute query: " . $dbhx->errstr());
+                return;
+        }
+
+        1;
+}
+
+sub error {
+
+        #this populates the error() value for the object (if there is something STDIN
+        #regardless, it eventually churns out the error message as a return.
+        my $self = shift;
+        if (@@_) { $self->{error} = shift; }
+        return $self->{error};
+}
+
+sub get_object {
+
+        #this provides a public method to make calls on private methods
+        #like _get_source to keep a level of database integrity
+        #thus, it is anticipating the pointer to the function name,
+        #and the arguments to be passed to this function name.
+        #anticipating something like :
+        # get_object('SAA::Source', select args...)
+        my $self = shift;
+
+        if (scalar(@@_) < 1) {
+                croak "DB::get_object: Must specify at least one argument";
+        }
+
+        my $obj = shift;
+        if (!$objectToGetMethod{$obj}) {
+                croak "DB::get_object: Unknown object, $obj";
+        }
+
+        # This can be confusing.  We're using the static hash to map an object to
+        # a method.  We pass the remaining get_object arguments to this private
+        # method.
+        my $method = $objectToGetMethod{$obj};
+        return $self->$method(@@_);
+}
+
+sub _get_source {
+
+        # create SELECT SQL queries on $SRC_TABLE and deliver result
+        # see question1 below:
+        my $self  = shift;
+        my $class = ref $self;
+        croak "Attempt to call private method" if ($class ne __PACKAGE__);
+        my ($query, $dbh, $sth, $src, $srcs);
+
+        $query = "SELECT * FROM $TBL_SOURCE";
+        $dbh   = $self->dbh();
+
+        if (@@_) {
+
+                # Arguments have been passed.  Use the arguments to build SQL queries.
+                $query .= " WHERE ";
+                my $arg;
+                my %args = @@_;
+                foreach $arg (keys %args) {
+
+                        # Handle LIKE '%string%' queries.
+                        if ($args{$arg} =~ /[^\\]%/) {
+                                $query .= "$arg LIKE '$args{$arg}',";
+                        } else {
+                                $query .= "$arg='$args{$arg}',";
+                        }
+                }
+                $query =~ s/,$//;
+        }
+
+        if (!($sth = $dbh->prepare($query))) {
+                $self->error("Failed to prepare query: " . $dbh->errstr());
+                return;
+        }
+
+        if (!($sth->execute())) {
+                $self->error("Failed to execute query: " . $dbh->errstr());
+                return;
+        }
+
+        #finally get data back using fetchrow_hashref()
+        # question1 : why are we creating a source again with this data that was ingested in the DB?
+        # the data was ingested by creating a source in the first place...
+
+        my $row;
+        while ($row = $sth->fetchrow_hashref()) {
+
+                $src =
+                    new SAA::Source($row->{Name}, $row->{Address},
+                        $row->{SNMP_Version});
+                $src->read_community($row->{Read_Community});
+                $src->write_community($row->{Write_Community});
+                $src->_saa_version($row->{SAA_Version});
+                $src->_ios_version($row->{IOS_Version});
+                $src->_status($row->{Status});
+                my ($type, $protocol);
+
+                foreach $type (split (/;/, $row->{Supported_Types})) {
+                        $src->_add_type_supported($type);
+                }
+                foreach $protocol (split (/;/, $row->{Supported_Protocols})) {
+                        $src->_add_protocol_supported($protocol);
+                }
+                push @@{$srcs}, $src;
+        }
+
+        $sth->finish();
+
+        return $srcs;
+}
+
+sub _get_target {
+
+        #creates SELECT statmentes to be executed on $TBL_TARGET
+        #question2 : same as question1
+        my $self  = shift;
+        my $class = ref $self;
+        croak "Attempt to call private method" if ($class ne __PACKAGE__);
+        my ($query, $dbh, $sth, $target, $targets);
+
+        $query = "SELECT * FROM $TBL_TARGET";
+        $dbh   = $self->dbh();
+
+        if (@@_) {
+
+                # Arguments have been passed.  Use the arguments to build SQL queries.
+                $query .= " WHERE ";
+                my $arg;
+                my %args = @@_;
+                foreach $arg (keys %args) {
+
+                        # Handle LIKE '%string%' queries.
+                        if ($args{$arg} =~ /[^\\]%/) {
+                                $query .= "$arg LIKE '$args{$arg}',";
+                        } else {
+                                $query .= "$arg='$args{$arg}',";
+                        }
+                }
+                $query =~ s/,$//;
+        }
+
+        if (!($sth = $dbh->prepare($query))) {
+                $self->error("Failed to prepare query: " . $dbh->errstr());
+                return;
+        }
+
+        if (!($sth->execute())) {
+                $self->error("Failed to execute query: " . $dbh->errstr());
+                return;
+        }
+
+        my $row;
+        while ($row = $sth->fetchrow_hashref()) {
+
+                $target = new SAA::Target($row->{Name}, $row->{Address});
+                $target->_status($row->{Status});
+                push @@{$targets}, $target;
+        }
+
+        $sth->finish();
+
+        return $targets;
+}
+
+sub DESTROY {
+        my $self = shift;
+
+        # We create an explicit DESTROY method to take care of closing the
+        # database handle.
+        $self->dbh()->commit();
+        $self->dbh()->disconnect();
+}
+@
+
+
+1.16
+log
+@Clean up all the source with a nice call to:
+
+perltidy -i=8 -t -pt=2 -bt=2 -sbt=2 -ci=4 -noll -sfs -nasc -ce
+@
+text
+@d11 1
+a11 1
+use conf::prefs qw($DB_DRIVER $DB_USER $DB_PASS $DB_NAME);
+d50 3
+a52 2
+        $self->{dbh} = DBI->connect('dbi:' . $DB_DRIVER . ':' . $DB_NAME,
+                $DB_USER, $DB_PASS)
+@
+
+
+1.15
+log
+@fixed add_* method functionality via db_test.pl and also added add_target()
+@
+text
+@d5 1
+a5 1
+#					 instead of vars, and populated $self->error and returning, 
+d16 6
+a21 6
+  $TBL_SOURCE
+  $TBL_TARGET
+  $TBL_OPERATION
+  $TBL_COLLECTOR
+  $TBL_USER
+  %objectToGetMethod
+d31 5
+a35 5
+    'SAA::Source'    => \&_get_source,
+    'SAA::Target'    => \&_get_target,
+    'SAA::Operation' => \&_get_operation,
+    'SAA::Collector' => \&_get_collector,
+    'SAA::User'      => \&_get_user,
+d40 13
+a52 13
+    #creating a new object of this class merely connects to the saaconf db,
+    #and returns the dbh handle.
+    my ( $that, @@args ) = @@_;
+    my $class = ref($that) || $that;
+
+    my $self = {
+        dbh   => undef,
+        error => undef,
+    };
+
+    $self->{dbh} =
+      DBI->connect( 'dbi:' . $DB_DRIVER . ':' . $DB_NAME, $DB_USER, $DB_PASS )
+      or croak "SAA::DB: Unable to connect to database " . $DB_NAME;
+d54 2
+a55 2
+    bless( $self, $class );
+    $self;
+d60 6
+a65 6
+    # Allow external callers access to the raw database handle.  If they want
+    # to run raw queries, they're welcome to.
+    #doing nothing but returning the dbh handle created after the object has been
+    #instantiated.
+    my $self = shift;
+    return $self->{dbh};
+d70 30
+a99 47
+    #This public method would let callers enter a source in the table SAA_SOURCES
+    #Note: this does NOT make changes to already defined source (see &modify_source)
+    #Takes in the handle for the source object, and pulls data out from it.
+
+    use vars qw ($src @@ary @@IDs @@Vals $sth @@protocols @@types);
+
+    #note: see conf::tables.pm for hints on schema. do note: if some of the vars 
+    #above are not specified by user during configuration, the calling party needs 
+    #to still pass _undef_ instead of that var
+
+    #also note that SrcSupportedProtocols is an array not a scalar.
+    my $self = shift;
+    my $src  = shift;
+    my $dbhx = $self->{dbh};
+
+    my %SrcValHash = (
+        SrcId        => undef,
+        SrcAlias     => $src->name(),
+        SrcIpAddr    => $src->addr(),
+        SrcStatus    => $src->status(),
+        SrcDescr     => undef,                  #method not present in Source.pm
+        SrcHostname  => undef,                  # ""
+        SrcReadComm  => $src->read_community(),
+        SrcWriteComm => $src->write_community(),
+        SrcSnmpVersion        => $src->snmp_version(),
+        SrcIosVersion         => $src->ios_version(),
+        SrcRttAppVersion      => $src->saa_version(),
+        SrcSupportedTypes     => $src->type_supported(),       #a ref to a hash
+        SrcSupportedProtocols => $src->protocol_supported()    #a ref to a hash
+    );
+
+    #some rudimentary checks to ensure we populate the "NOT NULL" fields in the tables.
+    if ( !( $SrcValHash{SrcAlias} ) ) {
+        $self->error("SrcAlias needs to be defined");
+        return;
+    }
+    if ( !( $SrcValHash{SrcIpAddr} ) ) {
+        $self->error("SrcIpAddr needs to be defined");
+        return;
+    }
+
+    #check to see if src already exists and if it does, then balk out.
+    my $selector =
+"select \* from SAA_SOURCES where SrcIpAddr=\"$SrcValHash{SrcIpAddr}\" or SrcAlias=\"$SrcValHash{SrcAlias}\"";
+    if ( scalar( @@ary = $dbhx->selectrow_array($selector) ) != 0 ) {
+        $self->error(
+"DB.pm : SrcIpAddr and.or SrcAlias of this source is already present: $SrcValHash{SrcIpAddr} and.or $SrcValHash{SrcAlias}"
+a100 2
+        return;
+    }
+d102 34
+a135 1
+    undef @@ary;
+d137 30
+a166 1
+    #everything looks good, so let's insert this source into database:
+d168 13
+a180 56
+    #first, lets churn up the next available SrcId
+    my $srcidchecker = "select \* from  SAA_SOURCES order by SrcId DESC";
+    if ( scalar( @@ary = $dbhx->selectrow_array($srcidchecker) ) == 0 ) {
+        $SrcValHash{SrcId} = "1";
+    }
+    else {
+        $SrcValHash{SrcId} = ++$ary[0];
+    }
+
+    my $key;
+    foreach $key ( keys %SrcValHash ) {
+
+        #put a special catch for the hash refs for supported types
+        if ( $key eq "SrcSupportedTypes" ) {
+            foreach ( keys %{ ( $SrcValHash{SrcSupportedTypes} ) } ) {
+                push ( @@types, $_ );
+            }
+            push ( @@Vals, "\"@@types\"" );
+            push ( @@IDs,  $key );
+            next;
+        }
+
+        #also for hash ref for protocols:
+        if ( $key eq "SrcSupportedProtocols" ) {
+            foreach ( keys %{ ( $SrcValHash{SrcSupportedProtocols} ) } ) {
+                push ( @@protocols, $_ );
+            }
+            push ( @@Vals, "\"@@protocols\"" );
+            push ( @@IDs,  $key );
+            next;
+        }
+
+        #as for the rest, treat them as regular values..
+        if ( $SrcValHash{$key} ) {
+
+            #this is to get rid of all the vars not defined by user, 
+            #so we dont bother inserting them into the table
+            push ( @@IDs,  $key );
+            push ( @@Vals, "\"$SrcValHash{$key}\"" );
+
+        }
+    }
+
+    my $IDs  = join ( ',', @@IDs );
+    my $Vals = join ( ',', @@Vals );
+    my $inserter = "insert into SAA_SOURCES \($IDs\) VALUES \($Vals\)";
+
+    if ( !( $sth = $dbhx->prepare($inserter) ) ) {
+        $self->error( "Failed to prepare query: " . $dbhx->errstr() );
+        return;
+    }
+
+    if ( !( $sth->execute() ) ) {
+        $self->error( "Failed to execute query: " . $dbhx->errstr() );
+        return;
+    }
+d182 1
+a182 1
+    1;
+d187 52
+a238 53
+    #adds target to SAA_TARGETS table in saaconf database
+    #alls you have to do is pass it the target handle
+    my $self   = shift;
+    my $target = shift;
+    my $dbhx   = $self->{dbh};
+    use vars qw ($key @@ary @@IDs @@Vals $sth);
+
+    my %TargetHash = (
+        TgtId            => undef,
+        TgtAlias         => $target->name(),
+        TgtIpAddr        => $target->addr(),
+        TgtStatus        => $target->status(),
+        TgtDescr         => undef,              #not defined in Target.pm as yet
+        TgtHostName      => undef,              # ""
+        TgtReadComm      => undef,              # ""
+        TgtWriteComm     => undef,              # ""
+        TgtIosVersion    => undef,              #""
+        TgtRttAppVersion => undef               #""
+    );
+
+    #first, lets churn up the next available TargetId
+    my $tgtidchecker = "select \* from  SAA_TARGETS order by TgtId DESC";
+    if ( scalar( @@ary = $dbhx->selectrow_array($tgtidchecker) ) == 0 ) {
+        $TargetHash{TgtId} = "1";
+    }
+    else {
+        $TargetHash{TgtId} = ++$ary[0];
+    }
+
+    #now to pull IDs and values from the %TargetHash for the eventual query
+    foreach $key ( keys %TargetHash ) {
+
+        if ( $TargetHash{$key} ) {
+
+            #this is to get rid of all the vars not defined by user, 
+            #so we dont bother inserting them into the table
+            push ( @@IDs,  $key );
+            push ( @@Vals, "\"$TargetHash{$key}\"" );
+        }
+    }
+    my $IDs  = join ( ',', @@IDs );
+    my $Vals = join ( ',', @@Vals );
+    my $inserter = "insert into SAA_TARGETS \($IDs\) VALUES \($Vals\)";
+
+    if ( !( $sth = $dbhx->prepare($inserter) ) ) {
+        $self->error( "Failed to prepare query: " . $dbhx->errstr() );
+        return;
+    }
+
+    if ( !( $sth->execute() ) ) {
+        $self->error( "Failed to execute query: " . $dbhx->errstr() );
+        return;
+    }
+d243 26
+a268 52
+    #this as the name suggests, lets callers add NEW users to the SAA_USERS table.
+    #to modify userfields use &modify_user
+    #simply pass it the handle for the user object and it will pull requsite data itself
+
+    my $self = shift;
+    my $user = shift;
+    my $dbhx = $self->{dbh};
+
+    use vars qw ($key @@IDs @@Vals @@ary);
+
+    my %UserHash = (
+        UserId      => undef,
+        UserName    => $user->username(),
+        FirstName   => $user->firstname(),
+        LastName    => $user->lastname(),
+        Password    => $user->password(),
+        Permissions => $user->perms()
+    );
+
+    #first, lets churn up the next available UserId
+    my $useridchecker = "select \* from  SAA_USERS order by UserId DESC";
+    if ( scalar( @@ary = $dbhx->selectrow_array($useridchecker) ) == 0 ) {
+        $UserHash{UserId} = "1";
+    }
+    else {
+        $UserHash{UserId} = ++$ary[0];
+    }
+
+    #now to pull IDs and values from the %UserHash for the eventual query
+    foreach $key ( keys %UserHash ) {
+
+        if ( $UserHash{$key} ) {
+
+            #this is to get rid of all the vars not defined by user, 
+            #so we dont bother inserting them into the table
+            push ( @@IDs,  $key );
+            push ( @@Vals, "\"$UserHash{$key}\"" );
+        }
+    }
+    my $IDs  = join ( ',', @@IDs );
+    my $Vals = join ( ',', @@Vals );
+    my $inserter = "insert into SAA_USERS \($IDs\) VALUES \($Vals\)";
+
+    if ( !( $sth = $dbhx->prepare($inserter) ) ) {
+        $self->error( "Failed to prepare query: " . $dbhx->errstr() );
+        return;
+    }
+
+    if ( !( $sth->execute() ) ) {
+        $self->error( "Failed to execute query: " . $dbhx->errstr() );
+        return;
+    }
+d270 26
+a295 1
+    1;
+d300 5
+a304 5
+    #this populates the error() value for the object (if there is something STDIN
+    #regardless, it eventually churns out the error message as a return.
+    my $self = shift;
+    if (@@_) { $self->{error} = shift; }
+    return $self->{error};
+d309 22
+a330 22
+    #this provides a public method to make calls on private methods 
+    #like _get_source to keep a level of database integrity
+    #thus, it is anticipating the pointer to the function name,
+    #and the arguments to be passed to this function name.
+    #anticipating something like :
+    # get_object('SAA::Source', select args...)
+    my $self = shift;
+
+    if ( scalar(@@_) < 1 ) {
+        croak "DB::get_object: Must specify at least one argument";
+    }
+
+    my $obj = shift;
+    if ( !$objectToGetMethod{$obj} ) {
+        croak "DB::get_object: Unknown object, $obj";
+    }
+
+    # This can be confusing.  We're using the static hash to map an object to
+    # a method.  We pass the remaining get_object arguments to this private
+    # method.
+    my $method = $objectToGetMethod{$obj};
+    return $self->$method(@@_);
+d335 36
+a370 61
+    # create SELECT SQL queries on $SRC_TABLE and deliver result
+    # see question1 below:
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+    my ( $query, $dbh, $sth, $src, $srcs );
+
+    $query = "SELECT * FROM $TBL_SOURCE";
+    $dbh   = $self->dbh();
+
+    if (@@_) {
+
+        # Arguments have been passed.  Use the arguments to build SQL queries.
+        $query .= " WHERE ";
+        my $arg;
+        my %args = @@_;
+        foreach $arg ( keys %args ) {
+
+            # Handle LIKE '%string%' queries.
+            if ( $args{$arg} =~ /[^\\]%/ ) {
+                $query .= "$arg LIKE '$args{$arg}',";
+            }
+            else {
+                $query .= "$arg='$args{$arg}',";
+            }
+        }
+        $query =~ s/,$//;
+    }
+
+    if ( !( $sth = $dbh->prepare($query) ) ) {
+        $self->error( "Failed to prepare query: " . $dbh->errstr() );
+        return;
+    }
+
+    if ( !( $sth->execute() ) ) {
+        $self->error( "Failed to execute query: " . $dbh->errstr() );
+        return;
+    }
+
+    #finally get data back using fetchrow_hashref()
+    # question1 : why are we creating a source again with this data that was ingested in the DB?
+    # the data was ingested by creating a source in the first place...
+
+    my $row;
+    while ( $row = $sth->fetchrow_hashref() ) {
+
+        $src =
+          new SAA::Source( $row->{Name}, $row->{Address},
+            $row->{SNMP_Version} );
+        $src->read_community( $row->{Read_Community} );
+        $src->write_community( $row->{Write_Community} );
+        $src->_saa_version( $row->{SAA_Version} );
+        $src->_ios_version( $row->{IOS_Version} );
+        $src->_status( $row->{Status} );
+        my ( $type, $protocol );
+
+        foreach $type ( split ( /;/, $row->{Supported_Types} ) ) {
+            $src->_add_type_supported($type);
+        }
+        foreach $protocol ( split ( /;/, $row->{Supported_Protocols} ) ) {
+            $src->_add_protocol_supported($protocol);
+a371 2
+        push @@{$srcs}, $src;
+    }
+d373 25
+a397 1
+    $sth->finish();
+d399 3
+a401 1
+    return $srcs;
+d406 45
+a450 46
+    #creates SELECT statmentes to be executed on $TBL_TARGET
+    #question2 : same as question1
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+    my ( $query, $dbh, $sth, $target, $targets );
+
+    $query = "SELECT * FROM $TBL_TARGET";
+    $dbh   = $self->dbh();
+
+    if (@@_) {
+
+        # Arguments have been passed.  Use the arguments to build SQL queries.
+        $query .= " WHERE ";
+        my $arg;
+        my %args = @@_;
+        foreach $arg ( keys %args ) {
+
+            # Handle LIKE '%string%' queries.
+            if ( $args{$arg} =~ /[^\\]%/ ) {
+                $query .= "$arg LIKE '$args{$arg}',";
+            }
+            else {
+                $query .= "$arg='$args{$arg}',";
+            }
+        }
+        $query =~ s/,$//;
+    }
+
+    if ( !( $sth = $dbh->prepare($query) ) ) {
+        $self->error( "Failed to prepare query: " . $dbh->errstr() );
+        return;
+    }
+
+    if ( !( $sth->execute() ) ) {
+        $self->error( "Failed to execute query: " . $dbh->errstr() );
+        return;
+    }
+
+    my $row;
+    while ( $row = $sth->fetchrow_hashref() ) {
+
+        $target = new SAA::Target( $row->{Name}, $row->{Address} );
+        $target->_status( $row->{Status} );
+        push @@{$targets}, $target;
+    }
+d452 1
+a452 1
+    $sth->finish();
+d454 1
+a454 1
+    return $targets;
+d458 1
+a458 1
+    my $self = shift;
+d460 4
+a463 4
+    # We create an explicit DESTROY method to take care of closing the 
+    # database handle.
+    $self->dbh()->commit();
+    $self->dbh()->disconnect();
+@
+
+
+1.14
+log
+@modified add_source, to take source object handle instead of vars, fixed error handling, and added another method add_user()
+@
+text
+@d86 13
+a98 12
+        SrcId     => undef,
+        SrcAlias  => $src->{name},
+        SrcIpAddr => $src->{addr},
+        SrcDescr    => undef,    #$src->{descr}; method not present in Source.pm
+        SrcHostname => undef,    #$src->{hostname}; ""
+        SrcReadComm           => $src->{read_community},
+        SrcWriteComm          => $src->{write_community},
+        SrcSnmpVersion        => $src->{snmp_version},
+        SrcIosVersion         => $src->{ios_version},
+        SrcRttAppVersion      => $src->{saa_version},
+        SrcSupportedTypes     => $src->{type_supported},       #a ref to a hash
+        SrcSupportedProtocols => $src->{protocol_supported}    #a ref to a hash
+d116 1
+a116 1
+"DB.pm : SrcAlias and.or SrcIpAddr of this source is already present: @@ary"
+d127 2
+a128 2
+    if ( scalar( @@ary = $dbhx->selectrow_array($srcidchecker) ) != 0 ) {
+        $SrcValHash{SrcId} = "0";
+d143 1
+d153 1
+d185 57
+d256 5
+a260 5
+        UserName    => $user->{username},
+        FirstName   => $user->{firstname},
+        LastName    => $user->{lastname},
+        Password    => $user->{password},
+        Permissions => $user->{perms}
+d265 2
+a266 2
+    if ( scalar( @@ary = $dbhx->selectrow_array($useridchecker) ) != 0 ) {
+        $UserHash{UserId} = "0";
+@
+
+
+1.13
+log
+@added add_source() method; need to populate ->error though, and also need to test
+@
+text
+@d4 3
+a6 1
+#notes: need to populate self->error and return gracefully, instead of dying arbitrarily in methods
+d72 3
+a74 5
+    #Takes in the following vars in the respective order:
+    #SrcAlias, SrcIpAddr, SrcDescr, SrcHostname, SrcReadComm, SrcWriteComm, SrcSnmpVersion, 
+    #SrcIosVersion, SrcRttAppVersion, SrcSupportedProtocols
+    use vars
+      qw ($SrcAlias $SrcIpAddr $SrcDescr $SrcHostname $SrcReadComm $SrcWriteComm $SrcSnmpVersion $SrcIosVersion $SrcRttAppVersion @@SrcSupportedProtocols @@ary @@IDs @@Vals $sth);
+d82 1
+a82 1
+    my @@args = shift;
+a83 10
+    die "Insufficient args passed to add_source()" if ( scalar(@@args) < 10 );
+    (
+      $SrcAlias,       $SrcIpAddr,     $SrcDescr,
+      $SrcHostname,    $SrcReadComm,   $SrcWriteComm,
+      $SrcSnmpVersion, $SrcIosVersion, $SrcRttAppVersion,
+      @@SrcSupportedProtocols
+      )
+      = @@args;
+    die "SrcAlias needs to be defined"  if ( $SrcAlias  eq "_undef_" );
+    die "SrcIpAddr needs to be defined" if ( $SrcIpAddr eq "_undef_" );
+d86 29
+a114 17
+        SrcId                 => undef,
+        SrcAlias              => $SrcAlias,
+        SrcIpAddr             => $SrcIpAddr,
+        SrcDescr              => $SrcDescr,
+        SrcHostname           => $SrcHostname,
+        SrcReadComm           => $SrcReadComm,
+        SrcWriteComm          => $SrcWriteComm,
+        SrcSnmpVersion        => $SrcSnmpVersion,
+        SrcIosVersion         => $SrcIosVersion,
+        SrcRttAppVersion      => $SrcRttAppVersion,
+        SrcSupportedProtocols => @@SrcSupportedProtocols
+      );
+
+      #check to see if src already exists and if it does, then balk out.
+      my $selector =
+"select \* from SAA_SOURCES where SrcIpAddr=\"$SrcIpAddr\" or SrcAlias=\"$SrcAlias\"";
+    die
+d116 3
+a118 1
+      if ( scalar( @@ary = $dbhx->selectrow_array($selector) ) != 0 );
+d120 1
+a120 1
+      undef @@ary;
+d123 1
+d135 21
+a155 1
+        if ( "$SrcValHash{$key}" ne "_undef_" ) {
+a161 1
+            #this can be tricky business for @@SrcSupportedProtocols
+d167 11
+d179 47
+a225 1
+    my $inserter = "insert into SAA_SOURCES \($IDs\) VALUES \($Vals\)";
+d227 1
+a227 1
+    if ( !($sth = $dbhx->prepare($inserter) ) ) {
+d236 2
+@
+
+
+1.12
+log
+@We will read the settings from a preferences Perl module.
+@
+text
+@d3 3
+d9 1
+a9 1
+use conf::prefs qw($DB_HOST $DB_USER $DB_PASS $DB_NAME);
+d37 3
+d49 1
+a49 1
+      DBI->connect( 'dbi:' . $DB_HOST . ':' . $DB_NAME, $DB_USER, $DB_PASS )
+d60 2
+d66 91
+d158 3
+d167 7
+d193 3
+d233 4
+d265 3
+d308 1
+a308 2
+        $target =
+          new SAA::Target( $row->{Name}, $row->{Address});
+a317 1
+
+d322 2
+a323 2
+	# database handle.
+	$self->dbh()->commit();
+@
+
+
+1.11
+log
+@Initial import as DB.pm.
+@
+text
+@d6 1
+a36 4
+    if ( scalar(@@args) != 4 ) {
+        croak "SAA::DB: Insufficient arguments passed to constructor";
+    }
+
+d43 2
+a44 2
+      DBI->connect( 'dbi:' . $args[0] . ':' . $args[1], $args[2], $args[3] )
+      or croak "SAA::DB: Unable to connect to database " . $args[1];
+@
+
+
+1.10
+log
+@Remove DB.pm in favor of the upcoming new DB API.
+@
+text
+@a0 3
+#
+# $Id: DB.pm,v 1.9 2001/10/04 20:21:46 jmarcus Exp $
+#
+d5 1
+a6 2
+use SAA::Globals;
+use SAA::SAA_MIB;
+d9 23
+a32 1
+
+d35 8
+a42 10
+    my %params = @@args;
+    my $self   = {};
+    $self = {
+        Driver   => $params{Driver},
+        Database => $params{Database},
+        Hostname => $params{Hostname},
+        User     => $params{User},
+        Password => $params{Password},
+        error    => undef,
+        dbh      => undef
+d45 3
+a47 10
+    # Create connect to database.
+    my $DSN = "DBI:" . $self->{Driver} . ":";
+    $DSN = $DSN . $self->{Database} . ":";
+    $DSN = $DSN . $self->{Hostname};
+
+    #		my $dbh = DBI->connect (
+    #    			$DSN,
+    #    			$self->{User},
+    #    			$self->{Password}
+    #    			);
+a50 1
+
+d53 1
+a53 5
+sub driver {
+    my $self = shift;
+    if (@@_) { $self->{Driver} = shift; }
+    return $self->{Driver};
+}
+d55 2
+a56 1
+sub database {
+d58 1
+a58 20
+    if (@@_) { $self->{Database} = shift; }
+    return $self->{Database};
+}
+
+sub hostname {
+    my $self = shift;
+    if (@@_) { $self->{Hostname} = shift; }
+    return $self->{Hostname};
+}
+
+sub user {
+    my $self = shift;
+    if (@@_) { $self->{User} = shift; }
+    return $self->{User};
+}
+
+sub password {
+    my $self = shift;
+    if (@@_) { $self->{Password} = shift; }
+    return $self->{Password};
+d67 1
+a67 4
+# XXX This object will create a INSERT Statment and apply it 
+# to the database.  At this point it simply prints the query.
+
+sub setSAAObject {
+a68 5
+    my $obj  = shift;
+    my $ref  = ref $obj;
+    my $table;
+
+    if ( $ref eq "SAA::Source" ) {
+d70 2
+a71 1
+        $table = "Sources";
+d74 3
+a76 3
+    elsif ( $ref eq "SAA::Target" ) {
+
+        $table = "Targets";
+d79 6
+a84 1
+    elsif ( $ref eq "SAA::Operation" ) {
+d86 26
+a111 1
+        $table = "Operations";
+d114 3
+a116 3
+    elsif ( $ref eq "SAA::Collector" ) {
+
+        $table = "Collectors";
+d119 3
+a121 4
+    else {
+
+        croak
+          "SAA::DB->setSAAObject: $ref is not a valid object for this method.";
+d124 2
+a125 4
+    if ( !$obj ) {
+
+        croak "SAA::DB->setSAAObject: Can't find a valid object for $table";
+    }
+d127 9
+a135 11
+    if ( $table eq "Sources" ) {
+        my $query =
+"INSERT INTO $table (Name,Address,SNMPVer,SAAVer,IOSVer,Status,readCommunity,writeCommunity) values ('";
+        $query = $query . $obj->name . "','";
+        $query = $query . $obj->addr . "','";
+        $query = $query . $obj->snmp_version . "','";
+        $query = $query . $obj->saa_version . "','";
+        $query = $query . $obj->ios_version . "','";
+        $query = $query . $obj->status . "','";
+        $query = $query . $obj->read_community . "','";
+        $query = $query . $obj->write_community . "')";
+d137 7
+a143 1
+        print "$table Query: $query\n";
+d146 1
+a146 1
+    if ( $table eq "Targets" ) {
+d148 2
+a149 4
+        my $query = "INSERT INTO $table (Name,Address,Status) values ('";
+        $query = $query . $obj->name . "','";
+        $query = $query . $obj->addr . "','";
+        $query = $query . $obj->status . "')";
+d151 26
+a176 1
+        print "$table Query: $query\n";
+d179 4
+a182 1
+    if ( $table eq "Operations" ) {
+d184 4
+a187 12
+        my $query =
+"INSERT INTO $table (Name,Type,Protocal,Threshold,Timeout,Frequency,TOS,sourcePort,targetPort,controlEnabled) values ('";
+        $query = $query . $obj->name . "','";
+        $query = $query . $obj->type . "','";
+        $query = $query . $obj->protocol . "','";
+        $query = $query . $obj->threshold . "','";
+        $query = $query . $obj->timeout . "','";
+        $query = $query . $obj->frequency . "','";
+        $query = $query . $obj->tos . "','";
+        $query = $query . $obj->sourcePort . "','";
+        $query = $query . $obj->targetPort . "','";
+        $query = $query . $obj->control_enabled . "')";
+d189 2
+a190 1
+        print "$table Query: $query\n";
+d192 4
+d198 1
+a198 1
+    if ( $table eq "Collectors" ) {
+d200 2
+a201 4
+        # XXX Not to sure about this one. Because I have no module
+        # to go off of here.
+        # if we are going to use this function then we need to create a 
+        # Collectors object. (Maybe we can sell it on Ebay)
+a202 15
+        my $query =
+	"INSERT INTO $table (Name,ID,sourceName,targetName,operationName,startTime,Life,NVRam,historyFilter) values ('";
+        $query = $query . $obj->name . "','";
+        $query = $query . $obj->id . "','";
+        $query = $query . $obj->source . "','";
+        $query = $query . $obj->target . "','";
+        $query = $query . $obj->operation . "','";
+        $query = $query . $obj->startTime . "','";
+        $query = $query . $obj->life . "','";
+        $query = $query . $obj->writeNVRAM . "','";
+        $query = $query . $obj->historyFilter . "')";
+
+        print "$table Query: $query\n";
+
+    }
+d204 1
+a204 5
+}
+# This method will actually return a object created from the database
+# Give it a table name to represent the type of object to create.
+# and give it a name to find the correct object.
+sub getSAAObject {
+d207 4
+a210 56
+    if ( !@@_ ) {
+
+        croak
+"SAA::DB: No defaults for sub please specify\n\tgetSAAObject(Tablename, name => value)\n";
+    }
+
+    my $table = shift;
+    my $name  = @@_;
+    my $key;
+    my $query = "SELECT * FROM $table WHERE Name like '$name{'Name'}";
+    # Okay got our query and now we would have data.
+    tbl2obj ($table);
+}
+
+sub searchDB {
+    my $self       = shift;
+    my $tables     = shift;
+    my $searchType = shift;
+    my $params     = @@_;
+    my $key;
+    my $query;
+    my $queryHeader = "SELECT Name FROM ";
+    my $queryBody   = "WHERE ";
+
+    foreach $key (@@{$tables}) {
+
+        $query = $queryHeader . $key . " ";
+        $query = $query . $queryBody;
+
+        my $key;
+        my $count = 0;
+
+        foreach $key ( keys %{$params} ) {
+            if ( $count == 0 ) {
+                $query = $query . $key . " LIKE " . $params->{$key} . " ";
+                $count++;
+            }
+            else {
+                $query =
+                  $query . $searchType . $key . " LIKE " . $params->{$key} . " ";
+            }
+        }
+    }
+}
+
+sub runQuery {
+    my $self  = shift;
+    my $query = shift;
+    my $dbh   = $self->{dbh};
+    my $sth;
+
+    # XXX How do I actually do this statment.
+    $sth = $dbh->prepare($query);
+    $sth->execute or die "SAA::DB: Can't Execute SQL Query: $DBI::errstr\n";
+
+    return $sth;
+a211 1
+
+@
+
+
+1.9
+log
+@Add $Id$ CVS tags.
+@
+text
+@d2 1
+a2 1
+# $Id$
+@
+
+
+1.8
+log
+@*** empty log message ***
+@
+text
+@d1 3
+@
+
+
+1.7
+log
+@Changed some of the definitions of arrays and hashes to be references.
+@
+text
+@d170 1
+a170 1
+"INSERT INTO $table (Name,ID,sourceName,targetName,operationName,startTime,Life,Description,NVRam,RowAge,Owner,Status) values ('";
+d177 3
+a179 1
+        $query = $query . $obj->life . "')";
+d186 3
+a188 1
+
+d201 3
+a203 6
+    my $query = "SELECT * FROM $table WHERE ";
+    foreach $key ( keys %name ) {
+        print "Key: $key Value: $name{$key}\n";
+    }
+    print "--Database stuff--\n";
+    print "Database: " . $self->database() . " \n";
+@
+
+
+1.6
+log
+@Constructor must return reference to object.
+@
+text
+@d195 1
+a195 1
+    my %name  = @@_;
+d209 1
+a209 1
+    my %params     = @@_;
+d215 1
+a215 1
+    foreach $key (@@tables) {
+d223 1
+a223 1
+        foreach $key ( keys %params ) {
+d225 1
+a225 1
+                $query = $query . $key . " LIKE " . $params{$key} . " ";
+d230 1
+a230 1
+                  $query . $searchType . $key . " LIKE " . $params{$key} . " ";
+@
+
+
+1.5
+log
+@
+
+setSAAObject should be complete to print out an objects insert statment. Going to create actual rows in the table next/
+@
+text
+@d13 1
+a13 1
+    my $class  = ref($that) || $that;
+d22 2
+a23 2
+	error	 =>	undef,
+       	dbh 	 => undef
+d27 9
+a35 8
+    	my $DSN = "DBI:" . $self->{Driver} . ":";
+		$DSN = $DSN . $self->{Database} . ":";
+		$DSN = $DSN . $self->{Hostname};
+#		my $dbh = DBI->connect (
+#    			$DSN,
+#    			$self->{User},
+#    			$self->{Password}
+#    			);
+d38 1
+d73 3
+a75 3
+	my $self = shift;
+	if (@@_) {$self->{error} = shift;}
+	return $self->{error};
+d82 3
+a84 3
+    my $self  = shift;
+    my $obj   = shift;
+	my $ref = ref $obj;
+a85 2
+	
+	if ($ref eq "SAA::Source") {
+d87 1
+a87 2
+		$table = "Sources";
+	}
+d89 2
+a90 1
+	elsif ($ref eq "SAA::Target") {
+d92 1
+a92 2
+		$table = "Targets";
+	}
+d94 2
+a95 1
+	elsif ($ref eq "SAA::Operation") {
+d97 1
+a97 2
+		$table = "Operations";
+	}
+d99 2
+a100 1
+	elsif ($ref eq "SAA::Collector") {
+d102 1
+a102 2
+		$table = "Collectors";
+	}
+d104 2
+a105 4
+	else {
+    
+		croak "SAA::DB->setSAAObject: $ref is not a valid object for this method.";
+	}
+d107 1
+a107 1
+	if (!$obj) {
+d109 8
+a116 2
+		croak "SAA::DB->setSAAObject: Can't find a valid object for $table";
+	}
+d171 7
+a177 9
+	$query = $query . $obj->name . "','";
+	$query = $query . $obj->id . "','";
+	$query = $query . $obj->source . "','";
+	$query = $query . $obj->target . "','";
+	$query = $query . $obj->operation . "','";
+	$query = $query . $obj->startTime . "','";
+	$query = $query . $obj->life . "')";
+
+	print "$table Query: $query\n";
+d179 1
+a182 1
+
+d206 28
+a233 27
+	my $self = shift;
+	my $tables = shift;
+	my $searchType = shift;
+	my %params = @@_;
+	my $key;
+	my $query;
+	my $queryHeader = "SELECT Name FROM ";
+	my $queryBody   = "WHERE ";
+
+	foreach $key (@@tables) {
+
+		$query = $queryHeader . $key . " ";
+		$query = $query . $queryBody;
+		
+		my $key;
+		my $count = 0;
+		
+		foreach $key (keys %params) {
+			if ($count == 0) {
+				$query = $query . $key . " LIKE " . $params{$key} . " ";
+				$count++;
+			}
+			else {
+				$query = $query . $searchType . $key . " LIKE " . $params{$key} . " ";
+			}
+		}
+	}
+a235 1
+
+d237 8
+a244 8
+	my $self = shift;
+	my $query = shift;
+	my $dbh = $self->{dbh};
+	my $sth;
+
+	# XXX How do I actually do this statment.
+	$sth = $dbh->prepare ($query);
+	$sth->execute or die "SAA::DB: Can't Execute SQL Query: $DBI::errstr\n";
+d246 1
+a246 1
+	return $sth;
+d248 1
+a248 2
+	
+	
+@
+
+
+1.4
+log
+@Added a simple test script for use on shell.sourceforge.net to test the DB.
+Added 2 new subs to DB.pm.  searchDB should work but needs to be tested.
+
+The other runQuery is a pass thru interface to the db.  Taking a SQL Statment as an argument.  It also needs to be tested.
+@
+text
+@d22 2
+a23 2
+		error	 =>	undef,
+       	dbh	  	 => undef
+d167 11
+a177 1
+"INSERT INTO $table (sourceName,targetName,operationName,Description,startTime,NVRam,RowAge,Owner,Status,Life) values ('";
+@
+
+
+1.3
+log
+@added TODO for future use
+lastest mods to DB.pm, and saatable
+@
+text
+@d21 3
+a23 3
+        Password => $params{Password}
+
+        #		dbh			=> undef
+d27 8
+a34 5
+    #	my $dbh = DBI->connect (
+    #			"DBI:$self{'Driver'}:$self{'Datbase'}:$self{'Hostname'}",
+    #			$self{'User'},
+    #			$self{'Password'}
+    #			);
+d70 6
+a80 1
+    my $table = shift;
+d82 24
+d107 1
+a107 3
+	if ($table != "Sources" || $table != "Targets" || $table != "Operations") {
+	
+		croak "SAA::DB: Table $table is not a valid table.";
+d194 45
+@
+
+
+1.2
+log
+@
+Created a setSAAObject to create INSERT Statments for our Database.  It still does actually connect to the database but it will print the query it would create.
+@
+text
+@d11 23
+a33 22
+	
+	my ($that, @@args) = @@_;
+	my $class = ref($that) || $that;
+	my %params = @@args;
+	my $self = {};
+	$self = {
+		Driver 		=> $params{Driver},
+		Database 	=> $params{Database},
+		Hostname 	=> $params{Hostname},
+		User		=> $params{User},
+		Password	=> $params{Password}
+#		dbh			=> undef
+	};
+	
+	# Create connect to database.
+#	my $dbh = DBI->connect (
+#			"DBI:$self{'Driver'}:$self{'Datbase'}:$self{'Hostname'}",
+#			$self{'User'},
+#			$self{'Password'}
+#			);
+	
+	bless ($self, $class);
+d38 3
+a40 3
+	my $self = shift;
+	if (@@_) {$self->{Driver} = shift;}
+	return $self->{Driver};
+d44 3
+a46 3
+	my $self = shift;
+	if (@@_) {$self->{Database} = shift;}
+	return $self->{Database};
+d50 3
+a52 3
+	my $self = shift;
+	if (@@_) {$self->{Hostname} = shift;}
+	return $self->{Hostname};
+d56 3
+a58 3
+	my $self = shift;
+	if (@@_) {$self->{User} = shift;}
+	return $self->{User};
+d60 1
+d62 3
+a64 3
+	my $self = shift;
+	if (@@_) {$self->{Password} = shift;}
+	return $self->{Password};
+d66 4
+a69 3
+	# XXX This object will create a INSERT Statment and apply it 
+	# to the database.  At this point it simply prints the query.
+	
+d71 5
+a75 3
+	my $self = shift;
+	my $table = shift;
+	my $obj = shift;
+d77 1
+a77 12
+	if ($table eq  "Sources") {
+		my $query = "INSERT INTO $table (Name,Address,SNMPVer,SAAVer,IOSVer,Status,readCommunity,writeCommunity) values ('";
+		$query = $query . $obj->name . "','";
+		$query = $query . $obj->addr . "','";
+		$query = $query . $obj->snmp_version . "','";
+		$query = $query . $obj->saa_version . "','";
+		$query = $query . $obj->ios_version . "','";
+		$query = $query . $obj->status . "','";
+		$query = $query . $obj->read_community . "','";
+		$query = $query . $obj->write_community . "')";
+
+		print "$table Query: $query\n";
+d80 1
+a80 1
+	if ($table eq "Targets") {
+d82 1
+a82 6
+		my $query = "INSERT INTO $table (Name,Address,Status) values ('";
+		$query = $query . $obj->name . "','";
+		$query = $query . $obj->addr . "','";
+		$query = $query . $obj->status . "')";
+
+		print "$table Query: $query\n";
+d85 50
+a134 13
+	if ($table eq "Operations") {
+
+		my $query = "INSERT INTO $table (Name,Type,Protocal,Threshold,Timeout,Frequency,TOS,sourcePort,targetPort,controlEnabled) values ('";
+		$query = $query . $obj->name . "','";
+		$query = $query . $obj->type . "','";
+		$query = $query . $obj->protocol . "','";
+		$query = $query . $obj->threshold . "','";
+		$query = $query . $obj->timeout . "','";
+		$query = $query . $obj->frequency . "','";
+		$query = $query . $obj->tos . "','";
+		$query = $query . $obj->sourcePort . "','";
+		$query = $query . $obj->targetPort . "','";
+		$query = $query . $obj->control_enabled . "')";
+d136 2
+a137 1
+	}
+d139 1
+a139 9
+	if ($table eq "Collectors") {
+		# XXX Not to sure about this one. Because I have no module
+		# to go off of here.
+		# if we are going to use this function then we need to create a 
+		# Collectors object. (Maybe we can sell it on Ebay)
+		
+		my $query = "INSERT INTO $table (sourceName,targetName,operationName,Description,startTime,NVRam,RowAge,Owner,Status,Life) values ('";
+
+	}
+a140 3
+	else {
+		croak "SAA::DB: Table $table is not a valid table.";
+	}
+d145 1
+a145 1
+	my $self = shift;
+d147 1
+a147 4
+	if (!@@_) {
+		
+		croak "SAA::DB: No defaults for sub please specify\n\tgetSAAObject(Tablename, name => value)\n";
+	}
+d149 13
+a161 10
+
+	my $table = shift;
+	my %name = @@_;
+	my $key;
+	my $query = "SELECT * FROM $table WHERE ";
+	foreach $key (keys %name) {
+		print "Key: $key Value: $name{$key}\n";
+	}
+	print "--Database stuff--\n";
+	print "Database: " . $self->database() . " \n";
+@
+
+
+1.1
+log
+@
+This will be a module to add Database Functionallity to the SAA Config mod.
+
+The intent is to keep SQL and DBI Connects out of the other modules and to simplfy the coded needed to create a SAA Object and have it stored.
+@
+text
+@d6 2
+d15 2
+a16 1
+	my $self = {
+d21 2
+a22 2
+		Password	=> $params{Password},
+		dbh			=> undef;
+d26 5
+a30 5
+	$dbh = DBI->connect (
+			"DBI:$self{'Driver'}:$self{'Datbase'}:$self{'Hostname'}",
+			$self{'User'},
+			$self{'Password'}
+			);
+d64 63
+d136 1
+d140 1
+d147 1
+@
+

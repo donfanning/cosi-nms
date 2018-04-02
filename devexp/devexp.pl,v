@@ -1,0 +1,463 @@
+head	1.8;
+access;
+symbols
+	RELEASE_1_4:1.8
+	RELEASE_1_3:1.5
+	RELEASE_1_2:1.3
+	HEAD:1.1.1.1
+	MAIN:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.8
+date	2003.05.01.21.36.42;	author jmarcus;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2003.01.13.07.33.51;	author jmarcus;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2003.01.13.07.30.18;	author jmarcus;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2002.05.04.21.18.42;	author jmarcus;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.12.05.21.31.24;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.08.29.15.41.13;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.08.28.19.59.59;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.05.28.20.51.53;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.05.28.20.51.53;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.8
+log
+@Print the error that occurred to help with debugging.
+@
+text
+@#!/opt/CSCOpx/bin/perl
+#-
+# Copyright (c) 2001 Joe Clarke <marcus@@marcuscom.com>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+# $Id: devexp.pl,v 1.7 2003/01/13 07:33:51 jmarcus Exp $
+#
+
+use LWP::UserAgent;
+use MIME::Base64;
+use strict;
+
+use vars qw($VERSION $CONF_FILE %PREFS $URL $DEVSERVLET $XMLFILE);
+
+sub LOCK_SH { 1 }
+sub LOCK_EX { 2 }
+sub LOCK_NB { 4 }
+sub LOCK_UN { 8 }
+
+$VERSION    = '1.4';
+$DEVSERVLET = '/CSCOnm/servlet/com.cisco.nm.cmf.servlet.DeviceListService';
+
+if ($^O eq "MSWin32") {
+        use CRM;
+        $CONF_FILE = $ENV{'NMSROOT'} . "\\objects\\devexp\\devexp.conf";
+        $XMLFILE   = $ENV{'NMSROOT'} . "\\objects\\devexp\\devexp.xml";
+} else {
+        $CONF_FILE = "/opt/CSCOpx/objects/devexp/devexp.conf";
+        $XMLFILE   = "/opt/CSCOpx/objects/devexp/devexp.xml";
+}
+
+local *CONF;
+unless (open(CONF, $CONF_FILE)) {
+        die "Unable to open $CONF_FILE: $!\n";
+}
+flock(CONF, LOCK_SH);
+
+while (<CONF>) {
+        chomp;
+        s/#.*//;
+        s/^\s+//;
+        s/\s+$//;
+        next unless length;
+        my ($name, $value) = split (/\s*=\s*/, $_, 2);
+        $PREFS{$name} = $value;
+}
+close(CONF);
+
+### The password needs to be Base64 encoded.
+$PREFS{'ADMIN_PASSWD'} = encode_base64($PREFS{'ADMIN_PASSWD'});
+
+### Take off the '\n' at the end of the encoded password.
+chomp($PREFS{'ADMIN_PASSWD'});
+
+local *XML;
+unless (open(XML, $XMLFILE)) {
+        die "Unable to open file $XMLFILE: $!\n";
+}
+flock(XML, LOCK_SH);
+
+my $xmlpacket = "";
+while (<XML>) {
+        s/\%\%TYPE\%\%/$PREFS{'OUTPUT_FORMAT'}/;
+        s/\%\%PASSWD\%\%/$PREFS{'ADMIN_PASSWD'}/;
+        s/\%\%HOST\%\%/$PREFS{'RME_SERVER'}/;
+        s/\%\%PROD\%\%/DevExp/;
+        s/\%\%VERS\%\%/$VERSION/;
+        s{ \%\%OP\%\% }
+	   { ($PREFS{'OUTPUT_DEVICE_CREDENTIALS'} =~ /yes/i)
+	         ? "<getDeviceCredentials/>"
+		 : "<listDevices deviceType=\"\%\%DEVS\%\%\"/>"
+	}ex;
+        s/\%\%DEVS\%\%/$PREFS{'DEVICES'}/;
+        s{ \%\%DTDPATH\%\% }
+		{ ($PREFS{'DTD_PATH'} eq "")
+			? "$PREFS{'RME_SERVER'}:$PREFS{'RME_PORT'}\/devexp\/devexp.dtd"
+		  : $PREFS{'DTD_PATH'}
+	}ex;
+
+        $xmlpacket .= $_;
+}
+close(XML);
+
+$URL =
+    $PREFS{'RME_PROTOCOL'} . '://'
+    . $PREFS{'RME_SERVER'} . ':'
+    . $PREFS{'RME_PORT'}
+    . $DEVSERVLET;
+
+my $ua = new LWP::UserAgent;
+$ua->agent("DevExp/$VERSION " . $ua->agent);
+
+# Set a timeout of 30 minutes for users with large databases.
+$ua->timeout(1800);
+
+### Create a request
+my $request = new HTTP::Request POST => $URL;
+$request->content_type('application/x-www-form-urlencoded');
+$request->content($xmlpacket);
+
+my $response = $ua->request($request);
+
+### Check the outcome of the response
+if ($response->is_success) {
+        local *OUTFILE;
+        unless (open(OUTFILE, ">" . $PREFS{'OUTPUT_FILE'})) {
+                die "Unable to open $PREFS{'OUTPUT_FILE'}: $!\n";
+        }
+        flock(OUTFILE, LOCK_EX);
+        my $old_fh = select(OUTFILE);
+        $| = 1;
+
+        print $response->content;
+
+        select($old_fh);
+        close(OUTFILE);
+} else {
+        print STDERR
+            "The request failed.  Please check the config file\nto make sure all the options are correct.\nHere is the error that occurred:\n";
+        print STDERR $response->error_as_HTML;
+
+}
+
+exit(0);
+@
+
+
+1.7
+log
+@Up the version number to 1.4.
+@
+text
+@d27 1
+a27 1
+# $Id: devexp.pl,v 1.6 2003/01/13 07:30:18 jmarcus Exp $
+d139 4
+a142 2
+        die
+            "The request failed.  Please check the config file\nto make sure all the options are correct.\n";
+@
+
+
+1.6
+log
+@Up the timeout from 3 minutes to 30 minutes.  This should accomodate users
+with a few thousand devices in their database.
+@
+text
+@d27 1
+a27 1
+# $Id: devexp.pl,v 1.5 2002/05/04 21:18:42 jmarcus Exp $
+d41 1
+a41 1
+$VERSION    = '1.3';
+@
+
+
+1.5
+log
+@Update to DevExp 1.3.  This adds support for SSL in RME 3.4 and higher.
+@
+text
+@d27 1
+a27 1
+# $Id: devexp.pl,v 1.4 2001/12/05 21:31:24 jmarcus Exp $
+d45 3
+a47 3
+	use CRM;
+	$CONF_FILE = $ENV{'NMSROOT'} . "\\objects\\devexp\\devexp.conf";
+	$XMLFILE   = $ENV{'NMSROOT'} . "\\objects\\devexp\\devexp.xml";
+d49 2
+a50 2
+	$CONF_FILE = "/opt/CSCOpx/objects/devexp/devexp.conf";
+	$XMLFILE   = "/opt/CSCOpx/objects/devexp/devexp.xml";
+d55 1
+a55 1
+	die "Unable to open $CONF_FILE: $!\n";
+d60 7
+a66 7
+	chomp;
+	s/#.*//;
+	s/^\s+//;
+	s/\s+$//;
+	next unless length;
+	my ($name, $value) = split (/\s*=\s*/, $_, 2);
+	$PREFS{$name} = $value;
+d78 1
+a78 1
+	die "Unable to open file $XMLFILE: $!\n";
+d84 6
+a89 6
+	s/\%\%TYPE\%\%/$PREFS{'OUTPUT_FORMAT'}/;
+	s/\%\%PASSWD\%\%/$PREFS{'ADMIN_PASSWD'}/;
+	s/\%\%HOST\%\%/$PREFS{'RME_SERVER'}/;
+	s/\%\%PROD\%\%/DevExp/;
+	s/\%\%VERS\%\%/$VERSION/;
+	s{ \%\%OP\%\% }
+d94 2
+a95 2
+	s/\%\%DEVS\%\%/$PREFS{'DEVICES'}/;
+	s{ \%\%DTDPATH\%\% }
+d101 1
+a101 1
+	$xmlpacket .= $_;
+d114 3
+d124 1
+a124 1
+### Check the outcome of the response 
+d126 7
+a132 7
+	local *OUTFILE;
+	unless (open(OUTFILE, ">" . $PREFS{'OUTPUT_FILE'})) {
+		die "Unable to open $PREFS{'OUTPUT_FILE'}: $!\n";
+	}
+	flock(OUTFILE, LOCK_EX);
+	my $old_fh = select(OUTFILE);
+	$| = 1;
+d134 1
+a134 1
+	print $response->content;
+d136 2
+a137 2
+	select($old_fh);
+	close(OUTFILE);
+d139 2
+a140 2
+	die
+	    "The request failed.  Please check the config file\nto make sure all the options are correct.\n";
+@
+
+
+1.4
+log
+@Make the version number reflect the current version.
+@
+text
+@d27 1
+a27 1
+# $Id: devexp.pl,v 1.3 2001/08/29 15:41:13 jmarcus Exp $
+d44 7
+a50 8
+if ( $^O eq "MSWin32" ) {
+    use CRM;
+    $CONF_FILE = $ENV{'NMSROOT'} . "\\objects\\devexp\\devexp.conf";
+    $XMLFILE   = $ENV{'NMSROOT'} . "\\objects\\devexp\\devexp.xml";
+}
+else {
+    $CONF_FILE = "/opt/CSCOpx/objects/devexp/devexp.conf";
+    $XMLFILE   = "/opt/CSCOpx/objects/devexp/devexp.xml";
+d54 2
+a55 2
+unless ( open( CONF, $CONF_FILE ) ) {
+    die "Unable to open $CONF_FILE: $!\n";
+d57 1
+a57 1
+flock( CONF, LOCK_SH );
+d60 7
+a66 7
+    chomp;
+    s/#.*//;
+    s/^\s+//;
+    s/\s+$//;
+    next unless length;
+    my ( $name, $value ) = split ( /\s*=\s*/, $_, 2 );
+    $PREFS{$name} = $value;
+d71 1
+a71 1
+$PREFS{'ADMIN_PASSWD'} = encode_base64( $PREFS{'ADMIN_PASSWD'} );
+d74 1
+a74 1
+chomp( $PREFS{'ADMIN_PASSWD'} );
+d77 2
+a78 2
+unless ( open( XML, $XMLFILE ) ) {
+    die "Unable to open file $XMLFILE: $!\n";
+d80 1
+a80 1
+flock( XML, LOCK_SH );
+d84 6
+a89 6
+    s/\%\%TYPE\%\%/$PREFS{'OUTPUT_FORMAT'}/;
+    s/\%\%PASSWD\%\%/$PREFS{'ADMIN_PASSWD'}/;
+    s/\%\%HOST\%\%/$PREFS{'RME_SERVER'}/;
+    s/\%\%PROD\%\%/DevExp/;
+    s/\%\%VERS\%\%/$VERSION/;
+    s{ \%\%OP\%\% }
+d94 2
+a95 2
+    s/\%\%DEVS\%\%/$PREFS{'DEVICES'}/;
+    s{ \%\%DTDPATH\%\% }
+d101 1
+a101 1
+    $xmlpacket .= $_;
+d106 4
+a109 1
+  'http://' . $PREFS{'RME_SERVER'} . ':' . $PREFS{'RME_PORT'} . $DEVSERVLET;
+d112 1
+a112 1
+$ua->agent( "DevExp/$VERSION " . $ua->agent );
+d122 16
+a137 17
+if ( $response->is_success ) {
+    local *OUTFILE;
+    unless ( open( OUTFILE, ">" . $PREFS{'OUTPUT_FILE'} ) ) {
+        die "Unable to open $PREFS{'OUTPUT_FILE'}: $!\n";
+    }
+    flock( OUTFILE, LOCK_EX );
+    my $old_fh = select(OUTFILE);
+    $| = 1;
+
+    print $response->content;
+
+    select($old_fh);
+    close(OUTFILE);
+}
+else {
+    die
+"The request failed.  Please check the config file\nto make sure all the options are correct.\n";
+@
+
+
+1.3
+log
+@Added support for configuring a remote public DTD.
+@
+text
+@d27 1
+a27 1
+# $Id: devexp.pl,v 1.2 2001/08/28 19:59:59 jmarcus Exp $
+d41 1
+a41 1
+$VERSION    = '1.0';
+@
+
+
+1.2
+log
+@Modified the XML file to support a PUBLIC DTD.  This way, a platform
+independent DTD path can be assigned.
+@
+text
+@d27 1
+a27 1
+# $Id: devexp.pl,v 1.1.1.1 2001/05/28 20:51:53 jmarcus Exp $
+a94 1
+s/\%\%DTDPATH\%\%/$PREFS{'RME_SERVER'}:$PREFS{'RME_PORT'}\/devexp\/devexp.dtd/;
+d96 5
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d27 1
+a27 1
+# $Id: snmptransc.pl,v 1.4 2001/05/25 23:14:14 jmarcus Exp $
+d36 4
+a39 4
+sub LOCK_SH {1}
+sub LOCK_EX {2}
+sub LOCK_NB {4}
+sub LOCK_UN {8}
+d95 1
+@
+
+
+1.1.1.1
+log
+@Initial import into CVS
+@
+text
+@@

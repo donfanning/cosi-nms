@@ -1,0 +1,122 @@
+head     1.1;
+branch   1.1.1;
+access   ;
+symbols  arelease:1.1.1.1 avendor:1.1.1;
+locks    ; strict;
+comment  @# @;
+
+
+1.1
+date     2001.08.22.14.29.31;  author robelewi;  state Exp;
+branches 1.1.1.1;
+next     ;
+
+1.1.1.1
+date     2001.08.22.14.29.31;  author robelewi;  state Exp;
+branches ;
+next     ;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/usr/local/bin/expect -f
+#
+# check to see if we got all the arguments
+
+# useage: grab-config hostname  password  enablepassword configfilename
+#
+# A simple script to down load a router configurations to /tftpboot.
+#
+#
+#-----------------------------------------------------------
+# ver   comments                author          date
+# 00    original                dblack          5/98
+#
+# This script released to open source under the Mozilla Public License
+#-----------------------------------------------------------
+#
+# check to see if we got all the arguments
+if { [llength $argv] != 5} {
+puts " "
+puts "useage: grab-config hostname password enablepassword serveripaddress adconfigfilename"
+puts " "
+                         exit
+                        }
+
+set router [lindex $argv 0]
+set password [lindex $argv 1]
+set enablepass [lindex $argv 2]
+set serveraddress [lindex $argv 3]
+set configname [lindex $argv 4]
+#
+exec /bin/touch /tftpboot/$configname
+exec /bin/chmod 666 /tftpboot/$configname
+
+#
+log_user 0
+spawn telnet $router 
+set timeout 20
+
+#----------------------
+# enter the login password 
+#----------------------
+expect {*Password:*}    {}\
+                timeout {puts "timed out waiting for login prompt";exit}
+send ${password}\r
+
+expect {*Password:*}    {puts "Bad password\n"; exit} \
+                {*>}            {} \
+                timeout {puts "timed out waiting for prompt after 1st password";exit}
+#----------------------
+# enter the enable password 
+#----------------------
+
+send enable\r
+expect assword:
+send ${enablepass}\r
+
+expect {*Password:*}    {puts "Bad  enable password\n"; exit} \
+                {*#}            {} \
+                timeout {puts "timed out waiting for prompt after enable password";exit}
+#----------------------
+# config net 
+#----------------------
+send "write net\r"
+expect 		{*]}            {} \
+                timeout {puts "timed out waiting for prompt after write net";exit}
+#----------------------
+# HOST file net 
+#----------------------
+send "$serveraddress\r"
+expect 		{*]?}            {} \
+                timeout {puts "timed out waiting for prompt after server address";exit}
+#----------------------
+# config file name 
+#----------------------
+send "$configname\r"
+expect 		{confirm*]}            {} \
+                timeout {puts "timed out waiting for prompt after config name ";exit}
+#----------------------
+# confirm 
+#----------------------
+send "\r"
+expect 		{*#}            {} \
+                timeout {puts "timed out waiting for prompt after confirm ";exit}
+exit 0
+@
+
+
+1.1.1.1
+log
+@ios command script toolkit initial checkin 
+@
+text
+@@

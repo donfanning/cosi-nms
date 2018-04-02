@@ -1,0 +1,175 @@
+head	1.4;
+access;
+symbols
+	RELEASE_1_2_1:1.4
+	RELEASE:1.1.1.1
+	MarcusCom:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.4
+date	2003.11.29.02.00.21;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.05.27.22.20.40;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.05.24.19.58.10;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.05.24.05.58.05;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.05.24.05.58.05;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.4
+log
+@Update documentation for 1.2.1.
+@
+text
+@cisco Systems IOS(tm) Config-Register Decoder Readme
+----------------------------------------------------
+
+$Id: README.txt,v 1.3 2001/05/27 22:20:40 jmarcus Exp $
+
+Requirements:
+-------------
+
+* Java Runtime Environment (JRE) 1.1.5 or higher
+* Windows or UNIX operating system (FreeBSD recommended)
+* 32 MB or RAM
+* Color monitor with display set to 256 or more colors
+
+Installation (From Java Source):
+--------------------------------
+
+* Unpack the confregdecode-src-1.2.1.tar.gz or confregdecode-src-1.2.1zip file 
+(both contain identical contents)
+* Change directory to the confregdecode-src-1.2.1 directory.
+* On UNIX, edit the Makefile so that all the paths are correct, and type
+``make jar''.  You will need javac (the Java compiler) 1.1.5 or later.
+On Windows, you may not be able to use the Makefile.  If not, type
+``javac com/marcuscom/confregdecode/ConfregDecode.java''
+* On Windows, run confregdecode, on UNIX, run ./confregdecode.sh
+
+Running in Applet Mode:
+-----------------------
+
+A ConfregDecode.html file is distributed along with the Configuration
+Register Decoder Package.  This HTML file can be used as a template to
+invoke the applet version of the tool.  The Configuration Register Decoder
+jarfile has both the code necessary to be an applet or application.  No
+extra compilation is required.
+
+Notes:
+------
+
+* More on the Cisco IOS(tm) configuration register can be found at
+http://www.cisco.com/univercd/cc/td/doc/product/iaabu/distrdir/dd4700m/vconfig.htm
+* This program contains code written by David Flanagan.  All code is
+distributed under the BSD license except where noted in the header.
+
+IOS is a registered trademark of Cisco Systems, Inc.
+All rights reserved.
+@
+
+
+1.3
+log
+@Added online versions of the documentation (with a screenshot).
+@
+text
+@d4 1
+a4 1
+$Id: README.txt,v 1.2 2001/05/24 19:58:10 jmarcus Exp $
+a13 11
+Installation (From Precompiled Package):
+----------------------------------------
+
+* Unpack the confregdecode-1.0.tar.gz or confregdecode-1.0.zip file 
+(both contain identical contents)
+* Change directory to the confregdecode-1.0 directory.
+* On UNIX, you must edit confregdecode.sh, and change the JRE variable to
+point to the location where jre is installed your system.  On Windows, this
+should be in your path.
+* On Windows, run confregdecode, on UNIX, run ./confregdecode.sh
+
+d17 1
+a17 1
+* Unpack the confregdecode-src-1.0.tar.gz or confregdecode-src-1.0.zip file 
+d19 1
+a19 1
+* Change directory to the confregdecode-src-1.0 directory.
+d22 1
+a22 1
+On Windows, you may be able to use the Makefile, else, type
+@
+
+
+1.2
+log
+@Cleaning up the code and getting ready for a release.
+@
+text
+@d4 1
+a4 1
+$Id: README.txt,v 1.1.1.1 2001/05/24 05:58:05 jmarcus Exp $
+d9 1
+a9 1
+* Java Runtime Environment (JRE) 1.1 or higher
+d14 2
+a15 2
+Installation:
+-------------
+d17 3
+a19 3
+* Unpack the confregdecode.tar.Z or confregdecode.zip file (both contain
+identical contents).
+* Change directory to the confregdecode directory.
+d25 21
+d49 3
+a51 1
+This program contains code written by David Flanagan.  All code is
+d53 3
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 2
+a2 2
+cisco Systems Config-Register Decoder Readme
+--------------------------------------------
+d4 1
+a4 1
+$Id: README.txt,v 1.1 2000/12/12 20:05:54 marcus Exp $
+@
+
+
+1.1.1.1
+log
+@This is the initial import of the Cisco Systems IOS(tm) Configuration
+Register Decoder.
+@
+text
+@@

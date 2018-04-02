@@ -1,0 +1,176 @@
+head	1.5;
+access;
+symbols
+	devel:1.1.1.1 COSI:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.5
+date	2001.08.10.17.37.06;	author jmarcus;	state dead;
+branches;
+next	1.4;
+
+1.4
+date	2001.08.07.04.22.54;	author nick07;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.08.07.03.13.42;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.08.07.02.36.18;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.08.07.01.59.17;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.08.07.01.59.17;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.5
+log
+@Removed the ping support from the API.  This was spotty at best since it
+couldn't easily scale to every operating system.  It wasn't really needed
+either.
+@
+text
+@package SAA::Ping;
+
+use strict;
+require 5.002;
+
+use vars qw(@@EXPORT_OK);
+
+use Exporter;
+use Carp;
+
+*import    = \&Exporter::import;
+@@EXPORT_OK = qw(saa_ping);
+
+use vars qw(@@PING $PING_OPTIONS $REDIRECT);
+
+# XXX We should check to see which ping to use.  On Windows, there is only one
+# real choice.  On UNIX, however, ping could reside in a variety of places.
+# It's not safe just to say "ping".  One might think it's better to use
+# Net::Ping, but ICMP sockets require root privilege on UNIX.  If someone can
+# find a better solution than this, feel free to code it.
+if ( $^O eq "MSWin32" ) {
+    @@PING = ('ping');
+}
+else {
+    @@PING = ( '/sbin/ping', '/usr/sbin/ping' );
+}
+# XXX These options should probably be OS (or platform) dependent.
+# HP-UX uses -n for count.
+$PING_OPTIONS = '-c 1';                          # Stop pinging after one packet
+$REDIRECT     = '2>&1 >/dev/null';
+$REDIRECT     = '> nul' if ( $^O eq "MSWin32" );
+
+sub saa_ping {
+    my $addr = shift;
+    my $ping = "";
+
+    return 0 unless defined $addr;
+
+    if ( $^O eq "MSWin32" ) {
+        $ping = $PING[0];
+    }
+    else {
+        foreach (@@PING) {
+            if ( -x $_ ) {
+                $ping = $_;
+                last;
+            }
+        }
+    }
+
+    return 0 unless $ping;
+
+    my $result =
+      system( $ping . " " . $PING_OPTIONS . " " . $addr . " " . $REDIRECT );
+
+    return 0 if $result;
+
+    1;
+}
+
+1;
+__END__
+@
+
+
+1.4
+log
+@
+HP-UX info in the comments
+@
+text
+@@
+
+
+1.3
+log
+@Added some comments explaining why this module is the way it is.
+@
+text
+@d28 1
+@
+
+
+1.2
+log
+@Updated the code to add support for Windows ping, and make the UNIX code
+a little smarter.
+@
+text
+@d16 5
+d27 1
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@a2 2
+BEGIN { $ENV{'PATH'} = '/bin:/sbin:/usr/bin:/usr/sbin'; }
+
+d14 1
+a14 1
+use vars qw($PING $PING_OPTIONS $REDIRECT);
+d16 6
+a21 1
+$PING         = '/sbin/ping';
+d24 1
+a24 1
+$REDIRECT     = '> nul' if ( $^O eq "Win32" );
+d28 1
+d32 14
+d47 1
+a47 1
+      system( $PING . " " . $PING_OPTIONS . " " . $addr . " " . $REDIRECT );
+@
+
+
+1.1.1.1
+log
+@Initial import into the COSI CVS respository
+@
+text
+@@

@@ -1,0 +1,73 @@
+head	1.3;
+access;
+symbols
+	start:1.1.1.1
+	vendor:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.3
+date	2001.05.17.14.33.18;	author robelewi;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.05.17.12.09.36;	author robelewi;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.05.15.18.21.33;	author robelewi;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.05.15.18.21.33;	author robelewi;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.3
+log
+@updated via wincvs to verify
+@
+text
+@Welcome to the COSI-nms site. 
+This is a test page to test the CVS and provide a place to post some quick info.
+We hope to go live within 2 weeks. 
+This was updated via CVS on 051701 via wincvs (Run from welcome directory.)@
+
+
+1.2
+log
+@This was updated 051701 via cvs
+@
+text
+@d3 2
+a4 2
+And this line is for the change detection through wincvs...
+We hope to go live within 2 weeks. This was updated via CVS on 051701. Run from welcome directory.@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d2 3
+a4 1
+This is a test page to test the CVS and provide a place to post some quick info.@
+
+
+1.1.1.1
+log
+@this is the welcome file and the initial test for cvs on win 051501....rcl
+@
+text
+@@

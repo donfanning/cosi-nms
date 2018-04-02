@@ -1,0 +1,62 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2001.12.04.05.54.35;	author jmarcus;	state dead;
+branches;
+next	1.1;
+
+1.1
+date	2001.12.03.22.40.13;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@Contiue building out the CGI framework.  Add an API for creating and
+maintaining persisten user sessions.
+@
+text
+@package SAA::CGI::Error;
+
+use strict;
+require 5.002;
+
+use vars qw(@@ISA @@EXPORT);
+use Exporter;
+@@ISA = qw(Exporter);
+@@EXPORT = qw(return_error);
+
+sub return_error {
+	my ($q, $reason) = @@_;
+
+	print $q->header("text/html");
+	print $q->start_html("SAA Configurator Error");
+	print $q->h1("SAA Configurator Error");
+	print $q->p("The SAA Configurator encountered the following error: ");
+	print $q->p($q->i($reason));
+	print $q->end_html;
+
+	exit(0);
+}
+
+1;
+@
+
+
+1.1
+log
+@Initial import into CVS.
+@
+text
+@@
+

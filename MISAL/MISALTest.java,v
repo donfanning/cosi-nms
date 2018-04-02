@@ -1,0 +1,162 @@
+head	1.4;
+access;
+symbols
+	RELEASE_1_1_1:1.4
+	RELEASE_1_1:1.4
+	RELEASE_1_0_1:1.4
+	RELEASE_1_0:1.4;
+locks; strict;
+comment	@# @;
+
+
+1.4
+date	2001.06.15.17.06.05;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.06.14.16.34.34;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.06.14.14.37.19;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.06.14.14.26.57;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.4
+log
+@Updated to use the new MalformedMISALStateException.
+@
+text
+@import java.net.*;
+import java.io.*;
+import com.marcuscom.MISAL.*;
+
+public class MISALTest {
+	public static void main(String[] argv) {
+		Socket socket = null;
+		MISAL misal = null;
+		try {
+			socket = new Socket("my.host.com", 23);
+		}
+		catch (UnknownHostException uhe) {
+			System.err.println("Bad host: " + uhe.getMessage());
+			System.exit(1);
+		}
+		catch (IOException ioe) {
+			System.err.println(ioe.getMessage());
+			System.exit(1);
+		}
+
+		try {
+			misal = new MISAL(socket);
+		}
+		catch (SocketException se) {
+			System.err.println(se.getMessage());
+			System.exit(1);
+		}
+		catch (IOException ioe1) {
+			System.err.println(ioe1.getMessage());
+			System.exit(1);
+		}
+		try {
+			misal.addState(1, "login: ?$");
+			misal.addState(2, "[Pp]assword: ?$");
+		}
+		catch (MalformedMISALStateException mmse) {
+			System.err.println(mmse.getMessage());
+		}
+		try {
+			misal.send(1, "myusername\r", 2);
+			misal.clearBuffer();
+			misal.send(2, "mypassword\r", "]\\s*$");
+		}
+		catch (IllegalMISALStateException imse) {
+			System.err.println(imse.getMessage());
+		}
+		catch (IOException ioe2) {
+			System.err.println(ioe2.getMessage());
+		}
+		try {
+			Thread.sleep(4000);
+		}
+		catch (InterruptedException ie) {
+		}
+		System.out.println("\n\n\n");
+		System.out.println("buffer = " + misal.getBuffer());
+		misal.closeSocket();
+	}
+}
+@
+
+
+1.3
+log
+@Updated the API to make things simpler.  Also, add some JavaDoc fixes.
+@
+text
+@a3 1
+import com.oroinc.text.regex.*;
+d36 2
+a37 2
+		catch (MalformedPatternException mfpe) {
+			System.err.println(mfpe.getMessage());
+@
+
+
+1.2
+log
+@Fixed up the test (so it actually compiles).
+@
+text
+@d23 1
+a23 1
+			misal = new MISAL(socket, false);
+@
+
+
+1.1
+log
+@This is the test class for MISAL.
+@
+text
+@d4 1
+d14 1
+a14 1
+			System.err.println("Bad host.");
+d18 1
+a18 1
+			System.err.println("IO Exception.");
+d30 1
+a30 1
+			System.err.println("IO Exception.");
+d34 6
+a39 2
+			misal.addState(1, );
+			misal.addState(2, "Password: ?$");
+d41 3
+a43 3
+			sm.send(1, "myusername\r", 2);
+			sm.clearBuffer();
+			sm.send(2, "mypassword\r", "]\\s*$");
+d57 2
+a58 2
+		System.out.println("buffer = " + sm.getBuffer());
+		sm.closeSocket();
+a60 3
+
+
+		
+@
+

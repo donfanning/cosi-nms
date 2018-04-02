@@ -1,0 +1,81 @@
+head	1.2;
+access;
+symbols
+	RELEASE_1_4:1.2
+	RELEASE_1_3:1.2
+	RELEASE_1_2:1.2
+	HEAD:1.1.1.1
+	MAIN:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2001.08.28.19.59.59;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.05.28.20.51.53;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.05.28.20.51.53;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@Modified the XML file to support a PUBLIC DTD.  This way, a platform
+independent DTD path can be assigned.
+@
+text
+@<?xml version="1.0"?>
+
+<!-- $Id: devexp.xml,v 1.1.1.1 2001/05/28 20:51:53 jmarcus Exp $ -->
+
+<!DOCTYPE request PUBLIC "%%DTDPATH%%">
+
+<request responseFormat="%%TYPE%%">
+<!-- the value for responseFormat could be xml or csv -->
+    <authentication name="admin" pwd='%%PASSWD%%'/>
+    <!-- pwd is 64-based encoded -->
+    <source>
+         <host>%%HOST%%</host>
+         <product>%%PROD%%</product>
+         <version>%%VERS%%</version>
+         <description>XML Request packet for device export</description>
+    </source>
+
+   %%OP%%
+</request>
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d3 1
+a3 1
+<!-- $Id: devexp.xml,v 1.1 2000/11/03 06:22:23 marcus Exp $ -->
+d5 1
+a5 1
+<!DOCTYPE request SYSTEM "/opt/CSCOpx/objects/devexp/devexp.dtd">
+@
+
+
+1.1.1.1
+log
+@Initial import into CVS
+@
+text
+@@

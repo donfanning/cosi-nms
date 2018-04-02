@@ -1,0 +1,92 @@
+head     1.1;
+branch   1.1.1;
+access   ;
+symbols  arelease:1.1.1.1 avendor:1.1.1;
+locks    ; strict;
+comment  @# @;
+
+
+1.1
+date     2001.07.02.15.03.35;  author robelewi;  state Exp;
+branches 1.1.1.1;
+next     ;
+
+1.1.1.1
+date     2001.07.02.15.03.35;  author robelewi;  state Exp;
+branches ;
+next     ;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@<html>
+<head>
+<title>Example Swatch Wrapper Script</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<body bgcolor="#FFFFFF">
+<p>Example wrapper script for swatch:</p>
+<p>=========</p>
+<pre>#!/bin/sh
+# This script starts and stops "swatch" as needed.
+# contact lwt@@cisco.com
+#
+     pid=`/bin/ps -ef | /usr/bin/egrep "/usr/local/bin/swatch --config-file=/opt
+/CSCOlwt/conf/swatch/ios-swatch" | /usr/bin/egrep -v egrep | /usr/bin/awk '{prin
+t $2}'`
+   case "$1" in
+      'start')
+          # start the swatch process
+          if [ "${pid}" != "" ];
+             then
+                  echo 'Swatch System is already initialized.'
+                  exit 0
+             fi
+          if [ -f /usr/local/bin/swatch -a -f /opt/CSCOlwt/conf/swatch/ios-swatc
+h.cfg ];
+             then
+                  /bin/su - swatcher -c "/usr/local/bin/swatch --config-file=/op
+t/CSCOlwt/conf/swatch/ios-swatch.cfg -t /var/log/router.log --daemon &"
+
+                  exit
+             fi
+          echo 'Swatch System startup complete.'
+            ;;
+      'stop')
+
+          #stop all swatch processes
+             if [ "${pid}" != "" ];
+               then
+                  /usr/bin/kill -TERM ${pid}
+                  echo 'Swatch System shutdown complete.'
+             else
+                  echo 'No Swatch System initialized.'
+             fi
+             ;;
+      *)
+          echo "Usage: /etc/init.d/swatch { start | stop }"
+             ;;
+      esac
+</pre>
+<p>--------</p>
+<p><a href="/swatch/swatch.html">Back to Swatch Document</a></p>
+</body>
+</html>
+@
+
+
+1.1.1.1
+log
+@no message
+@
+text
+@@

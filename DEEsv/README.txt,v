@@ -1,0 +1,180 @@
+head	1.3;
+access;
+symbols
+	RELEASE_1_1:1.3
+	RELEASE_1_0:1.1;
+locks; strict;
+comment	@# @;
+
+
+1.3
+date	2003.05.23.16.32.12;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2003.04.22.01.11.04;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.09.11.17.06.36;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.3
+log
+@DEEv2 only needs to be downloaded from Cisco.com for RME 3.4.
+@
+text
+@Project DEEsv for Resource Manager Essentials 3.4 and Higher
+
+Author: Joe Clarke <marcus@@marcuscom.com>
+
+$Id: README.txt,v 1.2 2003/04/22 01:11:04 jmarcus Exp $
+
+INTRODUCTION:
+-------------
+
+This tool is designed for CiscoWorks users running RME 3.4 or higher
+and have the Data Extracting Engine (DEEv2) product installed.  This tool
+takes the XML data output by the cwexport interface to DEE, and converts
+it to xSV (e.g. CSV) in a similar format to the RME Detailed Device Report.
+
+REQUIREMENTS:
+-------------
+
+* CiscoWorks Resource Manager Essentials 3.4 or higher on Windows 2000,
+  Solaris 7, or Solaris 8.
+* Data Extracting Engine (DEEv2) (DEE can be obtained from 
+  http://www.cisco.com/cgi-bin/tablebuild.pl/cw2000-rme for RME 3.4).
+* ALL of the prerequisites for RME and DEE are met.
+
+INSTALLATION:
+-------------
+
+Installation under Windows 2000:
+--------------------------------
+
+* Unzip deesv-win-v10.zip
+
+* Change directory to deesv-win-v10
+
+* Run install.cmd
+
+
+Installation under Solaris 7 or 8:
+----------------------------------
+
+* Run 'uncompress -c deesv-unix-v10.tar.Z | tar -xvf -'
+
+* Change directory to deesv-unix-v10
+
+* Run ./install.sh
+
+
+USING DEEsv:
+------------
+
+DEEsv installs a DEEsv.pl script in NMSROOT/bin.  DEEsv accepts all the same
+arguments as the cwexport command.  For information on the cwexport command
+line syntax, see the on-line documentation within RME for DEE, or, on
+Solaris, look at the cwexport(1) manpage in NMSROOT/man/man1/cwexport.1.
+The one cwexport command DEEsv does _not_ support is the ``config'' command.
+DEEsv only operates on inventory data.  DEEsv also accepts one additional
+argument: -sep <character>.  This allows one to specify an alternate 
+separator character specified by <character>.  The default is a comma (',').
+
+The output produced by DEEsv will be written to the file specified by the
+-f argument.  If the -f is omitted, then the data will be written to
+standard output (i.e. the console).  The data is similar to the format
+produced by the RME Detailed Device Report.
+
+NOTE: The file specified by the -f option must be writable by casuser.
+
+
+EXAMPLE:
+--------
+
+To extract the inventory data for a device, 14.32.6.12, run the command:
+
+DEEsv.pl inventory -u admin -p admin -device 14.32.6.12 -f /tmp/14.32.6.12.csv
+
+To do the same thing, but using the recommended, secure mode:
+
+DEEsv.pl -device 14.32.6.12 -f /tmp/14.32.6.12.csv
+
+NOTE: For this to work, the CWEXPORTFILE environment variable must be
+set to the path of the file that specifies the CiscoWorks username and
+password.
+
+To extract inventory data for all the devices in the database, run the
+command:
+
+DEEsv.pl inventory -u admin -p admin -f /tmp/all_devices.csv
+
+
+BUGS:
+-----
+
+* DEEsv cannot be run remotely.  This will be addressed in an upcoming
+  release.
+
+
+ADDITIONAL NOTES:
+-----------------
+
+While most of this Open Source released under the BSD license, it still
+relies on components from CiscoWorks which is copyright of Cisco
+Systems, Inc.
+
+CiscoWorks, Resource Manager Essentials, and Data Extracting Engine are
+registered trademarks of Cisco Systems, Inc.
+All rights reserved.
+@
+
+
+1.2
+log
+@Call CiscoWorks 2000 CiscoWorks.
+@
+text
+@d5 1
+a5 1
+$Id: README.txt,v 1.1 2002/09/11 17:06:36 jmarcus Exp $
+d21 1
+a21 1
+  http://www.cisco.com/cgi-bin/tablebuild.pl/cw2000-rme).
+@
+
+
+1.1
+log
+@Add the documentation.
+@
+text
+@d5 1
+a5 1
+$Id$
+d10 1
+a10 1
+This tool is designed for CiscoWorks 2000 users running RME 3.4 or higher
+d18 1
+a18 1
+* CiscoWorks 2000 Resource Manager Essentials 3.4 or higher on Windows 2000,
+d79 1
+a79 1
+set to the path of the file that specifies the CiscoWorks 2000 username and
+d99 1
+a99 1
+relies on components from CiscoWorks 2000 which is copyright of Cisco
+d102 1
+a102 1
+CiscoWorks 2000, Resource Manager Essentials, and Data Extracting Engine are
+@
+

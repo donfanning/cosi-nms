@@ -1,0 +1,595 @@
+head     1.1;
+branch   1.1.1;
+access   ;
+symbols  arelease:1.1.1.1 avendor:1.1.1;
+locks    ; strict;
+comment  @# @;
+
+
+1.1
+date     2001.07.02.15.03.35;  author robelewi;  state Exp;
+branches 1.1.1.1;
+next     ;
+
+1.1.1.1
+date     2001.07.02.15.03.35;  author robelewi;  state Exp;
+branches ;
+next     ;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@ 
+
+<html>
+
+<!-- #BeginTemplate "/Templates/practices-01.dwt" --> 
+
+<head>
+
+<!-- #BeginEditable "doctitle" --> 
+
+<title>Enabling Swatch (Simple Watcher) for Log Filtering</title>
+
+<!-- #EndEditable --> 
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+</head>
+
+<body bgcolor="#FFFFFF" background="ss7_dial1.gif" text="#000000" link="#0000FF" vlink="#FF00FF">
+
+<table width="698" border="0">
+
+  <tr> 
+
+    <td width="650" height="83"><!-- #BeginEditable "banner" -->
+      <h2><a href="http://mccain.ots.utexas.edu/">CoE - Internet Access Engineering:</a></h2>
+      <h1 align="left"><a href="http://mccain.ots.utexas.edu/">Center of Excellence&nbsp;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+      </h1>
+      <!-- #EndEditable --> 
+      <div align="left"><br>
+        <font face="Arial, Helvetica, sans-serif" size="-2">last update by <em> 
+        <!-- #BeginEditable "edited-by" --><font face="Arial, Helvetica, sans-serif" size="-2"><em><font size="1">rcl 
+        <i></i></font></em></font><!-- #EndEditable --> </em> on <em> <!-- #BeginEditable "edited-date" --><font face="Arial, Helvetica, sans-serif" size="-2"><em><font size="1"><i>07/02/01</i></font></em></font><!-- #EndEditable --></em></font><font face="Arial, Helvetica, sans-serif" size="-2">. 
+        Knowledge by: <em><a href="http://mccain.ots.utexas.edu/">CoE-IAE</a></em> 
+        </font> </div>
+
+    </td>
+
+  </tr>
+
+  <tr> 
+
+    <td width="650" valign="top"> <!-- #BeginEditable "page-content" --> 
+      <h2>Enabling Swatch: Introduction</h2>
+      <p> This technical note consists of:</p>
+      <ul>
+        <li> Enabling Swatch 
+        <li> Sample Swatch Startup Script 
+        <li> Sample Swatch Configuration Script 
+      </ul>
+      Swatch is a Perl utility, written by <a href="http://www.stanford.edu/%7Eatkins">Todd 
+      E. Atkins</a> that provides automated filtering of system log messages. 
+      <br>
+      Swatch can be run as a daemon process on Unix operating systems to monitor 
+      specified files (logs) for user-defined<br>
+      pattern matches. When a pattern is matched, swatch can perform corresponding 
+      configured actions, including the automatic <br>
+      notification of support staff. 
+      <p>This technical note provides a procedure to install, configure, and enable 
+        <b>swatch</b> (simple watcher)<br>
+        within a Solaris 2.6 environment.The procedures within this technical 
+        note are presented in the <br>
+        context of enabling the swatch utility within a pseudo company customer 
+        site, <b>MauiOnions.com</b>.</p>
+      <p> For more background on swatch, refer to the <a href="#bookmarks">Reference</a> 
+        section at the end of this technote.</p>
+      <hr width="50%%" size="3" align="left">
+      <p>&nbsp; </p>
+      <h3>Enabling Swatch: Task Overview</h3>
+      <p> 
+      <p>The following tasks are detailed within this procedure:</p>
+      <ol>
+        <li><a href="#task1">Download swatch</a> and required Perl modules</li>
+        <li><a href="#task2">Install swatch</a> </li>
+        <li><a href="#task3">Create a swatch user</a></li>
+        <li><a href="#task4">Create swatch configuration</a> file(s)</li>
+        <li><a href="#task5">Test swatch</a></li>
+        <li><a href="#task6">Create a swatch</a> daemon startup script</li>
+        <li><a href="#task7">Update log </a>rotation scripts</li>
+        <li><a href="#task8">Maintain swatch</a> 
+      </ol>
+      <h3>Enabling Swatch: The Procedure</h3>
+      <h4>Task 1: Download Swatch and Required Modules<a name="task1"></a></h4>
+      <p> 
+      <ul>
+        <li> Download the latest swatch distribution. <br>
+          The swatch utility can be downloaded here: <a href="http://www.stanford.edu/%7Eatkins/swatch/latest.tar"><br>
+          Swa</a><a href="http://www.stanford.edu/%7Eatkins/swatch/latest.tar">tch 
+          Download</a>.<br>
+          <br>
+        <li>Verify Perl requirements: 
+          <ol>
+            <li>Swatch requires Perl 5; <br>
+              To verify the Perl version and compiler installation, use the<br>
+              command <i>perl -V</i>. 
+            <li>Swatch requires the Perl modules: Time::HiRes, Date::Calc, Date::Format, 
+              and File::Tail. <br>
+              If these are not installed on the system, download and install them 
+              before you proceed.<br>
+          </ol>
+          Perl modules are available from <a href="http://cpan.valueclick.com/modules/">CPAN.org</a> 
+          in the following locations:<br>
+          <br>
+          <table width="45%" border="0">
+            <tr> 
+              <td> 
+                <div align="center"><b>Module</b></div>
+              </td>
+              <td> 
+                <div align="center"><b>Contained within</b></div>
+              </td>
+              <td> 
+                <div align="center"><b>Category</b></div>
+              </td>
+            </tr>
+            <tr> 
+              <td>Date::Format</td>
+              <td>TimeDate - 1.10</td>
+              <td>Data Type Utilities &gt; Time</td>
+            </tr>
+            <tr> 
+              <td>Time::HiRes</td>
+              <td>Time-HiRes - 01.20</td>
+              <td>Data Type Utilities &gt; Time</td>
+            </tr>
+            <tr> 
+              <td>Date::Calc</td>
+              <td>Date-Calc - 4.3</td>
+              <td>Data Type Utilities &gt; Date</td>
+            </tr>
+            <tr> 
+              <td>File::Tail</td>
+              <td>File-Tail - 0.97</td>
+              <td>File Names Systems Locking &gt; File</td>
+            </tr>
+          </table>
+          <br>
+          (additional information on installing modules is available at <a href="http://cpan.valueclick.com/modules/INSTALL.html">CPAN.org</a>)<br>
+          <br>
+        <li>Unpack the swatch download file to a working directory.<br>
+          The swatch package is available in various forms, including .tar and 
+          .rpm. <br>
+          The following command unpacked the file for MauiOnions.com:<br>
+          <font face="Courier New, Courier, mono" size="2"> tar -xvf latest.tar</font><br>
+          <br>
+        </li>
+        <li> Read the Documentation<br>
+          A directory is automatically created for the extracted files. Within 
+          that directory are the program <br>
+          files and a readme, an INSTALL and Makefile.PL. <br>
+          These files contain important information concerning how to install 
+          and configure swatch on your <br>
+          system. We recommend that you read these files before proceeding with 
+          the installation. <br>
+          <br>
+          Consult the Swatch <a href="http://www.stanford.edu/%7Eatkins/swatch/swatch.html">man 
+          page</a> for additional information. <br>
+        </li>
+        <i> </i> 
+      </ul>
+      <h4>Task 2: Install Swatch<a name="task2"></a></h4>
+      <p> 
+      <blockquote> 
+        <p>&nbsp; </p>
+        <blockquote> 
+          <p>To install Swatch:</p>
+          <p> 
+          <ul>
+            <li>Change to the directory containing the downloaded swatch distribution.</li>
+            <li>Use the su command to become root: <br>
+              <blockquote> onionring:~$ <br>
+                onionring:~$ su root <br>
+                Password:<br>
+                # </blockquote>
+            </li>
+            <li>Issue the following commands; allow each command to <br>
+              complete successfully before progressing to the next :<br>
+            </li>
+          </ul>
+          <pre>      <b>$</b> perl Makefile.PL
+
+      <b>$</b> make<br>      <b>$</b> make test<br>      <b>$</b> make install<br>      <b>$</b> make realclean
+
+
+
+</pre>
+        </blockquote>
+        <p></p>
+        <h4>Task 3: Create a user account for swatch<a name="task3"></a> </h4>
+        <p> 
+        <ul>
+          <li>Create a user account for swatch (in this case, <i>swatcher</i>).<br>
+            Assign swatcher to the group <i>logreaders</i>.<br>
+            <br>
+            The MauiOnions system administrator used the following command to 
+            create the <br>
+            user <i>swatcher</i>: </li>
+          <blockquote> 
+            <pre><font face="Courier New, Courier, mono">#   useradd -s /bin/sh -d /export/home/swatcher -m swatcher</font></pre>
+          </blockquote>
+          <li>Understand Permissions.<br>
+            The swatcher account must have permissions that allow it to:<br>
+            <ul>
+              <li>Enter (execute) directories and Read log files 
+              <li>Create its own files 
+              <li>Execute the appropriate startup script(s) <br>
+                (Startup scripts are discussed in <a href="#task6">Task 6</a>) 
+            </ul>
+            For example, within the MauiOnions.com environment, <br>
+            the swatcher account belongs to the group <i>logreader</i>.<br>
+            <br>
+          </li>
+          <li>Verify permissions<a name="assignpermission"></a><br>
+            To verify that <i>swatcher</i> has the appropriate permissions: 
+            <ul>
+              <li>Use the <b>su</b> command to become root, then use su to become 
+                <i>swatcher </i><br>
+                (include the dash (-) within the command to ensure the swatcher 
+                environment is used):<br>
+                <blockquote> <b>onionring:$ </b>su root<br>
+                  Password:<br>
+                  <b>#</b> su - swatcher<br>
+                  <b>swatcher$ </b></blockquote>
+                <b></b><font face="Courier New, Courier, mono" size="2"> </font></li>
+              <li> Demonstrate that swatcher can access, read, write, and create<br>
+                required directories and files:<br>
+                (On onionring, for example, the files in<i> /var/log</i> and <i>/var/adm</i> 
+                must be accessible):<br>
+                <br>
+                <dl> 
+                  <dt>To demonstrate/test directory access, attempt to change 
+                    into a directory such as <i>/var/log</i>: 
+                  <dd> 
+                    <blockquote> <b>Test directory (execute) access=====================</b><br>
+                      <br>
+                      <b>swatcher$</b> cd /var/log<br>
+                      <b>swatcher$</b> pwd<br>
+                      /var/log<br>
+                      <b>swatcher$</b><br>
+                      <br>
+                      <br>
+                      (successful directory (execute)access) </blockquote>
+                  <dt>To demonstrate/test directory and file read, attempt to 
+                    display the directory contents and the contents <br>
+                    of a file within a directory such as <i>/var/log</i>: <br>
+                    <br>
+                  </dt>
+                  <dt> 
+                    <blockquote> <b>Test directory read access=====================</b></blockquote>
+                  <dd> 
+                    <pre><b>swatcher$</b> ls 
+
+
+
+authlog                router.log.1           www_error.log.3
+
+cgi_error.log          router.log.2           www_server
+
+linkadder.log          router.log.3           www_server-120600.log
+
+mrtg                   www_error              www_server-120700.log
+
+mrtg-120600.log        www_error-120600.log   www_server.log
+
+mrtg-120700.log        www_error-120700.log   www_server.log.0
+
+router                 www_error.log          www_server.log.1
+
+  <br>(successful directory listing)<b> </b> </pre>
+                  <dt> 
+                    <blockquote><b>Test file read ==============</b></blockquote>
+                  <dd> 
+                    <blockquote> swatcher$ tail -1 router<br>
+                      Jan 24 09:25:59 maui-rtr-01.maui-onions.com 4911: 154621: 
+                      Jan 24 09:26:39.242 CST: %SYS-4-SNMP_WRITENET: SNMP WriteNet 
+                      request. Writing current configuration to 172.22.53.203 
+                      <br>
+                      swatcher$ <br>
+                      <br>
+                      <br>
+                      (successful file read) </blockquote>
+                  <dt> 
+                    <blockquote><b>Test file create=============</b><br>
+                    </blockquote>
+                  <dd> 
+                    <blockquote> <b>swatcher$</b> cd /var/log <br>
+                      <b>swatcher$</b> touch mytest.txt <br>
+                      <b>swatcher$</b> ls -l mytest.txt<br>
+                      -rw-r--r-- 1 swatcher other 0 Dec 7 11:13 mytest<br>
+                      <b>swatcher$</b><br>
+                      <br>
+                      (successful file create)<br>
+                    </blockquote>
+                    <br>
+                  <dt> <br>
+                </dl>
+              </li>
+              <li> Be aware that <i>swatcher</i> must be able to read and execute 
+                the <a href="#task6">startup script </a>(under /etc/init.d) and 
+                the swatcher <br>
+                <a href="#task4">configuration file</a>. 
+            </ul>
+        </ul>
+        <h4 align="left">Task 4: Create a swatch configuration file(s)<a name="task4"></a></h4>
+        <p> 
+        <p>The swatch utility uses a configuration file to read in (define) &quot;watchfor&quot; 
+          settings and corresponding actions to perform when a watchfor pattern 
+          is matched. These settings are written using regular expression syntax 
+          (see the <a href="sample-wrapper.html">example file</a>). Most servers 
+          generate multiple log files that may require monitoring. To monitor 
+          multiple log files, you must setup swatch to run as multiple distinct 
+          processes/daemons. Each process requires its own swatch configuration 
+          file to specify the <i>watchfor</i> parameters for each log file you 
+          plan to monitor. 
+        <p>If you determine that you require support for monitoring files via 
+          multiple swatch processes, we recommend that you define naming conventions 
+          for swatch configuration files and daemon startup scripts to ease administrative 
+          tasks. 
+        <p>The MauiOnions system administrator created a configuration file <i>(ios-swatch.cfg</i>) 
+          to enable swatch to notify the MauiOnions system administrators by email 
+          when configuration changes are made to any of the MauiOnions.com routers. 
+          <br>
+          If you plan to use email as a notification tool, verify your email is 
+          functioning appropriately. 
+        <p>This configuration file defines what text pattern(s) swatch watches 
+          for within the router log file (<i>/var/log/router</i>). <br>
+          Within the <i>ios-swatch.cfg </i>file, a <i>watchfor</i> parameter definition 
+          was added to instruct the swatch process to send mail <br>
+          to the MauiOnions administrator(s) if the defined text pattern appears 
+          within the log file. The <i>watchfor</i> strings were <br>
+          chosen by consulting log files, swatch documents and the internet for 
+          information on appropriate text strings associated <br>
+          with the events to be monitored. 
+        <p> For example, the text string <i>%SYS-5-CONFIG</i> is associated with 
+          entries within the log file that result from router configuration changes. 
+          To configure swatch to watch for router configuration changes, <i> </i>the 
+          string <i>%SYS-5-CONFIG</i> was specified as a <i>watchfor</i> within 
+          the <i>ios-swatch.cfg</i> file and the mail alias <i>netadmin </i>(designated 
+          in <i>/etc/aliases</i>) defines who email notifications are sent to:</p>
+        <blockquote> <b>swatcher$<a name="#example"></a></b> more ios-swatch.cfg<br>
+          # Insert Standard Header.<br>
+          # Swatch configuration file for CiscoIOS NAS monitoring<br>
+          # Last Updated by Sachin Patel, Dec 19, 2000.<br>
+          #<br>
+          <br>
+          #<br>
+          watchfor /%SYS-5-CONFIG/ mail addresses=netadmin,subject=System configuration 
+          notice throttle 1:00<br>
+          watchfor /%ALIGN-3/ mail addresses=netadmin,subject=Alignment errors 
+          throttle 1:00<br>
+          watchfor /%CALLRECORD-3/ exec /usr/bin/echo $* >> /var/mcrt/call_records.log<br>
+          <b>swatcher$</b><br>
+        </blockquote>
+        <p>On the machine <b>onion-ring</b> within <i>MauiOnions.com</i>, the 
+          swatch configuration files ( <i>ios-swatch.cfg</i>) are stored in the 
+          CSCOlwt configuration area of the directory tree, within the directory 
+          <i>swatch</i>: 
+        <pre> <font face="Courier New, Courier, mono">            /opt/CSCOlwt/conf/swatch/</font></pre>
+        <p>Be aware that various applications yield many different formats and 
+          types of messages into log files and they are dependent upon the various 
+          logging configurations on those systems. <br>
+          (<b>Note:</b> The log files you plan to watch must be enabled via application 
+          or syslog; swatcher can not enable them because it is a reader/filter 
+          only.) <br>
+          For information on setting up Syslog, consult the <a href="http://www.cisco.com/univercd/cc/td/doc/cisintwk/intsolns/dialnms/preface.htm">Dial 
+          NMS ISG</a>.</p>
+        <h4>Task 5: Test swatch<a name="task5"></a></h4>
+        <p>Manually test the swatch configuration by launching it from the Unix 
+          command prompt: </p>
+        <p> 
+        <ul>
+          <li>Use the su command to become swatcher and assume the swatcher environment: 
+          </li>
+          <blockquote> <b>onionring:$ </b>su root<br>
+            Password:<br>
+            <b>#</b> su - swatcher<br>
+            <b>swatcher$</b><i><br>
+            <br>
+            </i></blockquote>
+          <li>Start swatch-<br>
+            The MauiOnions.com system administrators use the following command 
+            to manually invoke swatch: </li>
+        </ul>
+        <blockquote> <font face="Courier New, Courier, mono" size="2">/usr/local/bin/swatch 
+          -c /opt/CSCOlwt/conf/swatch/ios-swatch.cfg -t /var/log/router </font></blockquote>
+        The command contains the following parts: 
+        <table width="101%" border="0">
+          <tr> 
+            <td width="29%"><font face="Courier New, Courier, mono" size="-1">/usr/local/bin/swatch 
+              -c</font></td>
+            <td width="47%"><font face="Courier New, Courier, mono" size="-1">/opt/CSCOlwt/conf/swatch/ios-swatch.cfg 
+              -t</font></td>
+            <td width="24%"><font face="Courier New, Courier, mono" size="-1">/var/log/router</font></td>
+          </tr>
+          <tr> 
+            <td width="29%"> 
+              <div align="center">binary location</div>
+            </td>
+            <td width="47%"> 
+              <div align="center">config file to read</div>
+            </td>
+            <td width="24%"> 
+              <div align="center">file to watch</div>
+            </td>
+          </tr>
+        </table>
+        <p> 
+        <ul>
+          <li> Confirm swatch start-<br>
+            When swatch starts, it spawns a second instance of swatch. A successful 
+            start for swatch can be confirmed using <i>grep</i> to search the 
+            process list. <br>
+            If swatch is successfully started, the following command returns information 
+            that two (2) <br>
+            swatch jobs exist within the process list.<font face="Courier New, Courier, mono"> 
+            </font><br>
+            To search for processes that contain the word <i>swatch</i>, use the 
+            following command: 
+            <blockquote> 
+              <pre><font face="Courier New, Courier, mono"><b>#:</b>  ps -ef | grep swatch
+
+
+
+swatcher 11482     1  0   Nov 27 ?        0:00 perl /usr/local/bin/swatch --config-file=/opt/CSCOlwt/conf/swatch/ios-swatch.cf
+
+user123  17435 17370  0 13:47:44 pts/3    0:00 grep swatch
+
+swatcher 11484 11482  0   Nov 27 ?        0:00 perl /export/home/swatcher/.swatch_script.11482
+
+<b>#</b></font></pre>
+            </blockquote>
+            <p>The output shown above confirms there are three processes that 
+              contain the word swatch; <br>
+              the two (2) processes that belong to swatcher confirm that swatch 
+              is running: </p>
+            <p> 
+            <ul>
+              <li>Processes (11482) and (11484) belong to swatcher 
+              <li>Process (17435) is the grep command<br>
+                <p> 
+            </ul>
+          <li> Confirm swatch output<br>
+            To confirm output by swatch, generate an event that swatch is configured 
+            to watchfor.<br>
+            Since swatch is configured to send mail to the administrator when 
+            a router configuration is altered (or accessed), <br>
+            you can generate an event by entering the router configuration mode, 
+            and then exiting. 
+            <p>To verify that events are captured by the logging daemon, open 
+              a terminal window and invoke the <i>tail -f </i>command against 
+              the <br>
+              log file that swatcher watches: 
+            <blockquote> <font face="Courier New, Courier, mono" size="2"><b>#</b> 
+              tail -f <i>/var/log/</i>router </font></blockquote>
+            <p>Any events written to the log file, /var/log/router, will display 
+              within the terminal window; an additional window can be used to 
+              monitor for new email.. If swatch is configured correctly, email 
+              will be sent to the system administrator shortly after the log file 
+              is amended with a information containing the pre-configured watchfor 
+              string. It is important to note that there may be some time delay 
+              between the time the router configuration mode is entered, the event 
+              is displayed by the <i>tail</i> command and the email is actually 
+              triggered. 
+        </ul>
+        <p> 
+        <h4>Task 6: Create a Swatch Daemon Startup Script<a name="task6"></a></h4>
+        <p>Create a startup script to automate startup and stop of swatch.<br>
+          An <a href="file:///D%7C/COSI_cvs_site/swatch/sample-wrapper.html">example 
+          script </a>is included with this technical note that can be used as 
+          a basis to write a startup script.<br>
+        </p>
+        <p> 
+        <ul>
+          <li>Place a copy of the swatch startup script (in this example, <i>ios-swatch</i>) 
+            in the <i>/etc/init.d</i> directory</li>
+        </ul>
+        <ul>
+          <li>Enable swatch for automatic start upon bootup. <br>
+            Ensure that you have the appropriate permissions and the create a 
+            pair of start and stop process hardlinks for use during system startup 
+            and shutdown to ensure swatch is managed: 
+            <pre> 
+
+<b>#</b> ln /etc/init.d/ios-swatch /etc/rc2.d/S99ios-swatch
+
+<b># </b>ln /etc/init.d/ios-swatch /etc/rc0.d/K99ios-swatch</pre>
+            <p> 
+          </li>
+          <li> Test the script to verify that swatch starts up successfully. The 
+            next time the server reboots, check that swatch<br>
+            succesfully started.<br>
+            If swatch does not successfully start upon reboot, check for the most 
+            common problems first: 
+            <ol>
+              <li> Incorrect permissions defined for <i>swatcher</i>. 
+              <li> Failure to use correct syntax in the startup script<br>
+                (for example, failure to include the dash (-) as part of the command 
+                "su - swatcher") 
+            </ol>
+          </li>
+        </ul>
+        <h4>Task 7: Update log rotation scripts<a name="task7"></a></h4>
+        <p>Update any log rotation scripts that might need to restart swatch when 
+          logs rotate.<br>
+          If your log rotation script moves your active log files to a new location, 
+          then<br>
+          swatch must restart to be able to tail the new active log. <br>
+        </p>
+        <h4>Task 8: Maintain Swatch</h4>
+        <p>The tasks required to maintain swatch include:<a name="task9"></a></p>
+        <ul>
+          <li>Check your logs regularly. 
+          <li>Verify the log contents and size. 
+          <li>Verify the logs are being rotated correctly. <br>
+            (Note: To assist in automating the tasks, it is possible to designate 
+            a create a cron job to <br>
+            mail the administrator with a listing such as a daily "ls -l".) 
+        </ul>
+        <p>&nbsp; </p>
+      </blockquote>
+      <hr>
+      <h3></h3>
+      <h3><a name="bookmarks"></a>References</h3>
+      <h4>At Cisco</h4>
+      <ul>
+        <li><a href="http://www.cisco.com/univercd/cc/td/doc/cisintwk/intsolns/dialnms/">Dial 
+          NMS ISG</a></li>
+        <ul>
+          <li><a href="http://www.cisco.com/univercd/cc/td/doc/cisintwk/intsolns/dialnms/syslog.htm">Syslog, 
+            NTP, and Modem Call Records</a></li>
+        </ul>
+      </ul>
+      <h4>On the Net</h4>
+      <ul>
+        <li><a href="http://www.stanford.edu/%7Eatkins/swatch/">Swatch Home</a></li>
+        <ul>
+          <li><a href="http://www.stanford.edu/%7Eatkins/swatch/lisa93.html">Swatch 
+            Presentation at 1993 Lisa Conference</a></li>
+          <li><a href="http://www.stanford.edu/%7Eatkins/swatch/swatch.html">Online 
+            Swatch ManPage</a></li>
+        </ul>
+        <li><a href="http://www.cert.org/security-improvement/implementations/i042.01.html">CERT 
+          Practice: Using Swatch to Analyze Log Messages on Solaris 2.x</a></li>
+        <li><a href="http://www.cert.org/security-improvement/implementations/i041.09.html">CERT 
+          Practice: Using Newsyslog to Rotate Log files on Solaris 2.x</a></li>
+        <li><a href="http://enteract.com/%7Elspitz/swatch.html">Automated Log 
+          Filtering with Swatch</a></li>
+      </ul>
+      <!-- #EndEditable --> 
+  </table>
+
+</body>
+
+<!-- #EndTemplate -->
+
+</html>
+
+@
+
+
+1.1.1.1
+log
+@no message
+@
+text
+@@

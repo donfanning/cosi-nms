@@ -1,0 +1,145 @@
+head	1.4;
+access;
+symbols
+	RELEASE_1_1_1:1.4
+	RELEASE_1_1:1.4
+	RELEASE_1_0_1:1.2
+	RELEASE_1_0:1.2;
+locks; strict;
+comment	@# @;
+
+
+1.4
+date	2004.07.01.04.01.04;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2004.07.01.03.58.56;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.06.15.17.06.28;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.06.15.16.47.32;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.4
+log
+@Add 2004 to the copyrights.
+@
+text
+@package com.marcuscom.MISAL;
+
+/**
+ * <p>
+ * A class to indicate an error has occurred when trying to define a new
+ * MISAL state.  When this exception is thrown, it usually indicates the
+ * prompt string is a malformed Perl regular expression.  The message will
+ * have more details.
+ * </p>
+ * <p>&copy; 2001-2004 MarcusCom, Inc.  All rights reserved.</p>
+ *
+ * @@version	1.0, $Id: MalformedMISALStateException.java,v 1.3 2004/07/01 03:58:56 jmarcus Exp $
+ * @@author 	Joe Clarke &lt;marcus@@marcuscom.com&gt;
+ * @@see		MISAL
+ */
+public class MalformedMISALStateException extends Exception {
+    /**
+     * Simply calls the corresponding constructor of its superclass.
+     *
+     * @@see		Exception
+     * @@since	MISAL1.0
+     */
+    public MalformedMISALStateException() {
+        super();
+    }
+
+    /**
+     * Simply calls the corresponding constructor of its superclass.
+     *
+     * @@param message	A message indicating why there is an error in
+     *			the state
+     * @@see		Exception
+     * @@since		MISAL1.0
+     */
+    public MalformedMISALStateException(String message) {
+        super(message);
+    }
+}
+@
+
+
+1.3
+log
+@Cleanup trainling whitespace, and reformat using astyle -j.
+@
+text
+@d10 1
+a10 1
+ * <p>&copy; 2001 MarcusCom, Inc.  All rights reserved.</p>
+d12 1
+a12 1
+ * @@version	1.0, $Id: MalformedMISALStateException.java,v 1.2 2001/06/15 17:06:28 jmarcus Exp $
+@
+
+
+1.2
+log
+@Fix and add more documentation.
+@
+text
+@d11 2
+a12 2
+ * 
+ * @@version	1.0, $Id: MalformedMISALStateException.java,v 1.1 2001/06/15 16:47:32 jmarcus Exp $
+d17 9
+a25 9
+	/**
+	 * Simply calls the corresponding constructor of its superclass.
+	 *
+	 * @@see		Exception
+	 * @@since	MISAL1.0
+	 */
+	 public MalformedMISALStateException() {
+		 super();
+	 }
+d27 11
+a37 11
+	 /**
+	  * Simply calls the corresponding constructor of its superclass.
+	  *
+	  * @@param message	A message indicating why there is an error in
+	  *			the state
+	  * @@see		Exception
+	  * @@since		MISAL1.0
+	  */
+	  public MalformedMISALStateException(String message) {
+		  super(message);
+	  }
+@
+
+
+1.1
+log
+@This exception is thrown by addState() to indicate a problem with the
+new MISAL state.  It is designed to replace MalformedPatternException
+so casual MISAL users don't have to require that in their classes.
+@
+text
+@d12 2
+a13 2
+ * @@version	1.0, $Id$
+ * @@author 	Joe Clarke &lt;jclarke@@cisco.com&gt;
+@
+

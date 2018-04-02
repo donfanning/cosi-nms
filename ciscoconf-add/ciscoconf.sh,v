@@ -1,0 +1,32 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2001.11.06.17.04.07;	author awo;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@new tool's addition (if i got autho agree i will publish whole tool here)
+@
+text
+@#!/bin/sh
+# $Id$
+
+DIR=/oss/utils/ciscoconf
+PID=/var/run/ciscoconfd.pid
+LOGFILE=/var/log/cisco
+INTERVAL=600
+
+$DIR/ciscoconfd -s local3 -p $PID -u root -g root -t $INTERVAL -r $DIR/ciscoconfr $LOGFILE
+@

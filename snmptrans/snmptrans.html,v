@@ -1,0 +1,454 @@
+head	1.7;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.7
+date	2005.01.18.22.44.37;	author jmarcus;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2005.01.18.22.43.44;	author jmarcus;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2005.01.18.22.43.03;	author jmarcus;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2005.01.18.22.10.28;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.05.31.15.16.36;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.05.24.04.44.05;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.05.22.18.59.15;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.7
+log
+@Default the translate type to detailed.
+@
+text
+@<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta name="author" content="marcus">
+    <meta name="FileOwner" content="marcus">
+    <meta name="FileName" content="snmptrans.html">
+    <meta name="Language" content="US_en">
+
+    <title>SNMP Translate / Search</title>
+<script type="text/javascript" language="JavaScript">
+<!-- //
+
+function isBlank (s) {
+        for (var i = 0; i < s.length; i++) {
+                var c = s.charAt(i);
+                if ((c != '') && (c != '\n') && (c != '\t')) return false;
+        }
+        return true;
+}
+
+function verifyTrans (f) {
+    var oid = f.oid.value;
+
+    if (isBlank(oid)) {
+        alert("You must specify an object identifier or object name to translate.");
+        return false;
+    }
+
+    return true;
+}
+
+function verifyBulk (f) {
+  var file = f.bulk_file.value;
+
+  if (isBlank(file)) {
+    alert("You must specify a source file to translate.");
+    return false;
+  }
+
+  return true;
+}
+
+function verifySearch (f) {
+    var pattern = f.pattern.value;
+
+    if (isBlank(pattern)) {
+        alert("You must specify a search pattern.");
+        return false;
+    }
+
+    return true;
+}
+
+// -->
+</script>
+  </head>
+
+  <body bgcolor="FFFFFF">
+    <h1>SNMP Translate &amp; Search</h1>
+
+    <p><a href="snmptrans_help.html"><b>Online Documentation</b></a> is
+    available for help with this tool's User Interface, Results, and
+    Error Messages.</p>
+
+    <form name="snmptrans" method="POST" action=
+    "/cgi-bin/snmptransc.pl" onsubmit=" return verifyTrans(this); ">
+      <table border="0">
+        <tr>
+          <td align="RIGHT"><b>Object Identifier or Object Name:</b>
+          </td>
+
+          <td align="LEFT"><input type="TEXT" name="oid" maxlength=
+          "120"></td>
+
+          <td align="LEFT"><input type="CHECKBOX" name="bg" value="1">
+          <i>r.e.</i></td>
+
+          <td align="RIGHT"><input type="CHECKBOX" name="replace"
+          value="1"> <i>replace</i></td>
+        </tr>
+        <!-- Uncomment this next section if you want security
+                          <TR>
+                              <TD ALIGN="RIGHT"><B>Password:</B> </TD>
+                              <TD ALIGN="LEFT"><INPUT TYPE="PASSWORD" NAME="security"</TD>
+                          </TR>
+                      -->
+      </table>
+
+      <p><b><i>Translate Options</i></b></p>
+
+      <table border="0">
+        <tr>
+          <td><input type="RADIO" value="" name="xOps">
+          <b>Simple Translation</b></td>
+
+          <td><input type="RADIO" value="detail" name="xOps" checked>
+          <b>Detailed Translation</b></td>
+
+          <td><input type="RADIO" value="tree" name="xOps"> <b>Tree
+          Translation</b></td>
+        </tr>
+      </table>
+
+      <table border="0">
+        <tr align="CENTER">
+          <td align="LEFT"><input type="SUBMIT" name="action" value=
+          "Translate"></td>
+
+          <td align="RIGHT"><input type="RESET" value="Cancel"></td>
+        </tr>
+      </table>
+    </form>
+
+    <h3>-OR-</h3>
+
+    <form method="POST" action="/cgi-bin/snmptransc.pl" name=
+    "snmpbulktrans" enctype="multipart/form-data" onsubmit=
+    "return verifyBulk(this); ">
+      <table border="0">
+        <tr>
+          <td align="RIGHT"><b>Bulk Translate a File:</b> </td>
+
+          <td align="LEFT"><input type="FILE" name="bulk_file"></td>
+        </tr>
+      </table>
+
+      <table border="0">
+        <tr align="CENTER">
+          <td align="RIGHT"><input type="SUBMIT" name="action" value=
+          "Translate File"></td>
+
+          <td align="LEFT"><input type="RESET" value="Cancel"></td>
+        </tr>
+      </table>
+    </form>
+
+    <h3>-OR-</h3>
+
+    <form method="POST" action="/cgi-bin/snmptransc.pl" name=
+    "snmpsearch" onsubmit=" return verifySearch(this); ">
+      <table border="0">
+        <tr>
+          <td align="RIGHT"><b>Search Pattern:</b> </td>
+
+          <td align="LEFT"><input type="TEXT" name="pattern" maxlength=
+          "120"></td>
+
+          <td align="LEFT"><input type="CHECKBOX" name="descr" value=
+          "1"> <small><i>Search description</i></small></td>
+        </tr>
+        <!-- Uncomment this next section if you want security
+                          <TR>
+                              <TD ALIGN="RIGHT"><B>Password:</B> </TD>
+                              <TD ALIGN="LEFT"><INPUT TYPE="PASSWORD" NAME="security"</TD>
+                          </TR>
+                      -->
+      </table>
+
+      <table border="0">
+        <tr align="CENTER">
+          <td align="RIGHT"><input type="SUBMIT" name="action" value=
+          "Find Objects"></td>
+
+          <td align="LEFT"><input type="RESET" value="Cancel"></td>
+        </tr>
+      </table>
+    </form>
+    <hr>
+  </body>
+</html>
+
+@
+
+
+1.6
+log
+@Tidy up the HTML.
+@
+text
+@d95 1
+a95 1
+          <td><input type="RADIO" value="" name="xOps" checked>
+d98 1
+a98 1
+          <td><input type="RADIO" value="detail" name="xOps">
+@
+
+
+1.5
+log
+@* Update copyright
+* Add the correct encoding type to the form
+* Add the bulk file input to the bulk file results screen
+@
+text
+@d84 5
+a88 5
+                  <TR>
+                      <TD ALIGN="RIGHT"><B>Password:</B> </TD>
+                      <TD ALIGN="LEFT"><INPUT TYPE="PASSWORD" NAME="security"</TD>
+                  </TR>
+              -->
+d119 2
+a120 1
+    "snmpbulktrans" enctype="multipart/form-data" onsubmit="return verifyBulk(this); ">
+d154 5
+a158 5
+                  <TR>
+                      <TD ALIGN="RIGHT"><B>Password:</B> </TD>
+                      <TD ALIGN="LEFT"><INPUT TYPE="PASSWORD" NAME="security"</TD>
+                  </TR>
+              -->
+@
+
+
+1.4
+log
+@Add support for bulk translations using Omer Ansari's walkres tool.
+@
+text
+@d119 1
+a119 1
+    "snmpbulktrans" onsubmit="return verifyBulk(this); ">
+@
+
+
+1.3
+log
+@Added support for telling the MIB parser to replace older loaded MIB objects
+with newer ones.  Note: this requires my patches to SNMP.pm which have
+not yet been introduced in the official net-snmp CVS repository.
+
+This feature will not be rolled into a release until the patch becomes
+official.
+@
+text
+@d1 1
+a1 6
+<HTML>
+<HEAD>
+<META NAME="author" CONTENT="marcus">
+<META NAME="FileOwner" CONTENT="marcus">
+<META NAME="FileName" CONTENT="snmptrans.html">
+<META NAME="Language" CONTENT="US_en">
+d3 7
+d11 2
+a12 5
+<TITLE>SNMP Translate / Search</TITLE>
+
+</HEAD>
+
+<SCRIPT LANGUAGE="JavaScript">
+d24 12
+a35 1
+	var oid = f.oid.value;
+d37 4
+a40 4
+	if (isBlank(oid)) {
+		alert("You must specify an object identifier or object name to translate.");
+		return false;
+	}
+d42 1
+a42 1
+	return true;
+d46 1
+a46 1
+	var pattern = f.pattern.value;
+d48 4
+a51 4
+	if (isBlank(pattern)) {
+		alert("You must specify a search pattern.");
+		return false;
+	}
+d53 1
+a53 1
+	return true;
+d58 1
+d60 2
+a61 92
+<H1>SNMP Translate &amp; Search</h1>
+
+<BODY BGCOLOR="FFFFFF">
+
+<P><A HREF="snmptrans_help.html"><B>Online Documentation</B></A> is available for help with this tool's User Interface, Results, and Error Messages.</P>
+
+
+<P>
+<TABLE BORDER="0">
+<FORM NAME="snmptrans" METHOD="POST" ACTION="/cgi-bin/snmptransc.pl" onSubmit="
+	return verifyTrans(this);
+">
+	<TR>
+		<TD ALIGN="RIGHT"><B>Object Identifier or Object Name:</B> </TD>
+		<TD ALIGN="LEFT"><INPUT TYPE="TEXT" NAME="oid"
+		MAXLENGTH="120"></TD>
+                <TD ALIGN="LEFT"><INPUT TYPE="CHECKBOX" NAME="bg" VALUE="1">
+                <I>r.e.</I></TD>
+		<TD ALIGN="RIGHT"><INPUT TYPE="CHECKBOX" NAME="replace" VALUE="1">
+		<I>replace</I></TD>
+
+	</TR>
+<!-- Uncomment this next section if you want security
+	<TR>
+		<TD ALIGN="RIGHT"><B>Password:</B> </TD>
+		<TD ALIGN="LEFT"><INPUT TYPE="PASSWORD" NAME="security"</TD>
+	</TR>
+-->
+</TABLE>
+<B><I>
+<P>
+	Translate Options
+</P>
+</I></B>
+<TABLE BORDER="0">
+	<TR>
+		<TD><INPUT TYPE="RADIO" VALUE="" NAME="xOps" CHECKED>
+		<B>Simple Translation
+		<TD><INPUT TYPE="RADIO" VALUE="detail" NAME="xOps">
+		<B>Detailed Translation</B></TD>
+		<TD><INPUT TYPE="RADIO" VALUE="tree" NAME="xOps">
+		<B>Tree Translation</B></TD>
+	</TR>
+</TABLE>
+<TABLE BORDER="0">
+	<TR ALIGN="CENTER">
+		<TD ALIGN="LEFT"><INPUT TYPE="SUBMIT"
+		NAME="action" VALUE="Translate"></TD>
+		<TD ALIGN="RIGHT"><INPUT TYPE="RESET" VALUE="Cancel"></TD>
+	</TR>
+</TABLE>
+</form>
+
+<P>
+
+<H3>-OR-</h3>
+
+<P>
+<TABLE BORDER="0">
+<FORM METHOD=POST ACTION="/cgi-bin/snmptransc.pl" NAME="snmpsearch" onSubmit="
+	return verifySearch(this);
+">
+	<TR>
+		<TD ALIGN="RIGHT"><B>Search Pattern:</b> </td>
+		<TD ALIGN="LEFT"><INPUT TYPE="TEXT" NAME="pattern"
+		MAXLENGTH="120"></td>
+		<TD ALIGN="LEFT"><INPUT TYPE="CHECKBOX" NAME="descr" VALUE="1">
+		<SMALL><I>Search description</I></SMALL></TD>
+		
+	</tr>
+<!-- Uncomment this next section if you want security
+	<TR>
+		<TD ALIGN="RIGHT"><B>Password:</B> </TD>
+		<TD ALIGN="LEFT"><INPUT TYPE="PASSWORD" NAME="security"</TD>
+	</TR>
+-->
+</table>
+<TABLE BORDER="0">
+	<TR ALIGN="CENTER">
+		<TD ALIGN="RIGHT"><INPUT TYPE="SUBMIT" NAME="action"
+		VALUE="Find Objects"></td>
+		<TD ALIGN="LEFT"><INPUT TYPE="RESET" VALUE="Cancel"></td>
+	</tr>
+</table>
+</form>
+
+<P>
+
+<P>
+</p>
+
+<hr>
+d63 109
+a171 2
+</BODY>
+</HTML>
+@
+
+
+1.2
+log
+@Added mention of the security parameters.
+
+They are commented out by default.  Again, the HTML is just an example.  It
+can be tailored to meet the needs of the individual user or organization.
+@
+text
+@d67 2
+@
+
+
+1.1
+log
+@These files make up the contents of the previously committed tar.gz file.
+This is a CGI frontend to net-snmp's snmptranslate command.
+@
+text
+@d69 6
+d117 6
+@
+

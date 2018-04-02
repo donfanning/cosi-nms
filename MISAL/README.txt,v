@@ -1,0 +1,147 @@
+head	1.3;
+access;
+symbols
+	RELEASE_1_1_1:1.3
+	RELEASE_1_1:1.3
+	RELEASE_1_0_1:1.2
+	RELEASE_1_0:1.1;
+locks; strict;
+comment	@# @;
+
+
+1.3
+date	2004.07.01.03.55.16;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.11.17.02.58.03;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.11.06.06.51.22;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.3
+log
+@Update the README with the latest list of supported OSes, plus the need
+for JVM 1.2 or higher and the new Jakarta ORO library instead of the old
+PerlTools.
+@
+text
+@MarcusCom Intelligent Socket Abstraction Library (MISAL)
+--------------------------------------------------------
+
+$Id: README.txt,v 1.2 2001/11/17 02:58:03 jmarcus Exp $
+
+MISAL is a multi-threaded Java library that allows for manipulation of TCP
+sockets.  MISAL is designed to wrap around sockets and give an easy interface
+to sending an receiving data on a socket.
+
+MISAL itself is fairly generic, and can be used for almost any type of TCP
+socket.  It is mostly used for things like telnet.  MISAL knows about telnet
+options, and will reply with DONT or WONT for all options.
+
+MISAL can be extended to support all kinds of specific socket types as well
+as specific network node types.  The default MISAL distribution comes with
+a Cisco IOS subclass.
+
+Right now, MISAL is considered to be beta-quality code.
+
+
+BUILDING:
+---------
+
+MISAL requires JDK 1.2 or higher, and will work on UNIX, MacOS X, or
+Windows (MacOS 9 has not been tested).
+
+MISAL requires Jakarta ORO from
+http://jakarta.apache.org/builds/jakarta-oro/release.  The jakarta-oro.jar file
+must be in your classpath before building or running MISAL-based applications.
+
+To build MISAL on UNIX or MacOS X, use the included Makefile.  You may need
+to edit this Makefile to point to the correct locations for javac, jar,
+javadoc, and other system binaries.  Once the Makefile is correct for your
+environment, type:
+
+> make all
+> make test
+
+This will build MISAL.jar, all the JavaDoc API documentation, and the
+MISALTest.class and MISALTestIOS.class.
+
+To build MISAL on Windows (XP, NT, 2000, and 2003), use build.bat:
+
+> build
+
+This will build MISAL.jar, all the JavaDoc API documentation, and the
+MISALTest.class and MISALTestIOS.class.
+
+To clean up things on windows, use the command:
+
+> build clean
+
+
+USING:
+------
+
+See the included JavaDoc documentation, MISALTest.java, and MISALTestIOS.java
+for usage guidlines.
+
+
+MISAL is distributed under the BSD license.
+@
+
+
+1.2
+log
+@Fix up for release 1.0.1.  This release includes a major fix in MISALCiscoIOS
+that kept it from working.
+@
+text
+@d4 1
+a4 1
+$Id: README.txt,v 1.1 2001/11/06 06:51:22 jmarcus Exp $
+d10 1
+a10 1
+MISAL itself is fairly generic, and can be used for almost any type of TCP 
+d24 1
+a24 1
+MISAL requires JDK 1.1 or higher, and will work on UNIX, MacOS X, or 
+d27 2
+a28 2
+MISAL requires PerlTools from
+http://www.savarese.org/oro/downloads/index.html#PerlTools.  PerlToos.jar
+d42 1
+a42 2
+To build MISAL on Windows (95/98/Me, NT, 2000, and maybe even XP), use 
+build.bat:
+@
+
+
+1.1
+log
+@Reimport with correct name.
+@
+text
+@d4 1
+a4 1
+$Id: README,v 1.4 2001/11/06 06:37:32 jmarcus Exp $
+d40 1
+a40 1
+MISALTest.class.
+d48 5
+a52 1
+MISALTest.class.
+d58 2
+a59 1
+See the included JavaDoc documentation and MISALTest.java for usage guidlines.
+@
+

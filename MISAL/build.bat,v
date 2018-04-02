@@ -1,0 +1,176 @@
+head	1.3;
+access;
+symbols
+	RELEASE_1_1_1:1.3
+	RELEASE_1_1:1.3
+	RELEASE_1_0_1:1.2
+	RELEASE_1_0:1.1;
+locks; strict;
+comment	@:: @;
+
+
+1.3
+date	2004.07.01.03.53.34;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.11.17.02.58.03;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.11.06.06.50.10;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.3
+log
+@Update build.bat to match the new Makefile.
+@
+text
+@REM
+REM Build batch script for the MISAL project.
+REM $Id: build.bat,v 1.2 2001/11/17 02:58:03 jmarcus Exp $
+
+SET SRCDIR=.
+SET DOCDIR=%SRCDIR%\doc\api
+SET JARDIR=C:\java\classes
+SET CLASSPATH=.;%JARDIR%\jakarta-oro.jar
+
+SET JAVAC=C:\jdk1.3.1\bin\javac
+SET JAVADOC=C:\jdk1.3.1\bin\javadoc
+SET JAVADOC_FLAGS=-author -version -d %DOCDIR%
+SET JAVAC_FLAGS=-O
+SET JAR=C:\jdk1.3.1\bin\jar
+SET JAR_FLAGS=-cf
+
+SET PACKAGE=com.marcuscom.MISAL
+SET PACKAGE_OS=com\marcuscom\MISAL
+
+SET RM=del
+SET MKDIR=mkdir
+
+
+if "%1"=="clean" goto clean
+
+REM classes:
+%JAVAC% %JAVAC_FLAGS% -classpath %CLASSPATH% %SRCDIR%\%PACKAGE_OS%\*.java
+
+REM jar:
+%JAR% %JAR_FLAGS% %SRCDIR%\MISAL.jar %SRCDIR%\%PACKAGE_OS%\*.class
+
+REM docs:
+%MKDIR% %DOCDIR%
+%JAVADOC% %JAVADOC_FLAGS% -classpath %CLASSPATH% %PACKAGE%
+
+REM test:
+%JAVAC% %JAVAC_FLAGS% -classpath %CLASSPATH% %SRCDIR%\MISALTest.java MISALTestIOS.java
+
+goto end
+
+:clean
+%RM% /q/f %SRCDIR%\MISAL.jar
+%RM% /q/f %SRCDIR%\%PACKAGE_OS%\*.class
+%RM% /q/f %DOCDIR%\*.* %DOCDIR%\package-list
+%RM% /q/f/s %DOCDIR%\com
+%RM% /q/f %SRCDIR%\MISALTest.class %SRCDIR%\MISALTestIOS.class
+
+:end
+@
+
+
+1.2
+log
+@Fix up for release 1.0.1.  This release includes a major fix in MISALCiscoIOS
+that kept it from working.
+@
+text
+@d3 1
+a3 1
+REM $Id: build.bat,v 1.1 2001/11/06 06:50:10 jmarcus Exp $
+d5 4
+a8 7
+SET srcdir=.
+SET docdir=%srcdir%\doc\api
+SET package=com.marcuscom.MISAL
+SET package_os=com\marcuscom\MISAL
+
+SET RM=del
+SET MKDIR=mkdir
+d11 2
+d14 2
+a15 1
+SET CLASSPATH=.;C:\classes\PerlTools.jar
+d17 5
+a21 2
+SET JAVADOC=C:\jdk1.3.1\bin\javadoc
+SET JAVADOC_FLAGS=-author -version -d %docdir%
+a22 2
+SET JAR=C:\jdk1.3.1\bin\jar
+SET JAR_FLAGS=-cf
+d27 1
+a27 1
+%JAVAC% %JAVAC_FLAGS% -classpath %CLASSPATH% %srcdir%\%package_os%\*.java
+d30 1
+a30 1
+%JAR% %JAR_FLAGS% %srcdir%\MISAL.jar %srcdir%\%packages_os%\*.class
+d33 2
+a34 2
+%MKDIR% %docdir%
+%JAVADOC% %JAVADOC_FLAGS% -classpath %CLASSPATH% %package%
+d37 1
+a37 1
+%JAVAC% %JAVAC_FLAGS% -classpath %CLASSPATH% %srcdir%\MISALTest.java MISALTestIOS.java
+d42 5
+a46 5
+%RM% /q/f %srcdir%\MISAL.jar
+%RM% /q/f %srcdir%\%package_os%\*.class
+%RM% /q/f %docdir%\*.* %docdir%\package-list
+%RM% /q/f/s %docdir%\com
+%RM% /q/f %srcdir%\MISALTest.class %srcdir%\MISALTestIOS.class
+@
+
+
+1.1
+log
+@Initial import into CVS.
+@
+text
+@d3 1
+a3 1
+REM $Id$
+d5 4
+a8 4
+SET srcdir = .
+SET docdir = %srcdir%\doc\api
+SET package = com.marcuscom.MISAL
+SET package_os = com\marcuscom\MISAL
+d10 2
+a11 2
+SET RM = del
+SET MKDIR = mkdir
+d13 3
+a15 3
+SET JAVAC = C:\jdk1.3.1\bin\javac
+SET JAVAC_FLAGS = -O
+SET CLASSPATH = .;C:\classes\PerlTools.jar
+d17 2
+a18 2
+SET JAVADOC = C:\jdk1.3.1\bin\javadoc
+SET JAVADOC_FLAGS = -author -version -d %docdir%
+d20 4
+a23 2
+SET JAR = C:\jdk1.3.1\bin\jar
+SET JAR_FLAGS = -cf
+d36 10
+a45 1
+%JAVAC% %JAVAC_FLAGS% -classpath %CLASSPATH% %srcdir%\MISALTest.java
+d47 1
+@
+

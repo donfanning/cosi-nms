@@ -1,0 +1,1314 @@
+head	1.22;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.22
+date	2003.08.31.22.19.34;	author jmarcus;	state Exp;
+branches;
+next	1.21;
+
+1.21
+date	2001.12.03.23.05.05;	author jmarcus;	state Exp;
+branches;
+next	1.20;
+
+1.20
+date	2001.12.03.06.25.01;	author jmarcus;	state Exp;
+branches;
+next	1.19;
+
+1.19
+date	2001.10.12.20.28.04;	author jmarcus;	state Exp;
+branches;
+next	1.18;
+
+1.18
+date	2001.10.12.17.08.18;	author jmarcus;	state Exp;
+branches;
+next	1.17;
+
+1.17
+date	2001.10.04.20.21.46;	author jmarcus;	state Exp;
+branches;
+next	1.16;
+
+1.16
+date	2001.09.26.16.57.41;	author jmarcus;	state Exp;
+branches;
+next	1.15;
+
+1.15
+date	2001.09.24.21.32.15;	author jmarcus;	state Exp;
+branches;
+next	1.14;
+
+1.14
+date	2001.09.18.08.02.04;	author jmarcus;	state Exp;
+branches;
+next	1.13;
+
+1.13
+date	2001.09.04.04.52.13;	author jmarcus;	state Exp;
+branches;
+next	1.12;
+
+1.12
+date	2001.09.04.04.39.12;	author jmarcus;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2001.09.04.04.22.47;	author jmarcus;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2001.09.04.04.15.54;	author jmarcus;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2001.09.04.04.12.42;	author jmarcus;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2001.09.03.23.54.36;	author jmarcus;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2001.09.03.23.46.46;	author jmarcus;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2001.09.03.23.32.29;	author jmarcus;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2001.09.03.22.30.56;	author jmarcus;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.09.03.22.24.08;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.08.30.06.07.15;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.08.28.02.32.44;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.08.26.05.54.27;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.22
+log
+@Clean up all the source with a nice call to:
+
+perltidy -i=8 -t -pt=2 -bt=2 -sbt=2 -ci=4 -noll -sfs -nasc -ce
+@
+text
+@#
+# $Id: Source.pm,v 1.21 2001/12/03 23:05:05 jmarcus Exp $
+#
+package SAA::Source;
+
+use strict;
+require 5.002;
+use lib qw(..);
+use SNMP;
+use SAA::Globals;
+use conf::prefs qw($KEY);
+use SAA::SAA_MIB;
+use Carp;
+use Crypt::CBC;
+
+# Right now, we'll configure for v1/v2c.
+sub new {
+        my ($that, @@args) = @@_;
+        my $class = ref($that) || $that;
+
+        if (scalar(@@args) != 3) {
+
+                # This is an extremely fatal error.  This keeps a Source from being
+                # properly instantiated.
+                croak
+                    "SAA::Source: Insufficient arguments passed to constructor";
+        }
+
+        my $self = {
+                name               => $args[0],
+                address            => undef,
+                readCommunity      => undef,
+                writeCommunity     => undef,
+                SNMPVersion        => $args[2],
+                SAAVersion         => undef,
+                IOSVersion         => undef,
+                supportedTypes     => {},
+                supportedProtocols => {},
+                status             => HOST_DOWN,
+                error              => undef,
+        };
+
+        my $addr = gethostbyname($args[1]);
+        $self->{address} = join ('.', unpack('C4', $addr));
+
+        bless($self, $class);
+        $self;
+}
+
+sub error {
+        my $self = shift;
+        if (@@_) { $self->{error} = shift; }
+        return $self->{error};
+}
+
+sub name {
+        my $self = shift;
+        if (@@_) { $self->{name} = shift; }
+        return $self->{name};
+}
+
+sub addr {
+        my $self = shift;
+        if (@@_) { $self->{address} = shift; }
+        return $self->{address};
+}
+
+sub snmp_version {
+        my $self = shift;
+        if (@@_) { $self->{SNMPVersion} = shift; }
+        return $self->{SNMPVersion};
+}
+
+sub read_community {
+        my $self      = shift;
+        my $encrypted = 0;
+        $encrypted = shift if (@@_);
+
+        if (@@_) {
+
+                # Store the community string in a Blowfish cipher in the memory
+                # and in the database.
+                my $comm = shift;
+                if ($encrypted) {
+                        $self->{readCommunity} = $comm;
+                        return $self->{readCommunity};
+                }
+                my $cipher = new Crypt::CBC($KEY, 'Crypt::Blowfish');
+
+                $self->{readCommunity} = $cipher->encrypt_hex($comm);
+        }
+
+        if ($encrypted) {
+                return $self->{readCommunity};
+        }
+        my $cipher = new Crypt::CBC($KEY, 'Crypt::Blowfish');
+        my $comm   = $cipher->decrypt_hex($self->{readCommunity});
+
+        return $comm;
+}
+
+sub write_community {
+        my $self      = shift;
+        my $encrypted = 0;
+        $encrypted = shift if (@@_);
+
+        if (@@_) {
+
+                # Store the community string in a Blowfish cipher in the memory
+                # and in the database.
+                my $comm = shift;
+                if ($encrypted) {
+                        $self->{writeCommunity} = $comm;
+                        return $self->{writeCommunity};
+                }
+                my $cipher = new Crypt::CBC($KEY, 'Crypt::Blowfish');
+
+                $self->{writeCommunity} = $cipher->encrypt_hex($comm);
+        }
+
+        if ($encrypted) {
+                return $self->{writeCommunity};
+        }
+        my $cipher = new Crypt::CBC($KEY, 'Crypt::Blowfish');
+        my $comm   = $cipher->decrypt_hex($self->{writeCommunity});
+
+        return $comm;
+}
+
+sub saa_version {
+
+        # This is the get version of the method only.  The set version of this
+        # method is protected.
+        my $self = shift;
+        return $self->{SAAVersion};
+}
+
+sub _saa_version {
+        my $self  = shift;
+        my $class = ref $self;
+        croak "Attempt to call protected method" if ($class !~ /^SAA::/);
+        $self->{SAAVersion} = shift;
+}
+
+sub _add_type_supported {
+        my $self  = shift;
+        my $class = ref $self;
+        croak "Attempt to call protected method" if ($class !~ /^SAA::/);
+        my $type = shift;
+        $self->{supportedTypes}->{$type} = 1;
+}
+
+sub type_supported {
+
+        # If an argument is specified, this method will return 1 if the
+        # type is supported, undef otherwise.  If no arguments are
+        # specified, this method will return a reference to a hash
+        # of supported types.
+        my $self = shift;
+        if (@@_) {
+                my $type = shift;
+                return $self->{supportedTypes}->{$type};
+        }
+        return $self->{supportedTypes};
+}
+
+sub _add_protocol_supported {
+        my $self  = shift;
+        my $class = ref $self;
+        croak "Attempt to call protected method" if ($class !~ /^SAA::/);
+        my $protocol = shift;
+        $self->{supportedProtocols}->{$protocol} = 1;
+}
+
+sub protocol_supported {
+
+        # If an argument is specified, this method will return 1 if the
+        # protocol is supported, undef otherwise.  If no arguments are
+        # specified, this method will return a reference to a hash
+        # of supported protocols.
+        my $self = shift;
+        if (@@_) {
+                my $protocol = shift;
+                return $self->{supportedProtocols}->{$protocol};
+        }
+        return $self->{supportedProtocols};
+}
+
+sub ios_version {
+
+        # This works the same way as SAA version.  This is the public
+        # accessor method.
+        my $self = shift;
+        return $self->{IOSVersion};
+}
+
+sub _ios_version {
+        my $self  = shift;
+        my $class = ref $self;
+        croak "Attempt to call protected method" if ($class !~ /SAA::/);
+        $self->{IOSVersion} = shift;
+}
+
+sub status {
+
+        # Again, another public method like SAA and IOS Version.
+        my $self = shift;
+        return $self->{status};
+}
+
+sub _status {
+        my $self  = shift;
+        my $class = ref $self;
+        croak "Attempt to call protected method" if ($class !~ /SAA::/);
+        $self->{status} = shift;
+}
+
+sub learn {
+
+        # This method connects to the device, and populates the SNMP-retrieved
+        # fields like IOS version, SAA version, etc.  It returns 0 if a device
+        # does not support SAA.  Else, it will return 1.  Use status() to
+        # determine the status of the device.
+        #
+        # This method will try v2c if the device claims to support v2c.  If v2c
+        # fails, it will fallback to v1.
+        my $self = shift;
+
+        if (       !defined($self->addr())
+                || !defined($self->read_community())
+                || !defined($self->write_community()))
+        {
+                $self->error(
+                        "Source must have IP address, read community, and read-write community set"
+                );
+                return;
+        }
+
+        $self->snmp_version("1") unless defined $self->snmp_version();
+
+        my $sess = new SNMP::Session(
+                DestHost  => $self->addr(),
+                Community => $self->read_community(),
+                Version   => $self->snmp_version()
+        );
+
+        my ($vars, @@vals, $saavers, $iosvers);
+
+        if ($self->snmp_version() eq "2c") {
+                $vars = new SNMP::VarList([$SAA::SAA_MIB::rttMonApplVersion],
+                        ['system']);
+                @@vals = $sess->getbulk(1, 1, $vars);
+
+                if ($sess->{ErrorNum} == SNMP_ERR_BAD_VERSION) {
+
+                        # SNMPv2c not supported!
+                        $self->snmp_version("1");
+
+                        # We need to re-create session with the right version number.
+                        $sess = new SNMP::Session(
+                                DestHost  => $self->addr(),
+                                Community => $self->read_community(),
+                                Version   => $self->snmp_version()
+                        );
+
+                } elsif (  $sess->{ErrorNum} == 0
+                        || $sess->{ErrorNum} == SNMP_ERR_NOSUCHNAME)
+                {
+                        ($saavers) = ($vals[0] =~ /(^[\d\.]+)/);
+                        ($iosvers) = ($vals[1] =~ /Version ([\d\.\w\(\)]+)/);
+                } else {
+                        $self->error(
+                                "Unable to get IOS and SAA versions using SNMPv2c"
+                        );
+                        return;
+                }
+        }
+
+        if ($self->snmp_version() eq "1") {
+                $vars = new SNMP::VarList([$SAA::SAA_MIB::rttMonApplVersion, 0],
+                        ['sysDescr', 0]);
+                @@vals = $sess->get($vars);
+                if ($sess->{ErrorNum}) {
+                        $self->error(
+                                "Unable to get IOS and SAA versions using SNMPv1"
+                        );
+                        return;
+                } else {
+                        ($saavers) = ($vals[0] =~ /(^[\d\.]+)/);
+                        ($iosvers) = ($vals[1] =~ /Version ([\d\.\w\(\)]+)/);
+                }
+        }
+
+        # We need to test to make sure the read-write community string works.  We will
+        # first read sysLocation, then set it to the same value.  Some firewalls don't
+        # like it when a SNMP GET and SET come from the same source port, so we'll
+        # create two SNMP sessions.
+        $sess = new SNMP::Session(
+                DestHost  => $self->addr(),
+                Community => $self->read_community(),
+                Version   => $self->snmp_version()
+        );
+        my $loc = $sess->get('sysLocation.0');
+
+        if ($sess->{ErrorNum}) {
+                $self->error("Failed checking read-write community string ("
+                            . $sess->{ErrorNum}
+                            . ")");
+                return;
+        }
+
+        $sess = new SNMP::Session(
+                DestHost  => $self->addr(),
+                Community => $self->write_community(),
+                Version   => $self->snmp_version()
+        );
+
+        $sess->set(new SNMP::Varbind(['sysLocation', 0, $loc, 'OCTETSTR']));
+
+        if ($sess->{ErrorNum}) {
+                $self->error("Read-write community string is invalid");
+                return;
+        }
+
+        $self->_saa_version($saavers);
+        $self->_status(HOST_UP_SNMP);
+        $self->_ios_version($iosvers);
+
+        if (!length($saavers)) {
+                $self->error("Router does not support SAA");
+                return;
+        }
+
+        # Now we need to check to see what operations are actually supported.
+        # Yes, we could hard-code this since we know the version number, but
+        # what if a new version comes out?  Best to ask the router.
+        $sess = new SNMP::Session(
+                DestHost  => $self->addr(),
+                Community => $self->read_community(),
+                Version   => $self->snmp_version()
+        );
+
+        # First get a list of the supported types.
+        foreach (keys %{$SAA::SAA_MIB::operationTypeEnum}) {
+                my $isSupported =
+                    $sess->get(
+                        $SAA::SAA_MIB::rttMonApplSupportedRttTypesValid . '.'
+                            . $SAA::SAA_MIB::operationTypeEnum->{$_});
+                $self->_add_type_supported($_)
+                    if ($isSupported == SAA::SAA_MIB::TRUE);
+        }
+
+        # Now we get a list of the supported protocols.
+        foreach (keys %{$SAA::SAA_MIB::operationProtocolEnum}) {
+                my $isSupported =
+                    $sess->get(
+                        $SAA::SAA_MIB::rttMonApplSupportedProtocolsValid . '.'
+                            . $SAA::SAA_MIB::operationProtocolEnum->{$_});
+                $self->_add_protocol_supported($_)
+                    if ($isSupported == SAA::SAA_MIB::TRUE);
+        }
+
+        1;
+}
+
+1;
+__END__
+@
+
+
+1.21
+log
+@Make KEY a variable rather than a constant.
+@
+text
+@d2 1
+a2 1
+# $Id: Source.pm,v 1.20 2001/12/03 06:25:01 jmarcus Exp $
+d18 2
+a19 2
+    my ( $that, @@args ) = @@_;
+    my $class = ref($that) || $that;
+d21 1
+a21 1
+    if ( scalar(@@args) != 3 ) {
+d23 19
+a41 18
+        # This is an extremely fatal error.  This keeps a Source from being
+        # properly instantiated.
+        croak "SAA::Source: Insufficient arguments passed to constructor";
+    }
+
+    my $self = {
+        name               => $args[0],
+        address            => undef,
+        readCommunity      => undef,
+        writeCommunity     => undef,
+        SNMPVersion        => $args[2],
+        SAAVersion         => undef,
+        IOSVersion         => undef,
+        supportedTypes     => {},
+        supportedProtocols => {},
+        status             => HOST_DOWN,
+        error              => undef,
+    };
+d43 2
+a44 2
+    my $addr = gethostbyname( $args[1] );
+    $self->{address} = join ( '.', unpack( 'C4', $addr ) );
+d46 2
+a47 2
+    bless( $self, $class );
+    $self;
+d51 3
+a53 3
+    my $self = shift;
+    if (@@_) { $self->{error} = shift; }
+    return $self->{error};
+d57 3
+a59 3
+    my $self = shift;
+    if (@@_) { $self->{name} = shift; }
+    return $self->{name};
+d63 3
+a65 3
+    my $self = shift;
+    if (@@_) { $self->{address} = shift; }
+    return $self->{address};
+d69 3
+a71 3
+    my $self = shift;
+    if (@@_) { $self->{SNMPVersion} = shift; }
+    return $self->{SNMPVersion};
+d75 18
+a92 9
+    my $self      = shift;
+    my $encrypted = 0;
+    $encrypted = shift if (@@_);
+
+    if (@@_) {
+
+        # Store the community string in a Blowfish cipher in the memory
+        # and in the database.
+        my $comm = shift;
+d94 1
+a94 2
+            $self->{readCommunity} = $comm;
+            return $self->{readCommunity};
+d96 2
+a97 1
+        my $cipher = new Crypt::CBC( $KEY, 'Crypt::Blowfish' );
+d99 2
+a100 2
+        $self->{readCommunity} = $cipher->encrypt_hex($comm);
+    }
+d102 15
+a116 5
+    if ($encrypted) {
+        return $self->{readCommunity};
+    }
+    my $cipher = new Crypt::CBC( $KEY, 'Crypt::Blowfish' );
+    my $comm = $cipher->decrypt_hex( $self->{readCommunity} );
+d118 2
+a119 2
+    return $comm;
+}
+a120 10
+sub write_community {
+    my $self      = shift;
+    my $encrypted = 0;
+    $encrypted = shift if (@@_);
+
+    if (@@_) {
+
+        # Store the community string in a Blowfish cipher in the memory
+        # and in the database.
+        my $comm = shift;
+d122 1
+a122 2
+            $self->{writeCommunity} = $comm;
+            return $self->{writeCommunity};
+d124 2
+a125 4
+        my $cipher = new Crypt::CBC( $KEY, 'Crypt::Blowfish' );
+
+        $self->{writeCommunity} = $cipher->encrypt_hex($comm);
+    }
+d127 1
+a127 7
+    if ($encrypted) {
+        return $self->{writeCommunity};
+    }
+    my $cipher = new Crypt::CBC( $KEY, 'Crypt::Blowfish' );
+    my $comm = $cipher->decrypt_hex( $self->{writeCommunity} );
+
+    return $comm;
+d132 4
+a135 4
+    # This is the get version of the method only.  The set version of this
+    # method is protected.
+    my $self = shift;
+    return $self->{SAAVersion};
+d139 4
+a142 4
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call protected method" if ( $class !~ /^SAA::/  );
+    $self->{SAAVersion} = shift;
+d146 5
+a150 5
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call protected method" if ( $class !~ /^SAA::/ );
+    my $type = shift;
+    $self->{supportedTypes}->{$type} = 1;
+d155 10
+a164 10
+    # If an argument is specified, this method will return 1 if the 
+    # type is supported, undef otherwise.  If no arguments are
+    # specified, this method will return a reference to a hash
+    # of supported types.
+    my $self = shift;
+    if (@@_) {
+        my $type = shift;
+        return $self->{supportedTypes}->{$type};
+    }
+    return $self->{supportedTypes};
+d168 5
+a172 5
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call protected method" if ( $class !~ /^SAA::/ );
+    my $protocol = shift;
+    $self->{supportedProtocols}->{$protocol} = 1;
+d177 10
+a186 10
+    # If an argument is specified, this method will return 1 if the 
+    # protocol is supported, undef otherwise.  If no arguments are
+    # specified, this method will return a reference to a hash
+    # of supported protocols.
+    my $self = shift;
+    if (@@_) {
+        my $protocol = shift;
+        return $self->{supportedProtocols}->{$protocol};
+    }
+    return $self->{supportedProtocols};
+d191 4
+a194 4
+    # This works the same way as SAA version.  This is the public
+    # accessor method.
+    my $self = shift;
+    return $self->{IOSVersion};
+d198 4
+a201 4
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call protected method" if ( $class !~ /SAA::/ );
+    $self->{IOSVersion} = shift;
+d206 3
+a208 3
+    # Again, another public method like SAA and IOS Version.
+    my $self = shift;
+    return $self->{status};
+d212 4
+a215 4
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call protected method" if ( $class !~ /SAA::/ );
+    $self->{status} = shift;
+d220 25
+a244 14
+    # This method connects to the device, and populates the SNMP-retrieved
+    # fields like IOS version, SAA version, etc.  It returns 0 if a device
+    # does not support SAA.  Else, it will return 1.  Use status() to 
+    # determine the status of the device.
+    #
+    # This method will try v2c if the device claims to support v2c.  If v2c
+    # fails, it will fallback to v1.
+    my $self = shift;
+
+    if ( !defined( $self->addr() ) || !defined( $self->read_community() )
+        || !defined( $self->write_community() ) )
+    {
+        $self->error(
+"Source must have IP address, read community, and read-write community set"
+a245 2
+        return;
+    }
+d247 1
+a247 1
+    $self->snmp_version("1") unless defined $self->snmp_version();
+d249 29
+a277 5
+    my $sess = new SNMP::Session(
+        DestHost  => $self->addr(),
+        Community => $self->read_community(),
+        Version   => $self->snmp_version()
+    );
+d279 14
+a292 1
+    my ( $vars, @@vals, $saavers, $iosvers );
+d294 10
+a303 4
+    if ( $self->snmp_version() eq "2c" ) {
+        $vars =
+          new SNMP::VarList( [$SAA::SAA_MIB::rttMonApplVersion], ['system'] );
+        @@vals = $sess->getbulk( 1, 1, $vars );
+d305 6
+a310 1
+        if ( $sess->{ErrorNum} == SNMP_ERR_BAD_VERSION ) {
+d312 12
+a323 2
+            # SNMPv2c not supported!
+            $self->snmp_version("1");
+d325 13
+a337 2
+            # We need to re-create session with the right version number.
+            $sess = new SNMP::Session(
+d341 1
+a341 1
+            );
+d343 8
+d352 9
+a360 5
+        elsif ( $sess->{ErrorNum} == 0
+            || $sess->{ErrorNum} == SNMP_ERR_NOSUCHNAME )
+        {
+            ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
+            ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
+a361 87
+        else {
+            $self->error("Unable to get IOS and SAA versions using SNMPv2c");
+            return;
+        }
+    }
+
+    if ( $self->snmp_version() eq "1" ) {
+        $vars =
+          new SNMP::VarList( [ $SAA::SAA_MIB::rttMonApplVersion, 0 ],
+            [ 'sysDescr', 0 ] );
+        @@vals = $sess->get($vars);
+        if ( $sess->{ErrorNum} ) {
+            $self->error("Unable to get IOS and SAA versions using SNMPv1");
+            return;
+        }
+        else {
+            ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
+            ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
+        }
+    }
+
+# We need to test to make sure the read-write community string works.  We will
+# first read sysLocation, then set it to the same value.  Some firewalls don't
+    # like it when a SNMP GET and SET come from the same source port, so we'll
+    # create two SNMP sessions.
+    $sess = new SNMP::Session(
+        DestHost  => $self->addr(),
+        Community => $self->read_community(),
+        Version   => $self->snmp_version()
+    );
+    my $loc = $sess->get('sysLocation.0');
+
+    if ( $sess->{ErrorNum} ) {
+        $self->error(
+            "Failed checking read-write community string (" . $sess->{ErrorNum}
+            . ")" );
+        return;
+    }
+
+    $sess = new SNMP::Session(
+        DestHost  => $self->addr(),
+        Community => $self->write_community(),
+        Version   => $self->snmp_version()
+    );
+
+    $sess->set( new SNMP::Varbind( [ 'sysLocation', 0, $loc, 'OCTETSTR' ] ) );
+
+    if ( $sess->{ErrorNum} ) {
+        $self->error("Read-write community string is invalid");
+        return;
+    }
+
+    $self->_saa_version($saavers);
+    $self->_status(HOST_UP_SNMP);
+    $self->_ios_version($iosvers);
+
+    if ( !length($saavers) ) {
+        $self->error("Router does not support SAA");
+        return;
+    }
+
+    # Now we need to check to see what operations are actually supported.
+    # Yes, we could hard-code this since we know the version number, but
+    # what if a new version comes out?  Best to ask the router.
+    $sess = new SNMP::Session(
+        DestHost  => $self->addr(),
+        Community => $self->read_community(),
+        Version   => $self->snmp_version()
+    );
+
+    # First get a list of the supported types.
+    foreach ( keys %{$SAA::SAA_MIB::operationTypeEnum} ) {
+        my $isSupported =
+          $sess->get( $SAA::SAA_MIB::rttMonApplSupportedRttTypesValid . '.'
+            . $SAA::SAA_MIB::operationTypeEnum->{$_} );
+        $self->_add_type_supported($_)
+          if ( $isSupported == SAA::SAA_MIB::TRUE );
+    }
+
+    # Now we get a list of the supported protocols.
+    foreach ( keys %{$SAA::SAA_MIB::operationProtocolEnum} ) {
+        my $isSupported =
+          $sess->get( $SAA::SAA_MIB::rttMonApplSupportedProtocolsValid . '.'
+            . $SAA::SAA_MIB::operationProtocolEnum->{$_} );
+        $self->_add_protocol_supported($_)
+          if ( $isSupported == SAA::SAA_MIB::TRUE );
+    }
+d363 1
+a363 1
+    1;
+@
+
+
+1.20
+log
+@Fix bug in exporter.
+@
+text
+@d2 1
+a2 1
+# $Id: Source.pm,v 1.19 2001/10/12 20:28:04 jmarcus Exp $
+d11 1
+a11 1
+use conf::prefs qw(KEY);
+d87 1
+a87 1
+        my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
+d95 1
+a95 1
+    my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
+d115 1
+a115 1
+        my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
+d123 1
+a123 1
+    my $cipher = new Crypt::CBC( KEY, 'Crypt::Blowfish' );
+@
+
+
+1.19
+log
+@More coding.
+@
+text
+@d2 1
+a2 1
+# $Id: Source.pm,v 1.18 2001/10/12 17:08:18 jmarcus Exp $
+d11 1
+d38 1
+a38 1
+        status             => SAA::Globals::HOST_DOWN,
+d87 1
+a87 1
+        my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
+d95 1
+a95 1
+    my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
+d115 1
+a115 1
+        my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
+d123 1
+a123 1
+    my $cipher = new Crypt::CBC( SAA::Globals::KEY, 'Crypt::Blowfish' );
+d252 1
+a252 1
+        if ( $sess->{ErrorNum} == SAA::Globals::SNMP_ERR_BAD_VERSION ) {
+d266 1
+a266 1
+            || $sess->{ErrorNum} == SAA::Globals::SNMP_ERR_NOSUCHNAME )
+d324 1
+a324 1
+    $self->_status(SAA::Globals::HOST_UP_SNMP);
+@
+
+
+1.18
+log
+@Fix a problem with not converting the output of gethostbyname() back to
+a string.
+@
+text
+@d2 1
+a2 1
+# $Id: Source.pm,v 1.17 2001/10/04 20:21:46 jmarcus Exp $
+d131 1
+a131 1
+    # method is private.
+d139 1
+a139 1
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+d146 1
+a146 1
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+d168 1
+a168 1
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+d198 1
+a198 1
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+d212 1
+a212 1
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+@
+
+
+1.17
+log
+@Add $Id$ CVS tags.
+@
+text
+@d2 1
+a2 1
+# $Id$
+d41 2
+a42 1
+    $self->{address} = gethostbyname( $args[1] );
+@
+
+
+1.16
+log
+@Coding, coding coding....
+@
+text
+@d1 3
+@
+
+
+1.15
+log
+@Determine which operations the router actually supports.
+@
+text
+@d26 1
+a26 1
+        address            => $args[1],
+d37 2
+@
+
+
+1.14
+log
+@Massive OOP style changes.
+@
+text
+@d25 11
+a35 9
+        name           => $args[0],
+        address        => $args[1],
+        readCommunity  => undef,
+        writeCommunity => undef,
+        SNMPVersion    => $args[2],
+        SAAVersion     => undef,
+        IOSVersion     => undef,
+        status         => SAA::Globals::HOST_DOWN,
+        error          => undef,
+d131 42
+d174 5
+a178 3
+	my $class = ref $self;
+	croak "Attempt to call private method" if ($class ne __PACKAGE__);
+    $self->{SAAVersion} = shift;
+d190 3
+a192 3
+    my $self = shift;
+	my $class = ref $self;
+	croak "Attempt to call private method" if ($class ne __PACKAGE__);
+d204 3
+a206 3
+    my $self = shift;
+	my $class = ref $self;
+	croak "Attempt to call private method" if ($class ne __PACKAGE__);
+d323 27
+@
+
+
+1.13
+log
+@Changed the error message returned when $saavers is null.
+@
+text
+@d32 1
+a32 1
+        status         => $SAA::Globals::HOST_DOWN,
+d78 1
+a78 1
+        my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
+d86 1
+a86 1
+    my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
+d106 1
+a106 1
+        my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
+d114 1
+a114 1
+    my $cipher = new Crypt::CBC( $SAA::Globals::KEY, 'Crypt::Blowfish' );
+d130 2
+d145 2
+d159 2
+d199 1
+a199 1
+        if ( $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_BAD_VERSION ) {
+d213 1
+a213 1
+            || $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_NOSUCHNAME )
+d271 1
+a271 1
+    $self->_status($SAA::Globals::HOST_UP_SNMP);
+@
+
+
+1.12
+log
+@Added support for an error property and accessor method.  This way, errors
+in the module can be tracked.  If a method returns undef, then referencing
+$src->error() must return the error that occurred.
+@
+text
+@d269 1
+a269 1
+        $self->error("Unable to get SAA version");
+@
+
+
+1.11
+log
+@Backed out 1.9 and 1.10.  Duh, if NO SUCH NAME is returned, all value fields
+will be NULL.
+@
+text
+@d9 1
+d18 4
+a21 1
+        return;
+d33 1
+d40 6
+d168 9
+a176 3
+    return 0
+      unless ( defined $self->addr() && defined $self->read_community()
+        && defined $self->write_community );
+a210 3
+            $self->_status($SAA::Globals::HOST_UP_SNMP);
+            $self->_ios_version($iosvers);
+            return 0 unless length $saavers;
+d213 2
+a214 1
+            return 0;
+d223 3
+a225 4
+        if ( $sess->{ErrorNum}
+            && $sess->{ErrorNum} != $SAA::SAA_MIB::SNMP_ERR_NOSUCHNAME )
+        {
+            return 0;
+a229 3
+            $self->_status($SAA::Globals::HOST_UP_SNMP);
+            $self->_ios_version($iosvers);
+            return 0 unless length $saavers;
+d244 6
+a249 1
+    return 0 if ( $sess->{ErrorNum} );
+d259 4
+a262 1
+    return 0 if ( $sess->{ErrorNum} );
+d265 7
+a273 1
+
+@
+
+
+1.10
+log
+@Whoops, forgot to clean up code.
+@
+text
+@d173 1
+a173 1
+          new SNMP::VarList( ['system'], [$SAA::SAA_MIB::rttMonApplVersion] );
+d192 2
+a193 2
+            ($iosvers) = ( $vals[0] =~ /Version ([\d\.\w\(\)]+)/ );
+            ($saavers) = ( $vals[1] =~ /(^[\d\.]+)/ );
+d205 2
+a206 2
+          new SNMP::VarList( [ 'sysDescr', 0 ],
+            [ $SAA::SAA_MIB::rttMonApplVersion, 0 ] );
+d214 2
+a215 2
+            ($iosvers) = ( $vals[0] =~ /Version ([\d\.\w\(\)]+)/ );
+            ($saavers) = ( $vals[1] =~ /(^[\d\.]+)/ );
+@
+
+
+1.9
+log
+@Reverse the system and rttMon varbinds so that the system objects are fist.
+This way, if SAA version returns NO SUCH NAME, we can still record
+the IOS version.
+@
+text
+@d173 1
+a173 1
+          new SNMP::VarList( ['system'], [$SAA::SAA_MIB::rttMonApplVersion]);
+d205 2
+a206 1
+          new SNMP::VarList( [ 'sysDescr', 0 ], [ $SAA::SAA_MIB::rttMonApplVersion, 0 ] );
+@
+
+
+1.8
+log
+@V2_IN_V1 should really be BAD_VERSION
+@
+text
+@d173 1
+a173 1
+          new SNMP::VarList( [$SAA::SAA_MIB::rttMonApplVersion], ['system'] );
+d192 2
+a193 2
+            ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
+            ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
+d205 1
+a205 2
+          new SNMP::VarList( [ $SAA::SAA_MIB::rttMonApplVersion, 0 ],
+            [ 'sysDescr', 0 ] );
+d213 2
+a214 2
+            ($saavers) = ( $vals[0] =~ /(^[\d\.]+)/ );
+            ($iosvers) = ( $vals[1] =~ /Version ([\d\.\w\(\)]+)/ );
+@
+
+
+1.7
+log
+@Don't error out if we encounter a NOSUCHNAME error.  Instead, record all the
+data we can, then error out.
+@
+text
+@d176 1
+a176 1
+        if ( $sess->{ErrorNum} == $SAA::SAA_MIB::SNMP_ERR_V2_IN_V1 ) {
+@
+
+
+1.6
+log
+@As many Source properties should be set as possible before returning an
+error.
+@
+text
+@d176 1
+a176 4
+        # XXX Note, -7 may change as the ErrorNum in the future.  However,
+        # for now, it is the best way of determining if we're hitting a PDU
+        # version problem.
+        if ( $sess->{ErrorNum} == -7 ) {
+d189 3
+a191 1
+        else {
+d198 3
+d208 3
+a210 1
+        if ( $sess->{ErrorNum} ) {
+@
+
+
+1.5
+log
+@writeCommunity -> write_community
+@
+text
+@d195 2
+a197 1
+            $self->_status($SAA::Globals::HOST_UP_SNMP);
+d212 2
+a214 1
+            $self->_status($SAA::Globals::HOST_UP_SNMP);
+a241 1
+    $self->_ios_version($iosvers);
+@
+
+
+1.4
+log
+@The community strings should not be required when instnatiating a new
+instance of a Source.
+@
+text
+@d159 1
+a159 1
+        && defined $self->writeCommunity );
+@
+
+
+1.3
+log
+@Replace the community field with readCommunity and writeCommunity fields.
+Also, add code to verify the read-write community string.
+
+TODO: Create a field called error that tracks errors throughout modules.
+@
+text
+@d16 1
+a16 1
+    if ( scalar(@@args) != 4 ) {
+d23 3
+a25 3
+        readCommunity  => $args[2],
+        writeCommunity => $args[3],
+        SNMPVersion    => undef,
+@
+
+
+1.2
+log
+@Removed Carp and croak() calls.  If a constructor fails, it will return
+undef.
+@
+text
+@d16 3
+a18 3
+	if (scalar(@@args) != 3) {
+		return;
+	}
+d21 8
+a28 7
+        name        => $args[0],
+        address     => $args[1],
+        community   => $args[2],
+        SNMPVersion => undef,
+        SAAVersion  => undef,
+        IOSVersion  => undef,
+        status      => $SAA::Globals::HOST_DOWN,
+d53 29
+a81 1
+sub community {
+d92 2
+a93 2
+            $self->{community} = $comm;
+            return $self->{community};
+d97 1
+a97 1
+        $self->{community} = $cipher->encrypt_hex($comm);
+d101 1
+a101 1
+        return $self->{community};
+d104 1
+a104 1
+    my $comm   = $cipher->decrypt_hex($self->{community});
+d157 3
+a159 1
+    return 0 unless ( defined $self->addr() && defined $self->community() );
+d165 1
+a165 1
+        Community => $self->community(),
+d183 8
+d203 1
+a203 1
+            [ 'system', 0 ] );
+d215 23
+@
+
+
+1.1
+log
+@Initial import into CVS.
+@
+text
+@a9 1
+use Carp;
+d17 1
+a17 1
+		croak "SAA::Source: Insufficient arguments passed to constructor.";
+@
+

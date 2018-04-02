@@ -1,0 +1,28 @@
+head	1.1;
+access;
+symbols
+	RELEASE_1_1_1:1.1
+	RELEASE_1_1:1.1
+	RELEASE_1_0_1:1.1
+	RELEASE_1_0:1.1;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2001.11.06.00.37.55;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Stop annoying me about .class files.
+@
+text
+@*.class
+@

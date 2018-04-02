@@ -1,0 +1,64 @@
+head	1.2;
+access;
+symbols
+	devel:1.1.1.1 COSI:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2001.08.07.02.00.24;	author jmarcus;	state dead;
+branches;
+next	1.1;
+
+1.1
+date	2001.08.07.01.59.17;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.08.07.01.59.17;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@This is a test file.  It should not be part of the repository.
+@
+text
+@#!/usr/bin/perl
+
+use lib qw(/home/marcus/src/saa);
+use SAA::Sources::Source;
+
+my $src = new SAA::Sources::Source("creme-brulee", "192.168.1.1", "1");
+$src->community(1, "83bbbbdcc6211844", 6);
+print $src->learn(), "\n";
+print $src->addr(), "\n";
+print $src->status(), "\n";
+
+print $src->community(1), "\n";
+print $src->comm_length(), "\n";
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@@
+
+
+1.1.1.1
+log
+@Initial import into the COSI CVS respository
+@
+text
+@@

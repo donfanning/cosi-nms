@@ -1,0 +1,291 @@
+head	1.9;
+access;
+symbols
+	RELEASE_1_1_1:1.9
+	RELEASE_1_1:1.9
+	RELEASE_1_0_1:1.6
+	RELEASE_1_0:1.5;
+locks; strict;
+comment	@# @;
+
+
+1.9
+date	2004.07.01.16.33.53;	author jmarcus;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2004.07.01.03.54.34;	author jmarcus;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2004.07.01.03.46.49;	author jmarcus;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2001.11.17.02.58.03;	author jmarcus;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2001.11.06.06.40.29;	author jmarcus;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.11.06.06.37.55;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.11.06.04.28.51;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.11.06.01.05.03;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.06.17.07.18.34;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.9
+log
+@Fix some more style issues.
+@
+text
+@#
+# Makefile for the MISAL project.
+# $Id: Makefile,v 1.8 2004/07/01 03:54:34 jmarcus Exp $
+
+SRCDIR=		.
+DOCDIR=		${SRCDIR}/doc/api
+JARDIR=		/usr/local/share/java/classes
+CLASSPATH=	.:${JARDIR}/jakarta-oro.jar
+
+JAVADOC=	/usr/local/jdk1.3.1/bin/javadoc
+JAVADOC_FLAGS=	-author -version -d $(DOCDIR)
+JAVAC=		/usr/local/jdk1.3.1/bin/javac
+JAVAC_FLAGS=	-O
+JAR=		/usr/local/jdk1.3.1/bin/jar
+JAR_FLAGS=	-cf
+
+PACKAGE=	com.marcuscom.MISAL
+PACKAGE_OS=	com/marcuscom/MISAL
+
+RM=	/bin/rm
+MKDIR=	/bin/mkdir -p
+
+all: jar docs
+
+jar: classes
+	${JAR} ${JAR_FLAGS} ${SRCDIR}/MISAL.jar ${SRCDIR}/${PACKAGE_OS}/*.class
+
+classes:
+	${JAVAC} ${JAVAC_FLAGS} -classpath \
+		${CLASSPATH} ${SRCDIR}/${PACKAGE_OS}/*.java
+
+test:
+	${JAVAC} ${JAVAC_FLAGS} -classpath ${CLASSPATH} \
+		${SRCDIR}/MISALTest.java ${SRCDIR}/MISALTestIOS.java
+
+docs:
+	${MKDIR} ${DOCDIR}
+	${JAVADOC} ${JAVADOC_FLAGS} -classpath ${CLASSPATH} ${PACKAGE}
+
+clean:
+	${RM} -f ${SRCDIR}/MISAL.jar
+	${RM} -f ${SRCDIR}/${PACKAGE_OS}/*.class
+	${RM} -f ${DOCDIR}/*.* ${DOCDIR}/package-list
+	${RM} -rf ${DOCDIR}/com
+	${RM} -f ${SRCDIR}/MISALTest.class ${SRCDIR}/MISALTestIOS.class
+@
+
+
+1.8
+log
+@Fix some typos in the newly re-formatted Makefile.
+@
+text
+@d3 1
+a3 1
+# $Id: Makefile,v 1.7 2004/07/01 03:46:49 jmarcus Exp $
+d5 2
+a6 2
+SRCDIR=	.
+DOCDIR=	${SRCDIR}/doc/api
+@
+
+
+1.7
+log
+@Re-format the Makefile to match FreeBSD Makefile style.
+@
+text
+@d3 1
+a3 1
+# $Id: Makefile,v 1.6 2001/11/17 02:58:03 jmarcus Exp $
+d7 1
+a9 1
+JARDIR=		/usr/local/share/java/classes
+d11 1
+a11 1
+JAVADOC_FLAGS=	-author -version -d $(docdir)
+@
+
+
+1.6
+log
+@Fix up for release 1.0.1.  This release includes a major fix in MISALCiscoIOS
+that kept it from working.
+@
+text
+@d2 2
+a3 2
+# Makefile for the MISAL project. 
+# $Id: Makefile,v 1.5 2001/11/06 06:40:29 jmarcus Exp $
+d5 3
+a7 4
+srcdir=	.
+docdir=	$(srcdir)/doc/api
+package=	com.marcuscom.MISAL
+package_os=	com/marcuscom/MISAL
+d9 4
+a12 4
+RM=	/bin/rm
+MKDIR= /bin/mkdir
+
+JAVAC=	/usr/local/jdk1.3.1/bin/javac
+d14 2
+a15 1
+CLASSPATH=.:/usr/local/share/java/classes/PerlTools.jar
+d17 2
+a18 2
+JAVADOC=	/usr/local/jdk1.3.1/bin/javadoc
+JAVADOC_FLAGS=	-author -version -d $(docdir)
+d20 2
+a21 2
+JAR=	/usr/local/jdk1.3.1/bin/jar
+JAR_FLAGS=	-cf
+d26 1
+a26 1
+	$(JAR) $(JAR_FLAGS) $(srcdir)/MISAL.jar $(srcdir)/$(package_os)/*.class
+d29 2
+a30 1
+	$(JAVAC) $(JAVAC_FLAGS) -classpath $(CLASSPATH) $(srcdir)/$(package_os)/*.java
+d33 2
+a34 2
+	$(JAVAC) $(JAVAC_FLAGS) -classpath $(CLASSPATH) $(srcdir)/MISALTest.java \
+		$(srcdir)/MISALTestIOS.java
+d37 2
+a38 2
+	$(MKDIR) -p $(docdir)
+	$(JAVADOC) $(JAVADOC_FLAGS) -classpath $(CLASSPATH) $(package)
+d41 5
+a45 5
+	$(RM) -f $(srcdir)/MISAL.jar
+	$(RM) -f $(srcdir)/$(package_os)/*.class
+	$(RM) -f $(docdir)/*.* $(docdir)/package-list
+	$(RM) -rf $(docdir)/com
+	$(RM) -f $(srcdir)/MISALTest.class $(srcdir)/MISALTestIOS.class
+@
+
+
+1.5
+log
+@Add some more cleaning stuff.
+@
+text
+@d3 1
+a3 1
+# $Id: Makefile,v 1.4 2001/11/06 06:37:55 jmarcus Exp $
+d32 2
+a33 1
+	$(JAVAC) $(JAVAC_FLAGS) -classpath $(CLASSPATH) $(srcdir)/MISALTest.java
+d44 1
+a44 1
+	$(RM) -f $(srcdir)/MISALTest.class
+@
+
+
+1.4
+log
+@Don't make ``make clean'' so destructive.
+@
+text
+@d3 1
+a3 1
+# $Id: Makefile,v 1.3 2001/11/06 04:28:51 jmarcus Exp $
+d41 2
+a42 1
+	$(RM) -rf $(docdir)/Package-com
+@
+
+
+1.3
+log
+@Add support for building the test class.
+@
+text
+@d3 1
+a3 1
+# $Id: Makefile,v 1.2 2001/11/06 01:05:03 jmarcus Exp $
+d41 1
+a41 1
+	$(RM) -rf $(docdir)
+@
+
+
+1.2
+log
+@Update documentation and Makefile to prepare for 1.0 release.
+@
+text
+@d3 1
+a3 1
+# $Id: Makefile,v 1.1 2001/06/17 07:18:34 jmarcus Exp $
+d11 1
+d31 3
+d35 1
+d41 2
+a42 1
+	$(RM) -rf $(docdir)/*.html
+@
+
+
+1.1
+log
+@Initial import into the COSI CVS repository.
+@
+text
+@d3 1
+a3 1
+# $Id$
+d12 1
+a12 1
+JAVAC=	/usr/local/jdk1.1.8/bin/javac
+d14 1
+d16 1
+a16 1
+JAVADOC=	/usr/local/jdk1.1.8/bin/javadoc
+d19 1
+a19 1
+JAR=	/usr/local/jdk1.1.8/bin/jar
+d28 1
+a28 1
+	$(JAVAC) $(JAVAC_FLAGS) $(srcdir)/$(package_os)/*.java
+d31 1
+a31 1
+	$(JAVADOC) $(JAVADOC_FLAGS) $(package)
+@
+

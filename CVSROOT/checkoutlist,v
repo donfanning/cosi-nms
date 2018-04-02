@@ -1,0 +1,82 @@
+head	1.4;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.4
+date	2001.11.06.17.34.49;	author awo;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.11.06.17.33.35;	author awo;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.11.06.16.51.54;	author robelewi;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.04.16.20.10.41;	author root;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.4
+log
+@mail
+@
+text
+@# The "checkoutlist" file is used to support additional version controlled
+# administrative files in $CVSROOT/CVSROOT, such as template files.
+#
+# The first entry on a line is a filename which will be checked out from
+# the corresponding RCS file in the $CVSROOT/CVSROOT directory.
+# The remainder of the line is an error message to use if the file cannot
+# be checked out.
+#
+# File format:
+#
+#	[<whitespace>]<filename><whitespace><error message><end-of-line>
+#
+# comment lines begin with '#'
+syncmail
+@
+
+
+1.3
+log
+@*** empty log message ***
+@
+text
+@d14 1
+@
+
+
+1.2
+log
+@added email notify
+@
+text
+@a13 1
+syncmail
+@
+
+
+1.1
+log
+@initial checkin
+@
+text
+@d14 1
+@
+
+

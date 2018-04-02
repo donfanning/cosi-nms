@@ -1,0 +1,228 @@
+head     1.1;
+branch   1.1.1;
+access   ;
+symbols  start:1.1.1.1 vendor:1.1.1;
+locks    ; strict;
+comment  @# @;
+
+
+1.1
+date     2002.04.25.20.24.50;  author jleonard;  state Exp;
+branches 1.1.1.1;
+next     ;
+
+1.1.1.1
+date     2002.04.25.20.24.50;  author jleonard;  state Exp;
+branches ;
+next     ;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@                             Modem Call Record Pusher
+                             ------------------------
+
+                                                        Weston Hopkins
+                                                        <wehopkin@@cisco.com>
+                                                        Cisco Systems
+                                                        March 20, 2001
+NAME:
+-----
+        Modem Call Record Pusher
+        mcr_pusher.pl
+
+SYNOPSIS:
+---------
+        mcr_pusher.pl [logfile_1 logfile_2 logfile_n]
+        echo $line_of_callrecord | mcr_pusher.pl
+
+DESCRIPTION:
+------------
+        Lets say you are an internet service provider and you have dialup users
+        on a Cisco Network Access Server (I repeat myself) and you want the
+        call records inserted into a database. MCR Pusher does the last part
+        for you. MCR Pusher is a tool used in conjuction with the Modem
+        Call Record set of utilties. It takes a line from stdin (or several
+        lines from a file) that contains the information about a call record
+        from a Cisco Network Access Server (NAS). The tool then parses this
+        information and pushes it to a MySQL server.
+
+INSTALLATION:
+-------------
+        The installation usually goes like this:
+        1. Install MySQL
+        2. Install Perl
+        3. Install DBI and DBD::mysql (the database driver and interface for
+        Perl) for perl.
+        4. Setup the database.
+        5. Configure the script.
+        6. Configure swatcher or cron to run the script.
+
+        [1. MySQL]
+        Information on installing MySQL can be obtained from their site at
+        http://www.mysql.com . MySQL is an excellent, free database for
+        almost every platform available.
+
+        [2. Perl]
+        Perl is also excellent and free, and is more than likely already
+        installing on your Unix machine. Information on installing perl is
+        available at http://www.perl.org .
+
+        [3. DBI]
+        DBI and DBD::mysql need to be installed in conjuction with Perl to
+        access the database. The easiest way to install it is with the
+        command:
+        perl -MCPAN -e 'install Bundle::DBD::mysql'
+        This usually works unless you don't have CPAN installed or you are
+        behind a firewall. Information on the CPAN shell (Comprehensive
+        Perl Archive Network) can be found at
+        http://theoryx5.uwinnipeg.ca/pub/CPAN/CPAN.html .
+
+        [4. Setting up the Database]
+        After this has been completed, you must create a database for
+        mcr_pusher to access. This sounds confusing, because not only is
+        MySQL a database, but "databases" have to be created ON the MySQL
+        server. Your best bet is to look over the MySQL tutorial at
+        http://www.mysql.com/documentation/mysql/bychapter/manual_Tutorial.html
+        But for the impatient (like myself), run the `mysql' command and type
+        the following at the prompt:
+        mysql> CREATE DATABASE deez;
+        This will create a database named `deez' (which is the default). This
+        can be changed by altering the $database name in the script
+        mcr_pusher.pl.
+
+        Now you must give permission to who/whatever is running the script to
+        access this database. The MySQL command:
+        mysql> GRANT ALL ON deez.* TO swatcher@@localhost;
+        will grant access to the database `deez' to the user swatcher.
+
+        [5. Installing MCR Pusher]
+
+        Installing the script itself includes copying the file mcr_pusher.pl to
+        a certain directory and having the script run periodically. You will
+        have to alter mcr_pusher.pl if you want to change the MySQL
+        servers' hostname, database name, tablename, or the username which
+        connects to the server. The lines look something like this:
+
+        # Hostname of MySQL server
+        $db_hostname = "localhost";
+
+        # Database to create the table in
+        $database = "deez";
+
+        # Name of the table to insert the callrecords into
+        $tablename = "testrecs";
+
+        # Optional username to connect as.
+        $username = "";
+
+
+        You may also need to change the first line of mcr_pusher.pl to point to
+        perl. The first line looks like this:
+        #!/usr/local/bin/perl
+
+        [6. Running MCR Pusher]
+
+        Assuming you already have syslog dumping the records to a logfile, you
+        have several ways to get this information to MCR Pusher, and
+        therefore several ways to get this information to the MySQL
+        database. An example call record (line) might look like this:
+
+Mar 21 23:58:55 telesys1.xentao.com 1152936: Mar 21 23:58:54: %CALLRECORD-3-
+MICA_TERSE_CALL_REC: DS0 slot/contr/chan=1/25/7, slot/port=8/33, call_id=3A7D,
+userid=aeinstein, ip=128.83.128.214, calling=5126197116, called=1519,
+std=V.34+, prot=LAP-M, comp=V.42bis both, init-rx/tx b-rate=28800/44000, finl-
+rx/tx b-rate=28800/33600, rbs=0, d-pad=None, retr=21, sq=4, snr=29, rx/tx
+chars=262041/2065296, bad=0, rx/tx ec=4117/13484, bad=459, time=2953, finl-
+state=Steady, disc(radius)=(n/a)/(n/a), disc(modem)=8220 Rx (line to host) data
+flushing - All your base are belong to us - locally detected/received DISC
+frame -- normal LAPM termination
+
+        This line can be one of several in a set of logfiles or can be piped
+        into mcr_pusher.pl line by line via stdin. If you need a database
+        that is current in "realtime", then running mcr_pusher after each
+        line is sent to a logfile is an option. Using a utility such as
+        Swatcher, this can be accomplished. Here is an example config file,
+        created by Sachin Patel, that is used in conjuction with Swatcher to
+        update the database after each connection is made [2]:
+                watchfor /%CALLRECORD-3/
+                exec echo $0 | /opt/CSCOlwt/bin/mcr_pusher.pl
+
+        If you don't need any realtime data, or your realtime application
+        requires a maximum latency of an hour or so, I recommend that you run
+        mcr_pusher on the set of logfiles from crontab hourly. This is a
+        more efficient method since only one connection to the database needs
+        to be made for several records to be pushed. With a scenario like
+        Swatcher, each time a user dials up your NAS, a new process must be
+        spawned and another connection to the database must be made. This
+        can be very taxing on your system if your NAS receives many incomming
+        calls.
+
+FAQs:
+-----
+        1. I keep on getting "# is not a valid number" error message.
+        * This is because, for some reason, a certain number for that field
+        in the log file is not valid. A common example is having a negative
+        number for the tx_chars field, which says that the modem transmitted a
+        negative number of bytes.
+
+        2. I keep on getting a message saying I don't have access to the
+        database.
+        * You need to setup the permission to allow the user that the script is
+        run under access to insert records into the database. The MySQL command
+        mysql> GRANT ALL on deez.* for username;
+        should do the trick if you are using the default database name.
+
+        3. Everytime I run mcr_pusher.pl and I check the table in the database,
+        it is empty.
+        * There may be several possible reasons for this. A common error is to
+        give the call record string on the command line instead of the file
+        name. If you want to pass a line directly to the tool, you just use
+        stdin with something like   echo $line | mcr_pusher.pl
+
+        4. Some of my records are being dropped and aren't put in the database.
+        * If the record is malformed or contains bogus information, I drop the
+        record. This is because IOS will report misinformation like an SNR of
+        32682 or an ip address of `*******'. There is also the possibility that
+        the lines are being chopped-off by Swatcher or syslog.
+
+
+AUTHOR:
+-------
+        Cisco Systems
+        Weston Hopkins <wehopkin@@cisco.com>
+
+REFERENCES:
+-----------
+        [1] Jim Leonard: For help with parsing code.
+        [2] Sachin Patel: For help with MySQL and Swatcher.
+
+
+REPORTING BUGS:
+---------------
+        I am sure there are bugs, so send an email to wehopkin@@cisco.com if
+        you find one. Thanks!
+
+COPYRIGHT:
+----------
+        Freeware.
+
+HISTORY:
+--------
+@
+
+
+1.1.1.1
+log
+@Initial import of mcrt reposit
+@
+text
+@@

@@ -1,0 +1,66 @@
+head	1.2;
+access;
+symbols
+	RELEASE_1_1:1.2
+	RELEASE_1_0:1.2;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2002.09.09.18.56.58;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2002.09.07.10.02.55;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@Add a check to make sure the user running the install is root.
+@
+text
+@#!/bin/sh
+
+rcsid='$Id: install.sh,v 1.1 2002/09/07 10:02:55 jmarcus Exp $'
+
+if [ `/bin/id | /usr/bin/sed -e 's/(.*$//' -e 's/^.*=//'` != 0 ] ; then
+    echo "You must be root to install this package."
+    exit 1
+fi
+
+echo '***************************************************************'
+
+echo "This will install DEEsv for Resource Manager Essentials 3.4."
+echo "This adds the capability to convert XML produced by DEEv2 to"
+echo "xSV format (for example, CSV)."
+echo
+echo "If you do not want to install this package, press CTRL+C."
+echo
+echo "If you want to install this patch, press Enter or Return"
+echo "to continue."
+
+echo '****************************************************************'
+read reply
+
+exec ./.install.pl
+@
+
+
+1.1
+log
+@Add the install scripts.
+@
+text
+@d3 6
+a8 1
+rcsid='$Id$'
+@
+

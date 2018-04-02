@@ -1,0 +1,159 @@
+head	1.4;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.4
+date	2001.08.28.05.29.02;	author jmarcus;	state dead;
+branches;
+next	1.3;
+
+1.3
+date	2001.08.21.00.46.34;	author nick07;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.08.21.00.11.38;	author nick07;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.08.10.18.54.16;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.4
+log
+@Removed this file in favor of Operation.pm.
+@
+text
+@package SAA::Operations;
+
+use strict;
+require 5.002;
+use vars qw(@@EXPORT_OK);
+# Only supported protocols are defined.
+use vars qw(
+	$PROTO_NA
+	$PROTO_ICMP_ECHO
+	$PROTO_UDP_ECHO
+	$PROTO_SNA_RU_ECHO
+	$PROTO_SNA_LU0_ECHO_APPL
+	$PROTO_SNA_LU2_ECHO_APPL
+	$PROTO_SNA_LU62_ECHO
+	$PROTO_SNA_LU62_ECHO_APPL
+	$PROTO_TCP_CONN
+	$PROTO_HTTP_APPL
+	$PROTO_DNS_APPL
+	$PROTO_JITTER_APPL
+	$PROTO_DLSW_APPL
+	$PROTO_DHCP_APPL
+	$PROTO_FTP_APPL
+);
+# XXX So we need a Type for each type of operation?
+use vars qw(
+    $TYPE_ECHO
+	$TYPE_TCP_CONN
+);
+
+use vars qw(
+    $MAX_THRESHOLD
+	$MAX_FREQUENCY
+	$MAX_TIMEOUT
+);
+
+@@EXPORT_OK = qw(
+	$PROTO_NA
+	$PROTO_ICMP_ECHO
+	$PROTO_UDP_ECHO
+	$PROTO_SNA_RU_ECHO
+	$PROTO_SNA_LU0_ECHO_APPL
+	$PROTO_SNA_LU2_ECHO_APPL
+	$PROTO_SNA_LU62_ECHO
+	$PROTO_SNA_LU62_ECHO_APPL
+	$PROTO_TCP_CONN
+	$PROTO_HTTP_APPL
+	$PROTO_DNS_APPL
+	$PROTO_JITTER_APPL
+	$PROTO_DLSW_APPL
+	$PROTO_DHCP_APPL
+	$PROTO_FTP_APPL
+	$TYPE_ECHO
+	$MAX_FREQUENCY
+	$MAX_TIMEOUT
+	$MAX_THRESHOLD
+	$CONTROL
+);
+
+use Exporter();
+use vars qw(@@ISA);
+@@ISA = qw(Exporter);
+
+$PROTO_NA = 1;
+$PROTO_ICMP_ECHO = 2;
+$PROTO_UDP_ECHO = 3;
+$PROTO_SNA_RU_ECHO = 4;
+$PROTO_SNA_LU0_ECHO_APPL = 5;
+$PROTO_SNA_LU2_ECHO_APPL = 6;
+$PROTO_SNA_LU62_ECHO = 7;
+$PROTO_SNA_LU62_ECHO_APPL = 8;
+$PROTO_TCP_CONN = 24;
+$PROTO_HTTP_APPL = 25;
+$PROTO_DNS_APPL = 26;
+$PROTO_JITTER_APPL = 27;
+$PROTO_DLSW_APPL = 28;
+$PROTO_DHCP_APPL = 29;
+$PROTO_FTP_APPL = 30;
+
+$TYPE_ECHO = 1;
+
+$MAX_FREQUENCY = 604800;
+$MAX_TIMEOUT = 604800000;
+$MAX_THRESHOLD = 2147483647;
+$CONTROL = 0;
+@
+
+
+1.3
+log
+@
+Redid SAA::Operations::TcpCon so that it looks right to me.
+Added Values to SAA::Operations.pm to match with SAA::Operations::TcpCon Nick -oo-
+@
+text
+@@
+
+
+1.2
+log
+@
+Added another TYPE $TYPE_TCP_CON
+@
+text
+@d56 1
+d84 1
+a84 1
+
+@
+
+
+1.1
+log
+@This is the replacement file for Operations::Globals.  It is the same file with
+a new package name.
+@
+text
+@d24 1
+a24 1
+
+d27 1
+@
+

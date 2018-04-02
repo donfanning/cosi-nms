@@ -1,0 +1,343 @@
+head	1.12;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.12
+date	2003.08.31.22.19.34;	author jmarcus;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2001.12.03.06.25.01;	author jmarcus;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2001.10.12.20.28.04;	author jmarcus;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2001.10.12.17.08.18;	author jmarcus;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2001.10.04.20.21.46;	author jmarcus;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2001.09.26.16.57.41;	author jmarcus;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2001.09.25.06.09.50;	author jmarcus;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2001.09.18.08.02.04;	author jmarcus;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2001.09.09.21.39.01;	author jmarcus;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2001.08.30.05.12.26;	author nick07;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.08.28.02.32.44;	author jmarcus;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.08.26.06.03.34;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.12
+log
+@Clean up all the source with a nice call to:
+
+perltidy -i=8 -t -pt=2 -bt=2 -sbt=2 -ci=4 -noll -sfs -nasc -ce
+@
+text
+@#
+# $Id: Target.pm,v 1.11 2001/12/03 06:25:01 jmarcus Exp $
+#
+package SAA::Target;
+
+use strict;
+require 5.002;
+use lib qw(..);    # XXX for testing purposes only.
+use SAA::Globals;
+use Carp;
+
+sub new {
+        my ($that, @@args) = @@_;
+        my $class = ref($that) || $that;
+
+        if (scalar(@@args) != 2) {
+                croak
+                    "SAA::Target: Insufficient arguments passed to constructor";
+        }
+
+        my $self = {
+                name    => $args[0],
+                address => undef,
+                status  => HOST_UP_IP,
+                error   => undef,
+        };
+
+        my $addr = gethostbyname($args[1]);
+        $self->{address} = join ('.', unpack('C4', $addr));
+
+        bless($self, $class);
+        $self;
+}
+
+sub name {
+        my $self = shift;
+        if (@@_) { $self->{name} = shift; }
+        return $self->{name};
+}
+
+sub addr {
+        my $self = shift;
+        if (@@_) { $self->{address} = shift; }
+        return $self->{address};
+}
+
+sub status {
+
+        # This method is divided into a public accessor method, and a protected
+        # set method.
+        my $self = shift;
+        return $self->{status};
+}
+
+sub _status {
+        my $self  = shift;
+        my $class = ref $self;
+        croak "Attempt to call protected method" if ($class !~ /^SAA::/);
+        $self->{status} = shift;
+}
+
+1;
+__END__
+@
+
+
+1.11
+log
+@Fix bug in exporter.
+@
+text
+@d2 1
+a2 1
+# $Id: Target.pm,v 1.10 2001/10/12 20:28:04 jmarcus Exp $
+d13 2
+a14 2
+    my ( $that, @@args ) = @@_;
+    my $class = ref($that) || $that;
+d16 11
+a26 10
+    if ( scalar(@@args) != 2 ) {
+        croak "SAA::Target: Insufficient arguments passed to constructor";
+    }
+
+    my $self = {
+        name    => $args[0],
+        address => undef,
+        status  => HOST_UP_IP,
+        error   => undef,
+    };
+d28 2
+a29 2
+    my $addr = gethostbyname( $args[1] );
+    $self->{address} = join ( '.', unpack( 'C4', $addr ) );
+d31 2
+a32 2
+    bless( $self, $class );
+    $self;
+d36 3
+a38 3
+    my $self = shift;
+    if (@@_) { $self->{name} = shift; }
+    return $self->{name};
+d42 3
+a44 3
+    my $self = shift;
+    if (@@_) { $self->{address} = shift; }
+    return $self->{address};
+d49 4
+a52 4
+    # This method is divided into a public accessor method, and a protected
+    # set method. 
+    my $self = shift;
+    return $self->{status};
+d56 4
+a59 4
+    my $self  = shift;
+    my $class = ref $self;
+    croak "Attempt to call protected method" if ( $class !~ /^SAA::/ );
+    $self->{status} = shift;
+@
+
+
+1.10
+log
+@More coding.
+@
+text
+@d2 1
+a2 1
+# $Id: Target.pm,v 1.9 2001/10/12 17:08:18 jmarcus Exp $
+d23 1
+a23 1
+        status  => SAA::Globals::HOST_UP_IP,
+@
+
+
+1.9
+log
+@Fix a problem with not converting the output of gethostbyname() back to
+a string.
+@
+text
+@d2 1
+a2 1
+# $Id: Target.pm,v 1.8 2001/10/04 20:21:46 jmarcus Exp $
+d48 1
+a48 1
+    # This method is divided into a public accessor method, and a private
+d57 1
+a57 1
+    croak "Attempt to call private method" if ( $class ne __PACKAGE__ );
+@
+
+
+1.8
+log
+@Add $Id$ CVS tags.
+@
+text
+@d2 1
+a2 1
+# $Id$
+d27 2
+a28 1
+    $self->{address} = gethostbyname( $args[1] );
+@
+
+
+1.7
+log
+@Coding, coding coding....
+@
+text
+@d1 3
+@
+
+
+1.6
+log
+@More RTTMON-MIB additions and code cleanup.
+@
+text
+@d19 1
+a19 1
+        address => $args[1],
+d23 2
+@
+
+
+1.5
+log
+@Massive OOP style changes.
+@
+text
+@d49 3
+a51 3
+    my $self = shift;
+	my $class = ref $self;
+	croak "Attempt to call private method" if ($class ne __PACKAGE__);
+@
+
+
+1.4
+log
+@croak when constructor is called without the correct number of arguments.  Also add error
+field.
+@
+text
+@d20 1
+a20 1
+        status  => $SAA::Globals::HOST_UP_IP,
+d50 2
+@
+
+
+1.3
+log
+@Changed
+my $self {
+	aame =>
+
+
+TO
+
+my self {
+	name =>
+@
+text
+@d5 1
+a5 1
+use lib qw(..);
+d7 1
+d14 1
+a14 1
+		return;
+d21 1
+@
+
+
+1.2
+log
+@Removed Carp and croak() calls.  If a constructor fails, it will return
+undef.
+@
+text
+@d17 1
+a17 1
+        aame    => $args[0],
+@
+
+
+1.1
+log
+@Initial import into CVS.
+@
+text
+@a6 1
+use Carp;
+d13 1
+a13 1
+        croak "SAA::Target: Insufficient arguments passed to constructor.";
+@
+

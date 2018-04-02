@@ -1,0 +1,61 @@
+head	1.1;
+branch	1.1.1;
+access;
+symbols
+	RELEASE_1_4:1.1.1.1
+	RELEASE_1_3:1.1.1.1
+	RELEASE_1_2:1.1.1.1
+	HEAD:1.1.1.1
+	MAIN:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2001.05.28.20.51.53;	author jmarcus;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.05.28.20.51.53;	author jmarcus;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@  <!ELEMENT request (authentication,source,addDevices?,listDevices?,getDeviceCredentials?,setCredentials?,getDeviceIPAddresses?)>
+  <!ELEMENT authentication EMPTY>
+  <!ELEMENT source (host,product,version,description)>
+  <!ELEMENT host (#PCDATA)>
+  <!ELEMENT product (#PCDATA)>
+  <!ELEMENT version (#PCDATA)>
+  <!ELEMENT description (#PCDATA)>
+  <!ELEMENT addDevices (deviceInfo)>
+  <!ELEMENT listDevices (deviceInfo?)>
+  <!ELEMENT getDeviceCredentials (deviceInfo?)>
+  <!ELEMENT setCredentials (deviceInfo)>
+  <!ELEMENT getDeviceIPAddresses (deviceInfo?)>
+  <!ELEMENT deviceInfo (#PCDATA)>
+  <!ATTLIST request responseFormat (csv | xml) #IMPLIED>
+  <!ATTLIST authentication name CDATA #REQUIRED pwd CDATA #REQUIRED>
+  <!ATTLIST listDevices deviceType (all | managed) #IMPLIED>
+  <!ATTLIST getDeviceCredentials  wantdbid (yes) #IMPLIED wantsysoid (yes) #IMPLIED>
+@
+
+
+1.1.1.1
+log
+@Initial import into CVS
+@
+text
+@@

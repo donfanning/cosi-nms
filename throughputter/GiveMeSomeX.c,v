@@ -1,0 +1,54 @@
+head     1.1;
+branch   1.1.1;
+access   ;
+symbols  arelease:1.1.1.1 avendor:1.1.1;
+locks    ; strict;
+comment  @ * @;
+
+
+1.1
+date     2001.06.29.17.49.17;  author robelewi;  state Exp;
+branches 1.1.1.1;
+next     ;
+
+1.1.1.1
+date     2001.06.29.17.49.17;  author robelewi;  state Exp;
+branches ;
+next     ;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+void main( int argc, char *argv[] )
+{
+	int i;
+	int	k;
+	if( argc != 2 ) {
+		printf("\nUsage: %s 100", argv[0] );
+		exit(1);
+	}
+	k = atoi(argv[1]);
+	for( i=0; i<1024*k; i++ )
+		printf("%c", random()%256);
+}
+@
+
+
+1.1.1.1
+log
+@no message
+@
+text
+@@

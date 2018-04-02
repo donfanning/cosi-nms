@@ -1,0 +1,71 @@
+head     1.1;
+branch   1.1.1;
+access   ;
+symbols  arelease:1.1.1.1 avendor:1.1.1;
+locks    ; strict;
+comment  @# @;
+
+
+1.1
+date     2001.08.22.14.29.31;  author robelewi;  state Exp;
+branches 1.1.1.1;
+next     ;
+
+1.1.1.1
+date     2001.08.22.14.29.31;  author robelewi;  state Exp;
+branches ;
+next     ;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#!/usr/local/bin/perl
+#
+#   useage cnv2no filename
+#
+# A simple script to convert a configuration to a no configuration.
+# For example if you have a config of static routes and want to 
+# back them out, you need to prepend no to every statement.
+# well this does it for you.
+#----------------------------------------------------------------
+#  ver		comments		author		date
+#  00		original	dblack@@cisco.com	5/98
+#
+# This script released to open source under the Mozilla Public License
+#----------------------------------------------------------------
+
+die "Usage: cnv2no filename\n" if($#ARGV==-1);
+#
+$NO="no ";
+$INPUTFILE=$ARGV[0]; 
+$OUTPUTFILE="no-".$INPUTFILE;
+
+open(FILEIN, $INPUTFILE ) || die "Can't open $INPUTFILE\n";
+open(FILEOUT,"> $OUTPUTFILE" ) || die "Can't open $OUTPUTFILE\n";
+
+while (<FILEIN>){
+$OUTSTRING=$NO.$_;
+
+print FILEOUT "$OUTSTRING";
+#print "$OUTSTRING\n";
+} 
+close(FILEIN);
+close(FILEOUT);
+print "finished\n"
+@
+
+
+1.1.1.1
+log
+@ios command script toolkit initial checkin 
+@
+text
+@@

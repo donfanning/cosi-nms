@@ -1,0 +1,60 @@
+head	1.1;
+branch	1.1.1;
+access;
+symbols
+	arelease:1.1.1.1
+	avendor:1.1.1;
+locks; strict;
+comment	@# @;
+
+
+1.1
+date	2001.07.06.19.08.31;	author robelewi;	state Exp;
+branches
+	1.1.1.1;
+next	;
+
+1.1.1.1
+date	2001.07.06.19.08.31;	author robelewi;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@maui-nas-01
+maui-nas-05
+maui-nas-06
+maui-rtr-02
+maui-rtr-01
+maui-nas-02
+maui-nas-03
+maui-nas-04
+maui-rtr-03
+maui-rtr-04
+maui-rtr-05
+maui-rtr-06
+maui-robo-01
+maui-mgc-01
+maui-mgc-02
+maui-vgw-01
+travis-nas-01.the.net
+monica.ots.utexas.edu
+krist-isdn
+nas-06-pool23
+@
+
+
+1.1.1.1
+log
+@no message
+@
+text
+@@

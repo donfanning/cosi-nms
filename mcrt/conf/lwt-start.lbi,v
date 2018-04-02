@@ -1,0 +1,86 @@
+head     1.1;
+branch   1.1.1;
+access   ;
+symbols  start:1.1.1.1 vendor:1.1.1;
+locks    ; strict;
+comment  @# @;
+
+
+1.1
+date     2002.04.25.20.24.49;  author jleonard;  state Exp;
+branches 1.1.1.1;
+next     ;
+
+1.1.1.1
+date     2002.04.25.20.24.49;  author jleonard;  state Exp;
+branches ;
+next     ;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@<!-- #BeginLibraryItem "/lwt-start.lbi" -->                                                                               
+<!-- Version 0.1 by Kris Thompson -->                                                                                     
+                                                                                                                          
+<!-- HTMLHEAD -->                                                                                                         
+<html>                                                                                                                    
+<HEAD>                                                                                                                    
+<TITLE>%%title%%</TITLE>                                                                                                  
+</HEAD>                                                                                                                   
+<body bgcolor="#FFFFFF" background="/graphics/ss7_dial1.gif">                                                             
+                                                                                                                          
+<table BORDER="1" WIDTH="650">                                                                                            
+<tr>                                                                                                                      
+    <td WIDTH="90" HEIGHT="92">                                                                                           
+         <img SRC="%%spot%%" height=92 width=90 align=CENTER>                                                             
+    </td>                                                                                                                 
+                                                                                                                          
+    <td HEIGHT="92">                                                                                                      
+         <img SRC="%%banner%%">                                                                                           
+         <p><font size=-1><i><a href="http://mccain.ots.utexas.edu/coe/lwt">Lightweight Tools</a> by <a href="http://mccain.ots.utexas.edu">CoE-IAE</a></i></font>                                                                                  
+    </td>                                                                                                                 
+</tr>                                                                                                                     
+                                                                                                                          
+<tr>                                                                                                                      
+<td VALIGN=TOP WIDTH="90">                                                                                                
+<!-- #BeginLibraryItem "/leftmenu-01.lbi" -->                                                                             
+Tools:<br>                                                                                                                
+<font size="-1" face="Verdana, Arial, Helvetica, sans-serif">                                                             
+<a href="/cgi-lwt/cli_cmds.pl">CLI Cmdr</a><br>                                                                           
+<a href="/cgi-lwt/snmpcmds.pl">SNMP Cmdr</a><br>                                                                          
+<a href="/cgi-lwt/mcr_viewer.pl">MCR Viewer</a><br>                                                                       
+<a href="/cgi-lwt/device_lister.pl">DevList Mgr</a><br>                                                                   
+<a href="/cgi-lwt/dnszone.pl">DNSZone View</a><br>                                                                        
+                                                                                                                          
+</font>                                                                                                                   
+<br>                                                                                                                      
+Sites:<br>                                                                                                                
+<font size="-1" face="Verdana, Arial, Helvetica, sans-serif">                                                             
+<a href="http://onionring.cisco.com/">OnionRing</a><br>                                                                   
+<a href="http://mccain.ots.utexas.edu">UT CoE-IAE</a><br>                                                                 
+TACWeb:<br>                                                                                                               
+&nbsp;&nbsp;<a href="http://www-tac.cisco.com/">->Internal</a><br>                                                        
+&nbsp;&nbsp;<a href="http://www.cisco.com/tac">->External</a><br>                                                         
+</font>                                                                                                                   
+</font>                                                                                                                   
+<!-- #EndLibraryItem "/leftmenu-01.lbi" -->                                                                               
+</td>                                                                                                                     
+                                                                                                                          
+<td VALIGN=TOP>                                                                                                           
+<h2>%%title%%, Version %%version%%</h2>                                                                                   @
+
+
+1.1.1.1
+log
+@Initial import of mcrt reposit
+@
+text
+@@

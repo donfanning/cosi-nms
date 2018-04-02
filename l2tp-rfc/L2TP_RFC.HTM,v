@@ -1,0 +1,831 @@
+head     1.1;
+branch   1.1.1;
+access   ;
+symbols  arelease:1.1.1.1 avendor:1.1.1;
+locks    ; strict;
+comment  @# @;
+
+
+1.1
+date     2001.08.20.12.50.04;  author robelewi;  state Exp;
+branches 1.1.1.1;
+next     ;
+
+1.1.1.1
+date     2001.08.20.12.50.04;  author robelewi;  state Exp;
+branches ;
+next     ;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+       
+  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  <title>Decoder for L2TP</title>
+</head>
+ <body>
+ 
+<div align="Center"> 
+<h2>Summary</h2>
+ </div>
+ The programm enhances L2TP debugs output (green) with some explanations
+(blue and red) to make the output more comprehensive. Explanations are added
+in extra lines and framed with square brackets '[', ']'. All other input
+is either printed to the output transparently or filtered out (depending
+on "filter" variable value)<br>
+ <b>Required debugs:</b><br>
+ debug vpdn l2x-packets  
+<div align="Center"> 
+<h2> Decoded debugs from LAC </h2>
+ </div>
+  rebeca#sh debug<br>
+  General OS:<br>
+  &nbsp; AAA Authentication debugging is on<br>
+  &nbsp; AAA Authorization debugging is on<br>
+  VPN:<br>
+  &nbsp; L2X control packets debugging is on<br>
+  &nbsp; VPDN packet errors debugging is on<br>
+  PPP:<br>
+  &nbsp; PPP protocol negotiation debugging is on<br>
+  ISDN:<br>
+  &nbsp; ISDN Q931 packets debugging is on<br>
+  &nbsp; ISDN Q931 packets debug DSLs. (On/Off/No DSL:1/0/-)<br>
+  &nbsp; DSL&nbsp; 0 --&gt; 7<br>
+  &nbsp; 1 - - - - - - -<br>
+  <br>
+  Callback:<br>
+  &nbsp; Callback activity debugging is on<br>
+  Radius protocol debugging is on<br>
+  Modem Management:<br>
+  &nbsp; Modem Management Call Switching Module debugging is on<br>
+  rebeca#<br>
+  Aug 19 16:27:56.800: ISDN Se0:15: RX &lt;-&nbsp; SETUP pd = 8&nbsp; callref
+ = 0x200B<br>
+  Aug 19 16:27:56.800:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Sending
+ Complete<br>
+  Aug 19 16:27:56.800:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Bearer
+ Capability i = 0x8890<br>
+  Aug 19 16:27:56.800:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Channel
+ ID i = 0xA18391<br>
+  Aug 19 16:27:56.800:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Calling
+ Party Number i = 0xA1, '6107', Plan:ISDN, Type:National<br>
+  Aug 19 16:27:56.800:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Called
+ Party Number i = 0x81, '210', Plan:ISDN, Type:Unknown<br>
+  Aug 19 16:27:56.800:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Locking
+ Shift to Codeset 6<br>
+  Aug 19 16:27:56.800:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Codeset
+ 6 IE 0x28&nbsp; i = 'ISDN', 0x20, '7'<br>
+  Aug 19 16:27:56.804: ISDN Se0:15: TX -&gt;&nbsp; CALL_PROC pd = 8&nbsp; 
+callref = 0xA00B<br>
+  Aug 19 16:27:56.804:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Channel
+ ID i = 0xA98391<br>
+  Aug 19 16:27:56.812: %LINK-3-UPDOWN: Interface Serial0:16, changed state
+ to up<br>
+  Aug 19 16:27:56.816: Se0:16 PPP: Treating connection as a callin<br>
+  Aug 19 16:27:56.816: Se0:16 PPP: Phase is ESTABLISHING, Passive Open<br>
+  Aug 19 16:27:56.816: Se0:16 LCP: State is Listen<br>
+  Aug 19 16:27:56.816: ISDN Se0:15: TX -&gt;&nbsp; CONNECT pd = 8&nbsp; callref
+ = 0xA00B<br>
+  Aug 19 16:27:56.816:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Channel
+ ID i = 0xA98391<br>
+  Aug 19 16:27:56.860: ISDN Se0:15: RX &lt;-&nbsp; CONNECT_ACK pd = 8&nbsp;
+ callref = 0x200B<br>
+  Aug 19 16:27:56.860: ISDN Se0:15: CALL_PROGRESS: CALL_CONNECTED call id 
+0x21B, bchan 16, dsl 0<br>
+  Aug 19 16:27:56.968: Se0:16 LCP: I CONFREQ [Listen] id 111 len 29<br>
+  Aug 19 16:27:56.968: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MRU 1492 (0x010405D4)<br>
+  Aug 19 16:27:56.968: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MagicNumber 0x48268ED7
+ (0x050648268ED7)<br>
+  Aug 19 16:27:56.968: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MRRU 1524 (0x110405F4)<br>
+  Aug 19 16:27:56.968: Se0:16 LCP:&nbsp;&nbsp;&nbsp; EndpointDisc 1 Local 
+(0x130B016E61706F6C656F6E)<br>
+  Aug 19 16:27:56.968: Se0:16 AAA/AUTHOR/FSM: (0): LCP succeeds trivially<br>
+  Aug 19 16:27:56.968: Se0:16 LCP: O CONFREQ [Listen] id 3 len 14<br>
+  Aug 19 16:27:56.968: Se0:16 LCP:&nbsp;&nbsp;&nbsp; AuthProto PAP (0x0304C023)<br>
+  Aug 19 16:27:56.968: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MagicNumber 0x68BBD663
+ (0x050668BBD663)<br>
+  Aug 19 16:27:56.968: Se0:16 LCP: O CONFREJ [Listen] id 111 len 8<br>
+  Aug 19 16:27:56.968: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MRRU 1524 (0x110405F4)<br>
+  Aug 19 16:27:57.000: Se0:16 LCP: I CONFACK [REQsent] id 3 len 14<br>
+  Aug 19 16:27:57.000: Se0:16 LCP:&nbsp;&nbsp;&nbsp; AuthProto PAP (0x0304C023)<br>
+  Aug 19 16:27:57.000: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MagicNumber 0x68BBD663
+ (0x050668BBD663)<br>
+  Aug 19 16:27:57.024: Se0:16 LCP: I CONFREQ [ACKrcvd] id 112 len 25<br>
+  Aug 19 16:27:57.024: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MRU 1492 (0x010405D4)<br>
+  Aug 19 16:27:57.024: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MagicNumber 0x48268ED7
+ (0x050648268ED7)<br>
+  Aug 19 16:27:57.024: Se0:16 LCP:&nbsp;&nbsp;&nbsp; EndpointDisc 1 Local 
+(0x130B016E61706F6C656F6E)<br>
+  Aug 19 16:27:57.024: Se0:16 LCP: O CONFNAK [ACKrcvd] id 112 len 8<br>
+  Aug 19 16:27:57.024: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MRU 1500 (0x010405DC)<br>
+  Aug 19 16:27:57.056: Se0:16 LCP: I CONFREQ [ACKrcvd] id 113 len 25<br>
+  Aug 19 16:27:57.056: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MRU 1500 (0x010405DC)<br>
+  Aug 19 16:27:57.056: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MagicNumber 0x48268ED7
+ (0x050648268ED7)<br>
+  Aug 19 16:27:57.056: Se0:16 LCP:&nbsp;&nbsp;&nbsp; EndpointDisc 1 Local 
+(0x130B016E61706F6C656F6E)<br>
+  Aug 19 16:27:57.056: Se0:16 LCP: O CONFACK [ACKrcvd] id 113 len 25<br>
+  Aug 19 16:27:57.056: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MRU 1500 (0x010405DC)<br>
+  Aug 19 16:27:57.056: Se0:16 LCP:&nbsp;&nbsp;&nbsp; MagicNumber 0x48268ED7
+ (0x050648268ED7)<br>
+  Aug 19 16:27:57.056: Se0:16 LCP:&nbsp;&nbsp;&nbsp; EndpointDisc 1 Local 
+(0x130B016E61706F6C656F6E)<br>
+  Aug 19 16:27:57.056: Se0:16 LCP: State is Open<br>
+  Aug 19 16:27:57.056: Se0:16 PPP: Phase is AUTHENTICATING, by this end<br>
+  Aug 19 16:27:57.096: Se0:16 PAP: I AUTH-REQ id 114 len 39 from "vadim_ms@@vadim.domain"<br>
+  Aug 19 16:27:57.100: Se0:16 PPP: Phase is FORWARDING<br>
+  Aug 19 16:27:57.100: AAA: parse name=Serial0:16 idb type=13 tty=-1<br>
+  Aug 19 16:27:57.100: AAA: name=Serial0:16 flags=0x51 type=1 shelf=0 slot=0
+ adapter=0 port=0 channel=16<br>
+  Aug 19 16:27:57.100: AAA: parse name=&lt;no string&gt; idb type=-1 tty=-1<br>
+  Aug 19 16:27:57.100: AAA/MEMORY: create_user (0x61E449D8) user='vadim.domain'
+ ruser='' port='Serial0:16' rem_addr='6107/210' authen_type=NONE service=LOGIN
+ priv=0<br>
+  Aug 19 16:27:57.100: Serial0:16 AAA/AUTHOR/VPDN (3640131419): Port='Serial0:16'
+ list='default' service=NET<br>
+  Aug 19 16:27:57.100: AAA/AUTHOR/VPDN: Serial0:16 (3640131419) user='vadim.domain'<br>
+  Aug 19 16:27:57.100: Serial0:16 AAA/AUTHOR/VPDN (3640131419): send AV service=ppp<br>
+  Aug 19 16:27:57.100: Serial0:16 AAA/AUTHOR/VPDN (3640131419): send AV protocol=vpdn<br>
+  Aug 19 16:27:57.100: Serial0:16 AAA/AUTHOR/VPDN (3640131419): found list
+ "default"<br>
+  Aug 19 16:27:57.100: Serial0:16 AAA/AUTHOR/VPDN (3640131419): Method=radius
+ (radius)<br>
+  Aug 19 16:27:57.100: RADIUS: authenticating to get author data<br>
+  Aug 19 16:27:57.100: RADIUS: ustruct sharecount=2<br>
+  Aug 19 16:27:57.100: RADIUS: Initial Transmit Serial0:16 id 33 10.200.20.133:1645,
+ Access-Request, len 94<br>
+  Aug 19 16:27:57.100:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute
+ 4 6 0AC81421<br>
+  Aug 19 16:27:57.100:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute
+ 5 6 00004E30<br>
+  Aug 19 16:27:57.100:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute
+ 61 6 00000002<br>
+  Aug 19 16:27:57.100:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute
+ 1 21 76616469<br>
+  Aug 19 16:27:57.100:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute
+ 30 5 3231301F<br>
+  Aug 19 16:27:57.100:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute
+ 31 6 36313037<br>
+  Aug 19 16:27:57.100:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute
+ 2 18 27E5CBEE<br>
+  Aug 19 16:27:57.100:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute
+ 6 6 00000005<br>
+  Aug 19 16:27:57.120: RADIUS: Received from id 33 10.200.20.133:1645, Access-Accept,
+ len 225<br>
+  Aug 19 16:27:57.120:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute
+ 6 6 00000005<br>
+  Aug 19 16:27:57.120:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute
+ 26 38 0000000901207670<br>
+  Aug 19 16:27:57.120:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute
+ 26 29 0000000901177670<br>
+  Aug 19 16:27:57.120: RADIUS: saved authorization data for user 61E449D8 
+at 61AD89D8<br>
+  Aug 19 16:27:57.120: RADIUS: cisco AVPair "vpdn:ip-addresses=10.200.16.33"<br>
+  Aug 19 16:27:57.120: RADIUS: cisco AVPair "vpdn:tunnel-type=l2tp"<br>
+  Aug 19 16:27:57.120: AAA/AUTHOR (3640131419): Post authorization status 
+= PASS_REPL<br>
+  Aug 19 16:27:57.120: AAA/AUTHOR/VPDN: Processing AV ip-addresses=10.200.16.33<br>
+  Aug 19 16:27:57.120: AAA/AUTHOR/VPDN: Processing AV tunnel-type=l2tp<br>
+  Aug 19 16:27:57.120: AAA/MEMORY: free_user (0x61E449D8) user='vadim.domain'
+ ruser='' port='Serial0:16' rem_addr='6107/210' authen_type=NONE service=LOGIN
+ priv=0<br>
+  Aug 19 16:27:57.124: Tnl 27929 L2TP: <font color="#33cc00"><b>O </b></font><font color="#33cc00"><b><font>
+  SCCRQ</font></b></font><br>
+  <b><font color="#3333ff">[Start control connection request <font color="#ff0000">
+  (msg type 1</font><font color="#ff0000">)</font>; requires AVP 0, 2, 3, 
+7, 9]</font></b><br>
+  Aug 19 16:27:57.124: Tnl 27929 L2TP: <font color="#33cc00"><b>O </b></font><font color="#33cc00"><b><font>
+  SCCRQ</font></b></font>, flg TLS, ver 2, len 131, tnl 0, cl 0, ns 0, nr 
+0<br>
+  <font color="#3333ff"><b>[Start control connection request <font color="#ff0000">
+  (msg type 1</font><font color="#ff0000">)</font>; requires AVP 0, 2, 3, 
+7, 9]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 83 00 00 00 00
+ 00 00 00 00 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 01 80 08 00 00
+ 00 02 01 00 80 0A 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 03 00 00 00 00 80 0A
+ 00 00 00 04 00 00 00 ...<br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Clean Queue packet 0<br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Parse&nbsp; <font color="#33cc00"><b><font>
+  AVP</font></b></font><font color="#33cc00"><b> 0</b></font>, len 8, flag
+ 0x8000 (M)<br>
+  <font color="#3333ff"><b>[Message type]</b></font><br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Parse <font color="#33cc00"><b>SCCRP</b></font><br>
+  <font color="#3333ff"><b>[Start control connection reply <font color="#ff0000">
+  (msg type 2</font><font color="#ff0000">)</font>; requires AVP 0, 2, 3, 
+7, 9]</b></font><br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Parse&nbsp; AVP 2, len 8, flag 0x8000
+ (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control</font><font color="#ff0000">
+  :</font> protocol version]</b></font><br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Protocol Ver 256<br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Parse&nbsp; <font color="#33cc00"><b><font>
+  AVP</font></b></font><font color="#33cc00"><b> 3</b></font>, len 10, flag
+ 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control</font>: framing 
+capabilities </b><font color="#ff0000"><b>(async, sync)</b></font><b>]</b></font><br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Framing Cap 0x0<br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Parse&nbsp; <font color="#33cc00"><b><font>
+  AVP</font></b></font><font color="#33cc00"><b> 4</b></font>, len 10, flag
+ 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> bearer
+capabilities  <font color="#ff0000">(analogue, digital)</font>]</b></font><br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Bearer Cap 0x0<br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Parse&nbsp; <font color="#33cc00"><b><font>
+  AVP</font></b></font><font color="#33cc00"><b> 6</b></font>, len 8, flag
+ 0x0<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> firmware
+ revision]</b></font><br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Firmware Ver 0x1120<br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Parse&nbsp; <font color="#33cc00"><b><font>
+  AVP</font></b></font><font color="#33cc00"><b> 7</b></font>, len 14, flag
+ 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> host name]</b></font><br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Hostname loteling<br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Parse&nbsp; <font color="#33cc00"><b><font>
+  AVP</font></b></font><font color="#33cc00"><b> 8</b></font>, len 25, flag
+ 0x0<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> vendor
+name]</b></font><br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Vendor Name Cisco Systems, Inc.<br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Parse&nbsp; <font color="#33cc00"><b><font>
+  AVP</font></b></font><font color="#33cc00"><b> 9</b></font>, len 8, flag
+ 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> assigned
+ tunnel ID]</b></font><br>
+  Aug 19 16:27:57.240: Tnl 27929 L2TP: Assigned Tunnel ID 61627<br>
+  Aug 19 16:27:57.244: Tnl 27929 L2TP: Parse&nbsp; <font color="#33cc00"><b>
+  AVP 10</b></font>, len 8, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> receive 
+window size]</b></font><br>
+  Aug 19 16:27:57.244: Tnl 27929 L2TP: Rx Window Size 300<br>
+  Aug 19 16:27:57.244: Tnl 27929 L2TP: Parse&nbsp; <font color="#33cc00"><b>
+  AVP 11</b></font>, len 22, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> authentication
+ challenge]</b></font><br>
+  Aug 19 16:27:57.244: Tnl 27929 L2TP: Chlng<br>
+  C628C2F159BE212D3986ABE58B14542F<br>
+  Aug 19 16:27:57.244: Tnl 27929 L2TP: Parse&nbsp; <font color="#33cc00"><b>
+  AVP 13</b></font>, len 22, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> authentication
+ response]</b></font><br>
+  Aug 19 16:27:57.244: Tnl 27929 L2TP: Chlng Resp<br>
+  780AEF958685276457C6356981049E94<br>
+  Aug 19 16:27:57.244: Tnl 27929 L2TP: No missing AVPs in SCCRP<br>
+  Aug 19 16:27:57.244: Tnl 27929 L2TP: <font color="#33cc00"><b>I SCCRP</b></font>
+  , flg TLS, ver 2, len 155, tnl 27929, cl 0, ns 0, nr 1<br>
+  <font color="#3333ff"><b>[Start control connection reply <font color="#ff0000">
+  (msg type 2)</font>; requires AVP 0, 2, 3, 7, 9]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 9B 6D 19 00 00
+ 00 00 00 01 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 02 80 08 00 00
+ 00 02 01 00 80 0A 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 03 00 00 00 00 80 0A
+ 00 00 00 04 00 00 00 ...<br>
+  Aug 19 16:27:57.244: Tnl 27929 L2TP: <font color="#33cc00"><b>I SCCRP</b></font>
+   from loteling<br>
+  <font color="#3333ff"><b>[Start control connection reply <font color="#ff0000">
+  (msg type 2)</font>; requires AVP 0, 2, 3, 7, 9]</b></font><br>
+  Aug 19 16:27:57.244: Tnl 27929 L2TP: <font color="#33cc00"><b>O SCCCN</b></font>
+  &nbsp; to loteling tnlid 61627<br>
+  <font color="#3333ff"><b>[Start control connection connected <font color="#ff0000">
+  (msg type 3)</font>; requires AVP 0]</b></font><br>
+  Aug 19 16:27:57.244: Tnl 27929 L2TP: <font color="#33cc00"><b>O SCCCN</b></font>
+  , flg TLS, ver 2, len 42, tnl 61627, cl 0, ns 1, nr 1<br>
+  <font color="#3333ff"><b>[Start control connection connected <font color="#ff0000">
+  (msg type 3)</font>; requires AVP 0]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 2A F0 BB 00 00
+ 00 01 00 01 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 03 80 16 00 00
+ 00 0D 9D 1A 4B 25 14 32<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; F5 D8 FD 03 1F C6 94 60
+ 22 47<br>
+  Aug 19 16:27:57.248: AAA: parse name=Serial0:16 idb type=13 tty=-1<br>
+  Aug 19 16:27:57.248: AAA: name=Serial0:16 flags=0x51 type=1 shelf=0 slot=0
+ adapter=0 port=0 channel=16<br>
+  Aug 19 16:27:57.248: AAA: parse name=&lt;no string&gt; idb type=-1 tty=-1<br>
+  Aug 19 16:27:57.248: AAA/MEMORY: create_user (0x61BEB470) user='vadim_ms@@vadim.domain'
+ ruser='' port='Serial0:16' rem_addr='6107/210' authen_type=CHAP service=PPP
+ priv=1<br>
+  Aug 19 16:27:57.248: Se0:16 Tnl/Cl 27929/5 L2TP: <font color="#33cc00"><b>
+  O ICRQ</b></font> to loteling 61627/0<br>
+  <font color="#3333ff"><b>[Incoming data call request <font color="#ff0000">
+  (LAC -&gt; LNS, msg type 10)</font>; requires AVP 0, 14, 15]</b></font><br>
+  Aug 19 16:27:57.248: Se0:16 Tnl/Cl 27929/5 L2TP: <font color="#33cc00"><b>
+  O ICRQ</b></font>, flg TLS, ver 2, len 83, tnl 61627, cl 0, ns 2, nr 1<br>
+  <font color="#3333ff"><b>[Incoming data call request <font color="#ff0000">
+  (LAC -&gt; LNS, msg type 10)</font>; requires AVP 0, 14, 15]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 53 F0 BB 00 00
+ 00 02 00 01 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 0A 80 08 00 00
+ 00 0E 00 05 80 0A 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 0F 00 00 00 04 80 0A
+ 00 00 00 12 00 00 00 ...<br>
+  Aug 19 16:27:57.300: Tnl 27929 L2TP: Clean Queue packet 1<br>
+  Aug 19 16:27:57.300: Tnl 27929 L2TP: Clean Queue packet 2<br>
+  Aug 19 16:27:57.300: Tnl 27929 L2TP: I ZLB ctrl ack, flg TLS, ver 2, len
+ 12, tnl 27929, cl 0, ns 1, nr 2<br>
+  Aug 19 16:27:57.412: Tnl 27929 L2TP: Clean Queue packet 2<br>
+  Aug 19 16:27:57.412: Se0:16 Tnl/Cl 27929/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>
+  AVP 0</b></font>, len 8, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[Message type]</b></font><br>
+  Aug 19 16:27:57.412: Se0:16 Tnl/Cl 27929/5 L2TP: <font color="#33cc00"><b>
+  Parse ICRP</b></font><br>
+  <font color="#3333ff"><b>[Incoming data call reply (<font color="#ff0000">
+  LAC &lt;- LNS, msg type 11)</font>; requires AVP 0, 14]</b></font><br>
+  Aug 19 16:27:57.412: Se0:16 Tnl/Cl 27929/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>
+  AVP 14</b></font>, len 8, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[Data, call: Assigned session ID]</b></font><br>
+  Aug 19 16:27:57.412: Se0:16 Tnl/Cl 27929/5 L2TP: Assigned Call ID 5<br>
+  Aug 19 16:27:57.412: Se0:16 Tnl/Cl 27929/5 L2TP: No missing AVPs in ICRP<br>
+  Aug 19 16:27:57.412: Se0:16 Tnl/Cl 27929/5 L2TP: <font color="#33cc00"><b>
+  I ICRP</b></font>, flg TLS, ver 2, len 28, tnl 27929, cl 5, ns 1, nr 3<br>
+  <font color="#3333ff"><b>[Incoming data call reply <font color="#ff0000">
+  (LAC &lt;- LNS, msg type 11)</font>; requires AVP 0, 14]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 1C 6D 19 00 05
+ 00 01 00 03 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 0B 80 08 00 00
+ 00 0E 00 05<br>
+  Aug 19 16:27:57.412: Se0:16 Tnl/Cl 27929/5 L2TP: <font color="#33cc00"><b>
+  O ICCN</b></font> to loteling 61627/5<br>
+  <font color="#3333ff"><b>[Incoming data call connected <font color="#ff0000">
+  (LAC -&gt; LNS, msg type 12)</font>; requires AVP 0, 19, 24]</b></font><br>
+  Aug 19 16:27:57.412: Se0:16 Tnl/Cl 27929/5 L2TP: <font color="#33cc00"><b>
+  O ICCN</b></font>, flg TLS, ver 2, len 154, tnl 61627, cl 5, ns 3, nr 2<br>
+  <font color="#3333ff"><b>[Incoming data call connected <font color="#ff0000">
+  (LAC -&gt; LNS, msg type 12)</font>; requires AVP 0, 19, 24]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 9A F0 BB 00 05
+ 00 03 00 02 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 0C 80 0A 00 00
+ 00 18 00 00 FA 00 00 0A<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 26 00 00 FA 00
+ 80 0A 00 00 00 13 00 ...<br>
+  Aug 19 16:27:57.536: Tnl 27929 L2TP: Clean Queue packet 3<br>
+  Aug 19 16:27:57.536: Tnl 27929 L2TP: I ZLB ctrl ack, flg TLS, ver 2, len
+ 12, tnl 27929, cl 0, ns 2, nr 4<br>
+  Aug 19 16:27:58.248: %LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0:16,
+ changed state to up<br>
+  Aug 19 16:28:02.816: %ISDN-6-CONNECT: Interface Serial0:16 is now connected
+ to 6107 vadim_ms@@vadim.domain<br>
+   
+<div align="Center">  
+<h2>Decoded debugs from LNS</h2>
+  </div>
+  loteling#sh debug<br>
+  General OS:<br>
+  &nbsp; AAA Authentication debugging is on<br>
+  &nbsp; AAA Authorization debugging is on<br>
+  VPN:<br>
+  &nbsp; L2X protocol events debugging is on<br>
+  &nbsp; L2X control packets debugging is on<br>
+  &nbsp; L2X protocol errors debugging is on<br>
+  &nbsp; VPDN events debugging is on<br>
+  &nbsp; VPDN errors debugging is on<br>
+  &nbsp; VPDN packet errors debugging is on<br>
+  PPP:<br>
+  &nbsp; PPP protocol negotiation debugging is on<br>
+  VTEMPLATE:<br>
+  &nbsp; Virtual Template debugging is on<br>
+  Radius protocol debugging is on<br>
+  loteling#<br>
+  2w3d: L2X: Parse&nbsp; <font color="#33cc00"><b>AVP 0</b></font>, len 8,
+ flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[Message type]</b></font><br>
+  2w3d: L2X: <font color="#33cc00"><b>Parse SCCRQ</b></font><br>
+  <font color="#3333ff"><b>[Start control connection request <font color="#ff0000">
+  (msg type 1)</font>; requires AVP 0, 2, 3, 7, 9]</b></font><br>
+  2w3d: L2X: Parse&nbsp; <font color="#33cc00"><b>AVP 2</b></font>, len 8,
+ flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> protocol
+ version]</b></font><br>
+  2w3d: L2X: Protocol Ver 256<br>
+  2w3d: L2X: Parse&nbsp; <font color="#33cc00"><b>AVP 3</b></font>, len 10,
+ flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> framing 
+capabilities <font color="#ff0000">(async, sync)</font>]</b></font><br>
+  2w3d: L2X: Framing Cap 0x0<br>
+  2w3d: L2X: Parse&nbsp; <font color="#33cc00"><b>AVP 4</b></font>, len 10,
+ flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> bearer
+capabilities  (analogue, digital)]</b></font><br>
+  2w3d: L2X: Bearer Cap 0x0<br>
+  2w3d: L2X: Parse&nbsp; <font color="#33cc00"><b>AVP 6</b></font>, len 8,
+ flag 0x0<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> firmware
+ revision]</b></font><br>
+  2w3d: L2X: Firmware Ver 0x1130<br>
+  2w3d: L2X: Parse&nbsp; <font color="#33cc00"><b>AVP 7</b></font>, len 12,
+ flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> host name]</b></font><br>
+  2w3d: L2X: Hostname rebeca<br>
+  2w3d: L2X: Parse&nbsp; <font color="#33cc00"><b>AVP 8</b></font>, len 25,
+ flag 0x0<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> vendor
+name]</b></font><br>
+  2w3d: L2X: Vendor Name Cisco Systems, Inc.<br>
+  2w3d: L2X: Parse&nbsp; <font color="#33cc00"><b>AVP 9</b></font>, len 8,
+ flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> assigned
+ tunnel ID]</b></font><br>
+  2w3d: L2X: Assigned Tunnel ID 27929<br>
+  2w3d: L2X: Parse&nbsp; <font color="#33cc00"><b>AVP 10</b></font>, len
+8,  flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> receive 
+window size]</b></font><br>
+  2w3d: L2X: Rx Window Size 800<br>
+  2w3d: L2X: Parse&nbsp; <font color="#33cc00"><b>AVP 11</b></font>, len
+22,  flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Control:</font> authentication
+ challenge]</b></font><br>
+  2w3d: L2X: Chlng 73D48340DB0C0AF8DF399CB04FA99CC7<br>
+  2w3d: L2X: No missing AVPs in SCCRQ<br>
+  2w3d: L2X: <font color="#33cc00"><b>I SCCRQ</b></font>, flg TLS, ver 2, 
+len 131, tnl 0, cl 0, ns 0, nr 0<br>
+  <font color="#3333ff"><b>[Start control connection request <font color="#ff0000">
+  (msg type 1)</font>; requires AVP 0, 2, 3, 7, 9]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 83 00 00 00 00
+ 00 00 00 00 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 01 80 08 00 00
+ 00 02 01 00 80 0A 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 03 00 00 00 00 80 0A
+ 00 00 00 04 00 00 00 ...<br>
+  2w3d: L2TP: <font color="#33cc00"><b>I SCCRQ</b></font> from rebeca tnl 
+27929<br>
+  <font color="#3333ff"><b>[Start control connection request <font color="#ff0000">
+  (msg type 1)</font>; requires AVP 0, 2, 3, 7, 9]</b></font><br>
+  2w3d: Tnl 61627 L2TP: Got a challenge in SCCRQ, rebeca<br>
+  2w3d: Tnl 61627 L2TP: New tunnel created for remote rebeca, address 10.200.20.33<br>
+  2w3d: Tnl 61627 L2TP: <font color="#33cc00"><b>O SCCRP</b></font>&nbsp; 
+to rebeca tnlid 27929<br>
+  <font color="#3333ff"><b>[Start control connection reply <font color="#ff0000">
+  (msg type 2)</font>; requires AVP 0, 2, 3, 7, 9]</b></font><br>
+  2w3d: Tnl 61627 L2TP: <font color="#33cc00"><b>O SCCRP</b></font>, flg
+TLS,  ver 2, len 155, tnl 27929, cl 0, ns 0, nr 1<br>
+  <font color="#3333ff"><b>[Start control connection reply <font color="#ff0000">
+  (msg type 2)</font>; requires AVP 0, 2, 3, 7, 9]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 9B 6D 19 00 00
+ 00 00 00 01 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 02 80 08 00 00
+ 00 02 01 00 80 0A 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 03 00 00 00 00 80 0A
+ 00 00 00 04 00 00 00 ...<br>
+  2w3d: Tnl 61627 L2TP: Tunnel state change from idle to wait-ctl-reply<br>
+  2w3d: Tnl 61627 L2TP: Clean Queue packet 0<br>
+  2w3d: Tnl 61627 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 0</b></font>
+  , len 8, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[Message type]</b></font><br>
+  2w3d: Tnl 61627 L2TP: <b><font color="#33cc00">Parse SCCCN</font></b><br>
+  <font color="#3333ff"><b>[Start control connection connected (msg type
+3);  requires AVP 0]</b></font><br>
+  2w3d: Tnl 61627 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 13</b></font>
+  , len 22, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[Control: authentication response]</b></font><br>
+  2w3d: Tnl 61627 L2TP: Chlng Resp&nbsp; 9D1A4B251432F5D8FD031FC694602247<br>
+  2w3d: Tnl 61627 L2TP: No missing AVPs in SCCCN<br>
+  2w3d: Tnl 61627 L2TP: <font color="#33cc00"><b>I SCCCN</b></font>, flg
+TLS,  ver 2, len 42, tnl 61627, cl 0, ns 1, nr 1<br>
+  <font color="#3333ff"><b>[Start control connection connected <font color="#ff0000">
+  (msg type 3)</font>; requires AVP 0]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 2A F0 BB 00 00
+ 00 01 00 01 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 03 80 16 00 00
+ 00 0D 9D 1A 4B 25 14 32<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; F5 D8 FD 03 1F C6 94 60
+ 22 47<br>
+  2w3d: Tnl 61627 L2TP: O ZLB ctrl ack, flg TLS, ver 2, len 12, tnl 27929,
+ cl 0, ns 1, nr 2<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 0C 6D 19 00 00
+ 00 01 00 02<br>
+  2w3d: Tnl 61627 L2TP: <font color="#33cc00"><b>I SCCCN</b></font> from
+rebeca  tnl 27929<br>
+  <font color="#3333ff"><b>[Start control connection connected <font color="#ff0000">
+  (msg type 3)</font>; requires AVP 0]</b></font><br>
+  2w3d: Tnl 61627 L2TP: Got a Challenge Response in SCCCN from rebeca<br>
+  2w3d: Tnl 61627 L2TP: Tunnel Authentication success<br>
+  2w3d: Tnl 61627 L2TP: Tunnel state change from wait-ctl-reply to established<br>
+  2w3d: Tnl 61627 L2TP: SM State established<br>
+  2w3d: Tnl 61627 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 0</b></font>
+  , len 8, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[Message type]</b></font><br>
+  2w3d: Tnl 61627 L2TP: <font color="#33cc00"><b>Parse ICRQ</b></font><br>
+  <font color="#3333ff"><b>[Incoming data call request <font color="#ff0000">
+  (LAC -&gt; LNS, msg type 10)</font>; requires AVP 0, 14, 15]</b></font><br>
+  2w3d: Tnl 61627 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 14</b></font>
+  , len 8, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, call</font>: Assigned
+ session ID]</b></font><br>
+  2w3d: Tnl 61627 L2TP: Assigned Call ID 5<br>
+  2w3d: Tnl 61627 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 15</b></font>
+  , len 10, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, call</font>: call 
+serial number]</b></font><br>
+  2w3d: Tnl 61627 L2TP: Serial Number<br>
+  2w3d: Tnl 61627 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 18</b></font>
+  , len 10, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, call</font>: bearer
+ type <font color="#ff0000">(analogue, digital)</font>]</b></font><br>
+  2w3d: Tnl 61627 L2TP: Bearer Type 1<br>
+  2w3d: Tnl 61627 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 22</b></font>
+  , len 10, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, call:</font> calling
+ number]</b></font><br>
+  2w3d: Tnl 61627 L2TP: Calling Number 6107<br>
+  2w3d: Tnl 61627 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 21</b></font>
+  , len 9, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, call:</font> called
+ number]</b></font><br>
+  2w3d: Tnl 61627 L2TP: Called Number 210<br>
+  2w3d: Tnl 61627 L2TP: Parse Cisco AVP 100, len 16, flag 0x0<br>
+  2w3d: Tnl 61627 L2TP: Client NAS Port Serial0:16<br>
+  2w3d: Tnl 61627 L2TP: No missing AVPs in ICRQ<br>
+  2w3d: Tnl 61627 L2TP: <font color="#33cc00"><b>I ICRQ</b></font>, flg TLS,
+ ver 2, len 83, tnl 61627, cl 0, ns 2, nr 1<br>
+  <font color="#3333ff"><b>[Incoming data call request <font color="#ff0000">
+  (LAC -&gt; LNS, msg type 10)</font>; requires AVP 0, 14, 15]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 53 F0 BB 00 00
+ 00 02 00 01 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 0A 80 08 00 00
+ 00 0E 00 05 80 0A 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 0F 00 00 00 04 80 0A
+ 00 00 00 12 00 00 00 ...<br>
+  2w3d: Tnl 61627 L2TP: <font color="#33cc00"><b>I ICRQ</b></font> from rebeca
+ tnl 27929<br>
+  <font color="#3333ff"><b>[Incoming data call request <font color="#ff0000">
+  (LAC -&gt; LNS, msg type 10)</font>; requires AVP 0, 14, 15]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Session FS enabled<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Session state change from idle to wait-connect<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: New session created<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: <font color="#33cc00"><b>O ICRP</b></font> to
+ rebeca 27929/5<br>
+  <font color="#3333ff"><b>[Incoming data call reply <font color="#ff0000">
+  (LAC &lt;- LNS, msg type 11)</font>; requires AVP 0, 14]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: <font color="#33cc00"><b>O ICRP</b></font>,
+flg  TLS, ver 2, len 28, tnl 27929, cl 5, ns 1, nr 3<br>
+  <font color="#3333ff"><b>[Incoming data call reply <font color="#ff0000">
+  (LAC &lt;- LNS, msg type 11)</font>; requires AVP 0, 14]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 1C 6D 19 00 05
+ 00 01 00 03 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 0B 80 08 00 00
+ 00 0E 00 05<br>
+  2w3d: Tnl 61627 L2TP: Clean Queue packet 1<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 0</b></font>
+  , len 8, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[Message type]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: <font color="#33cc00"><b>Parse ICCN</b></font><br>
+  <font color="#3333ff"><b>[Incoming data call connected <font color="#ff0000">
+  (LAC -&gt; LNS, msg type 12)</font>; requires AVP 0, 19, 24]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 24</b></font>
+  , len 10, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, call:</font> LAC
+(Tx)  connect speed]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Connect Speed 64000<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 38</b></font>
+  , len 10, flag 0x0<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, call:</font> LAC
+Rx  connect speed]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Rx Speed 64000<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 19</b></font>
+  , len 10, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, call:</font> framing
+ type (async, sync)]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Framing Type 1<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 27</b></font>
+  , len 16, flag 0x0<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, PPP:</font> last
+sent  LCP CONFREQ]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Last Sent LCPREQ 0304C023050668BBD663<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 28</b></font>
+  , len 27, flag 0x0<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, PPP:</font> last
+received  LCP CONFREQ]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Last Rx LCPREQ<br>
+  01005DC050648268ED7130B016E61706F6C656F6E<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 32</b></font>
+  , len 8, flag 0x0<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, PPP:</font>&nbsp; 
+LAC proxy authentication ID]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Proxy Auth ID 114<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 30</b></font>
+  , len 34, flag 0x0<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, PPP:</font> LAC proxy
+ authentication name]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Proxy Auth Name vadim_ms@@vadim.domain<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 33</b></font>
+  , len 11, flag 0x8000 (M)<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, PPP:</font> LAC proxy
+ authentication response]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Proxy Auth Resp<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 76 61 64 69 6D<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Parse&nbsp; <font color="#33cc00"><b>AVP 29</b></font>
+  , len 8, flag 0x0<br>
+  <font color="#3333ff"><b>[<font color="#ff0000">Data, PPP:</font> LAC proxy
+ authentication type]</b></font><font color="#3333ff"><b><br>
+  </b></font><font color="#3333ff"><b>[ <font color="#ff0000">1 text name/pass
+ exchange</font>; requires AVP 33]</b></font><font color="#3333ff"><b><br>
+  </b></font><font color="#3333ff"><b>[ <font color="#ff0000">2 CHAP</font>
+  ; requires AVP 31, 32, 33]</b></font><font color="#3333ff"><b><br>
+  </b></font><font color="#3333ff"><b>[ <font color="#ff0000">3 PAP</font>
+ ; requires AVP 32, 33]</b></font><font color="#3333ff"><b><br>
+  </b></font><font color="#3333ff"><b>[ <font color="#ff0000">4 no authentication</font>
+  ]</b></font><font color="#3333ff"><b><br>
+  </b></font><font color="#3333ff"><b>[ <font color="#ff0000">5 MSCHAP ver.
+ 1</font>; requires AVP 31, 32, 33]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Proxy Auth Type 3<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: No missing AVPs in ICCN<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: <font color="#33cc00"><b>I ICCN</b></font>,
+flg  TLS, ver 2, len 154, tnl 61627, cl 5, ns 3, nr 2<br>
+  <font color="#3333ff"><b>[Incoming data call connected <font color="#ff0000">
+  (LAC -&gt; LNS, msg type 12)</font>; requires AVP 0, 19, 24]</b></font><br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 9A F0 BB 00 05
+ 00 03 00 02 80 08 00 00<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 0C 80 0A 00 00
+ 00 18 00 00 FA 00 00 0A<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 00 00 00 26 00 00 FA 00
+ 80 0A 00 00 00 13 00 ...<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: O ZLB ctrl ack, flg TLS, ver 2, len 12, tnl
+27929,  cl 0, ns 2, nr 4<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C8 02 00 0C 6D 19 00 00
+ 00 02 00 04<br>
+  2w3d: Tnl/Cl 61627/5 L2TP: <font color="#33cc00"><b>I ICCN</b></font> from
+ rebeca tnl 27929, cl 5<br>
+  <font color="#3333ff"><b>[Incoming data call connected <font color="#ff0000">
+  (LAC -&gt; LNS, msg type 12)</font>; requires AVP 0, 19, 24]</b></font><br>
+  2w3d: Tnl/Cl 61627/5 L2TP: Session state change from wait-connect to established<br>
+  2w3d: Vt1 VTEMPLATE: Unable to create and clone vaccess<br>
+  2w3d: Vi1 VTEMPLATE: Reuse Vi1, recycle queue size 0<br>
+  2w3d: Vi1 VTEMPLATE: Hardware address 0000.0c4a.4313<br>
+  2w3d: Vi1 VPDN: Virtual interface created for vadim_ms@@vadim.domain<br>
+  2w3d: Vi1 PPP: Phase is DOWN, Setup<br>
+  2w3d: Vi1 VPDN: Clone from Vtemplate 1 filterPPP=0 blocking<br>
+  2w3d: Vi1 VTEMPLATE: Has a new cloneblk vtemplate, now it has vtemplate<br>
+  2w3d: Vi1 VTEMPLATE: ************* CLONE VACCESS1 *****************<br>
+  2w3d: Vi1 VTEMPLATE: Clone from Virtual-Template1<br>
+  interface Virtual-Access1<br>
+  default ip address<br>
+  no ip address<br>
+  encap ppp<br>
+  ip unnumbered Ethernet0<br>
+  peer default ip address pool vadim_pool<br>
+  ppp authentication pap<br>
+  ppp multilink<br>
+  ip unnumbered loopback 0<br>
+  peer default ip address pool vadim_pool<br>
+  ip address 10.200.16.33 255.255.255.255<br>
+  ip address 10.0.0.1 255.255.255.255<br>
+  ip address 10.0.0.1 255.255.255.128<br>
+  end<br>
+  <br>
+  2w3d: Vi1 VTEMPLATE: Messages from (un)cloning ...<br>
+  Bad mask /32 for address 10.200.16.33Bad mask /32 for address 10.0.0.1<br>
+  2w3d: %LINK-3-UPDOWN: Interface Virtual-Access1, changed state to up<br>
+  2w3d: Vi1 PPP: Using set call direction<br>
+  2w3d: Vi1 PPP: Treating connection as a callin<br>
+  2w3d: Vi1 PPP: Phase is ESTABLISHING, Passive Open<br>
+  2w3d: Vi1 LCP: State is Listen<br>
+  2w3d: Vi1 VPDN: Bind interface direction=2<br>
+  2w3d: Vi1 LCP: I FORCED CONFREQ len 10<br>
+  2w3d: Vi1 LCP:&nbsp;&nbsp;&nbsp; AuthProto PAP (0x0304C023)<br>
+  2w3d: Vi1 LCP:&nbsp;&nbsp;&nbsp; MagicNumber 0x68BBD663 (0x050668BBD663)<br>
+  2w3d: Vi1 VPDN: PPP LCP accepted rcv CONFACK<br>
+  2w3d: Vi1 LCP: I FORCED CONFACK len 21<br>
+  2w3d: Vi1 LCP:&nbsp;&nbsp;&nbsp; MRU 1500 (0x010405DC)<br>
+  2w3d: Vi1 LCP:&nbsp;&nbsp;&nbsp; MagicNumber 0x48268ED7 (0x050648268ED7)<br>
+  2w3d: Vi1 LCP:&nbsp;&nbsp;&nbsp; EndpointDisc 1 Local (0x130B016E61706F6C656F6E)<br>
+  2w3d: Vi1 VPDN: PPP LCP accepted sent CONFACK<br>
+  2w3d: Vi1 PPP: Phase is AUTHENTICATING, by this end<br>
+  2w3d: Vi1 PAP: I AUTH-REQ id 114 len 39 from "vadim_ms@@vadim.domain"<br>
+  2w3d: Vi1 PAP: Authenticating peer vadim_ms@@vadim.domain<br>
+  2w3d: AAA: parse name=Virtual-Access1 idb type=21 tty=-1<br>
+  2w3d: AAA: name=Virtual-Access1 flags=0x11 type=5 shelf=0 slot=0 adapter=0
+ port=1 channel=0<br>
+  2w3d: AAA/MEMORY: create_user (0x4D3A08) user='vadim_ms@@vadim.domain' ruser=''
+ port='Virtual-Access1' rem_addr='6107/210' authen_type=PAP service=PPP priv=1<br>
+  2w3d: AAA/AUTHEN/START (32077094): port='Virtual-Access1' list='' action=LOGIN
+ service=PPP<br>
+  2w3d: AAA/AUTHEN/START (32077094): using "default" list<br>
+  2w3d: AAA/AUTHEN/START (32077094): Method=LOCAL<br>
+  2w3d: AAA/AUTHEN (32077094): status = ERROR<br>
+  2w3d: AAA/AUTHEN/START (32077094): Method=radius (radius)<br>
+  2w3d: RADIUS: ustruct sharecount=1<br>
+  2w3d: RADIUS: Initial Transmit Virtual-Access1 id 3 10.200.20.133:1645, 
+Access-Request, len 109<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 4 6 0AC81021<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 5 6 00000001<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 61 6 00000005<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 1 30 76616469<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 30 5 3231301F<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 31 6 36313037<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 2 18 D8E8C174<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 6 6 00000002<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 7 6 00000001<br>
+  2w3d: RADIUS: Received from id 3 10.200.20.133:1645, Access-Accept, len 
+234<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 26 37 00000009011F6172<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 26 37 00000009011F736C<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 26 38 0000000901207368<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 26 36 00000009011E6C63<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 7 6 00000001<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 6 6 00000002<br>
+  2w3d:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Attribute 26 54 0000000901306C63<br>
+  2w3d: RADIUS: saved authorization data for user 4D3A08 at 4D3B30<br>
+  2w3d: AAA/AUTHEN (32077094): status = PASS<br>
+  2w3d: Vi1 AAA/AUTHOR/LCP: Authorize LCP<br>
+  2w3d: Vi1 AAA/AUTHOR/LCP (2510656111): Port='Virtual-Access1' list='' service=NET<br>
+  2w3d: AAA/AUTHOR/LCP: Vi1 (2510656111) user='vadim_ms@@vadim.domain'<br>
+  2w3d: Vi1 AAA/AUTHOR/LCP (2510656111): send AV service=ppp<br>
+  2w3d: Vi1 AAA/AUTHOR/LCP (2510656111): send AV protocol=lcp<br>
+  2w3d: Vi1 AAA/AUTHOR/LCP (2510656111): found list "default"<br>
+  2w3d: Vi1 AAA/AUTHOR/LCP (2510656111): Method=LOCAL<br>
+  2w3d: AAA/AUTHOR/LOCAL: no entry for vadim_ms@@vadim.domain<br>
+  2w3d: Vi1 AAA/AUTHOR (2510656111): Post authorization status = ERROR<br>
+  2w3d: Vi1 AAA/AUTHOR/LCP (2510656111): Method=radius (radius)<br>
+  2w3d: RADIUS: cisco AVPair "lcp:interface-config=description Vadim @@ Cisco"<br>
+  2w3d: Vi1 AAA/AUTHOR (2510656111): Post authorization status = PASS_REPL<br>
+  2w3d: Vi1 AAA/AUTHOR/LCP: Processing AV service=ppp<br>
+  2w3d: Vi1 AAA/AUTHOR/LCP: Processing AV interface-config=description Vadim
+ @@ Cisco<br>
+  2w3d: Vi1 PAP: O AUTH-ACK id 114 len 5<br>
+  2w3d: Vi1 PPP: Phase is UP<br>
+  2w3d: Vi1 AAA/AUTHOR/FSM: (0): Can we start IPCP?<br>
+  2w3d: Vi1 AAA/AUTHOR/FSM (58010725): Port='Virtual-Access1' list='' service=NET<br>
+  2w3d: AAA/AUTHOR/FSM: Vi1 (58010725) user='vadim_ms@@vadim.domain'<br>
+  2w3d: Vi1 AAA/AUTHOR/FSM (58010725): send AV service=ppp<br>
+  2w3d: Vi1 AAA/AUTHOR/FSM (58010725): send AV protocol=ip<br>
+  2w3d: Vi1 AAA/AUTHOR/FSM (58010725): found list "default"<br>
+  2w3d: Vi1 AAA/AUTHOR/FSM (58010725): Method=LOCAL<br>
+  2w3d: AAA/AUTHOR/LOCAL: no entry for vadim_ms@@vadim.domain<br>
+  2w3d: Vi1 AAA/AUTHOR (58010725): Post authorization status = ERROR<br>
+  2w3d: Vi1 AAA/AUTHOR/FSM (58010725): Method=radius (radius)<br>
+  2w3d: RADIUS: cisco AVPair "lcp:interface-config=description Vadim @@ Cisco"
+ not applied for ip<br>
+  2w3d: Vi1 AAA/AUTHOR (58010725): Post authorization status = PASS_REPL<br>
+  2w3d: Vi1 AAA/AUTHOR/FSM: We can start IPCP<br>
+  2w3d: Vi1 IPCP: O CONFREQ [Closed] id 1 len 10<br>
+  2w3d: Vi1 IPCP:&nbsp;&nbsp;&nbsp; Address 10.0.0.1 (0x03060A000001)<br>
+  2w3d: Vi1 IPCP: I CONFREQ [REQsent] id 19 len 10<br>
+  2w3d: Vi1 IPCP:&nbsp;&nbsp;&nbsp; Address 0.0.0.0 (0x030600000000)<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP: Start.&nbsp; Her address 0.0.0.0, we want 0.0.0.0<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP: Processing AV service=ppp<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP: Authorization succeeded<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP: Done.&nbsp; Her address 0.0.0.0, we want 0.0.0.0<br>
+  2w3d: Vi1 IPCP: Pool returned 10.0.0.128<br>
+  2w3d: Vi1 IPCP: O CONFNAK [REQsent] id 19 len 10<br>
+  2w3d: Vi1 IPCP:&nbsp;&nbsp;&nbsp; Address 10.0.0.128 (0x03060A000080)<br>
+  2w3d: Vi1 IPCP: I CONFACK [REQsent] id 1 len 10<br>
+  2w3d: Vi1 IPCP:&nbsp;&nbsp;&nbsp; Address 10.0.0.1 (0x03060A000001)<br>
+  2w3d: Vi1 IPCP: I CONFREQ [ACKrcvd] id 20 len 10<br>
+  2w3d: Vi1 IPCP:&nbsp;&nbsp;&nbsp; Address 10.0.0.128 (0x03060A000080)<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP: Start.&nbsp; Her address 10.0.0.128, we want 
+10.0.0.128<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP (655233479): Port='Virtual-Access1' list='' service=NET<br>
+  2w3d: AAA/AUTHOR/IPCP: Vi1 (655233479) user='vadim_ms@@vadim.domain'<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP (655233479): send AV service=ppp<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP (655233479): send AV protocol=ip<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP (655233479): send AV addr*10.0.0.128<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP (655233479): found list "default"<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP (655233479): Method=LOCAL<br>
+  2w3d: AAA/AUTHOR/LOCAL: no entry for vadim_ms@@vadim.domain<br>
+  2w3d: Vi1 AAA/AUTHOR (655233479): Post authorization status = ERROR<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP (655233479): Method=radius (radius)<br>
+  2w3d: RADIUS: cisco AVPair "lcp:interface-config=description Vadim @@ Cisco"
+ not applied for ip<br>
+  2w3d: Vi1 AAA/AUTHOR (655233479): Post authorization status = PASS_REPL<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP: Reject 10.0.0.128, using 10.0.0.128<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP: Processing AV service=ppp<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP: Processing AV addr*10.0.0.128<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP: Authorization succeeded<br>
+  2w3d: Vi1 AAA/AUTHOR/IPCP: Done.&nbsp; Her address 10.0.0.128, we want
+10.0.0.128<br>
+  2w3d: Vi1 IPCP: O CONFACK [ACKrcvd] id 20 len 10<br>
+  2w3d: Vi1 IPCP:&nbsp;&nbsp;&nbsp; Address 10.0.0.128 (0x03060A000080)<br>
+  2w3d: Vi1 IPCP: State is Open<br>
+  2w3d: Vi1 IPCP: Install route to 10.0.0.128<br>
+  2w3d: %LINEPROTO-5-UPDOWN: Line protocol on Interface Virtual-Access1,
+changed  state to up<br>
+  2w3d: Vi1 LCP: TIMEout: State Open<br>
+  <br>
+  <br>
+   
+</body>
+</html>
+@
+
+
+1.1.1.1
+log
+@no message
+@
+text
+@@

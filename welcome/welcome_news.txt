@@ -1,4 +1,0 @@
-Welcome to the COSI-nms site. 
-This is a test page to test the CVS and provide a place to post some quick info.
-We hope to go live within 2 weeks. 
-This was updated via CVS on 051701 via wincvs (Run from welcome directory.)

@@ -1,0 +1,115 @@
+head	1.4;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.4
+date	2001.12.05.19.19.08;	author jmarcus;	state dead;
+branches;
+next	1.3;
+
+1.3
+date	2001.09.11.03.45.31;	author jmarcus;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2001.09.09.23.14.55;	author nick07;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2001.09.09.23.11.23;	author nick07;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.4
+log
+@This file is obsolete with the new DB API.
+@
+text
+@#!/usr/bin/perl
+
+use SAA::DB;
+use SAA::Source;
+use SAA::Target;
+use SAA::Operation;
+
+$db = SAA::DB->new(
+    Database => "localhost",
+    Driver   => "mysql",
+);
+
+print "setSAAObject:\n";
+
+$sourceObj = SAA::Source->new( "Sources", "10.1.1.1", "1" );
+$targetObj = SAA::Target->new( "Targets", "10.1.1.2" );
+$operationObj =
+  SAA::Operation->new( "Operations", $SAA::Operation::TYPE_ECHO,
+    $SAA::Operation::PROTO_ICMP_ECHO );
+
+print "Source Object created\n";
+
+print "Info From source\n";
+
+$blah  = $db->setSAAObject($sourceObj);
+$blah2 = $db->setSAAObject($targetObj);
+$blah3 = $db->setSAAObject($operationObj);
+
+print "BLAH $blah\n";
+print "BLAH2 $blah2\n";
+@
+
+
+1.3
+log
+@Remove the include path statement.  This should now work on any machine.
+@
+text
+@@
+
+
+1.2
+log
+@oops left hard coded path in there
+@
+text
+@a1 1
+BEGIN { push ( @@INC, "~/saaconfig" ); };
+d8 4
+a11 4
+$db = SAA::DB->new( 
+					Database => "localhost",
+					Driver	 => "mysql",
+					);
+d17 3
+a19 1
+$operationObj = SAA::Operation->new("Operations",$SAA::Operation::TYPE_ECHO,$SAA::Operation::PROTO_ICMP_ECHO);
+d25 3
+a27 3
+$blah  = $db->setSAAObject( $sourceObj );
+$blah2 = $db->setSAAObject( $targetObj );
+$blah3 = $db->setSAAObject( $operationObj );
+@
+
+
+1.1
+log
+@Added a simple test script for use on shell.sourceforge.net to test the DB.
+Added 2 new subs to DB.pm.  searchDB should work but needs to be tested.
+
+The other runQuery is a pass thru interface to the db.  Taking a SQL Statment as an argument.  It also needs to be tested.
+@
+text
+@d2 1
+a2 1
+BEGIN { push ( @@INC, "/home/nicko/saaconfig" ); };
+@
+
